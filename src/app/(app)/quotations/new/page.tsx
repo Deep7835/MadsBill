@@ -6,8 +6,14 @@ export const metadata: Metadata = { title: "New quotation" };
 export default async function NewQuotationPage({
   searchParams,
 }: {
-  searchParams: Promise<{ customer?: string }>;
+  searchParams: Promise<{ customer?: string; draft?: string; as?: string }>;
 }) {
-  const { customer } = await searchParams;
-  return <QuotationBuilder presetCustomerId={customer} />;
+  const { customer, draft, as } = await searchParams;
+  return (
+    <QuotationBuilder
+      presetCustomerId={customer}
+      fromDraft={draft === "1"}
+      presetStatus={as === "invoice" ? "invoice" : undefined}
+    />
+  );
 }

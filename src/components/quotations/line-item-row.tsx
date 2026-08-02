@@ -44,13 +44,16 @@ export function LineItemRow({
 }: LineItemRowProps) {
   const itemErrors = Array.isArray(errors) ? errors[index] : undefined;
   const isSqft = value?.rate_type === "sqft";
-  const { area, amount } = calcLine({
+  const product = products.find((p) => p.id === value?.product_id);
+
+  const { area, amount, rate, discount, slabThreshold } = calcLine({
     rate_type: isSqft ? "sqft" : "piece",
     width: value?.width,
     height: value?.height,
     qty: value?.qty,
     rate: value?.rate,
     gst_percent: value?.gst_percent,
+    slabs: product,
   });
 
   const grouped = products.reduce<Record<string, Product[]>>((acc, p) => {
@@ -172,6 +175,11 @@ export function LineItemRow({
               {...register(`items.${index}.rate` as const)}
             />
             {fieldError(itemErrors?.rate?.message)}
+            {discount > 0 ? (
+              <p className="mt-1 text-xs font-medium text-[var(--success)]">
+                {slabThreshold}+ sq.ft. → {formatCurrency(rate)}
+              </p>
+            ) : null}
           </div>
 
           <div className={cn(isSqft ? "lg:col-span-2" : "lg:col-span-3")}>

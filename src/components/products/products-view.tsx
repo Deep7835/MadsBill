@@ -147,6 +147,23 @@ export function ProductsView() {
                       <span className="ml-1 text-xs font-normal text-muted-foreground">
                         /{product.unit}
                       </span>
+                      {product.rate_type === "sqft" && product.slab1_min_area ? (
+                        <span className="block text-xs font-normal text-muted-foreground">
+                          {product.slab1_min_area}+:{" "}
+                          {formatCurrency(
+                            Number(product.default_rate) - Number(product.slab1_discount),
+                          )}
+                          {product.slab2_min_area ? (
+                            <>
+                              {" · "}
+                              {product.slab2_min_area}+:{" "}
+                              {formatCurrency(
+                                Number(product.default_rate) - Number(product.slab2_discount),
+                              )}
+                            </>
+                          ) : null}
+                        </span>
+                      ) : null}
                     </TableCell>
                     <TableCell className="hidden text-right text-muted-foreground md:table-cell">
                       {Number(product.gst_percent)}%

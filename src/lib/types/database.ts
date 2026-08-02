@@ -39,6 +39,11 @@ export interface Product {
   default_rate: number;
   gst_percent: number;
   is_active: boolean;
+  /** Volume pricing, per single piece area. NULL threshold disables the slab. */
+  slab1_min_area: number | null;
+  slab1_discount: number;
+  slab2_min_area: number | null;
+  slab2_discount: number;
   created_at: string;
   updated_at: string;
 }
@@ -70,6 +75,9 @@ export interface QuotationItem {
   height: number | null;
   area: number | null;
   qty: number;
+  /** The rate as typed, before any volume discount. */
+  base_rate: number | null;
+  /** The rate actually charged, after the volume discount. */
   rate: number;
   gst_percent: number;
   amount: number;

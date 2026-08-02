@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import {
+  Calculator,
   FileText,
   FilePlus2,
   IndianRupee,
@@ -32,6 +33,7 @@ import { fetchDashboard } from "@/lib/queries";
 import { formatCurrency, formatDate } from "@/lib/format";
 
 const QUICK_ACTIONS = [
+  { href: "/calculator", label: "Price calculator", icon: Calculator },
   { href: "/quotations/new", label: "New quotation", icon: FilePlus2 },
   { href: "/customers", label: "Add customer", icon: UserPlus },
   { href: "/products", label: "Manage products", icon: Package },

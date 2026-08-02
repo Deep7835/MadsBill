@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
@@ -32,8 +32,9 @@ import {
   fetchProducts,
   updateQuotation,
 } from "@/lib/queries";
-import { calcLine, calcTotals } from "@/lib/calc";
+import { calcLine, calcTotals, type CalcLine } from "@/lib/calc";
 import { addDays, formatCurrency, toDateInput } from "@/lib/format";
+import { consumeDraftItems } from "@/lib/draft";
 import {
   quotationSchema,
   type QuotationFormValues,
@@ -71,7 +72,8 @@ function defaultsFor(quotation?: QuotationFull, presetCustomerId?: string): Quot
         width: item.width ?? "",
         height: item.height ?? "",
         qty: Number(item.qty),
-        rate: Number(item.rate),
+        // Re-open with the pre-discount rate so the slab is not applied twice.
+        rate: Number(item.base_rate ?? item.rate),
         gst_percent: Number(item.gst_percent),
       })),
     };
@@ -91,9 +93,17 @@ function defaultsFor(quotation?: QuotationFull, presetCustomerId?: string): Quot
 interface QuotationBuilderProps {
   quotation?: QuotationFull;
   presetCustomerId?: string;
+  /** Pull line items stashed by the price calculator. */
+  fromDraft?: boolean;
+  presetStatus?: "quotation" | "invoice";
 }
 
-export function QuotationBuilder({ quotation, presetCustomerId }: QuotationBuilderProps) {
+export function QuotationBuilder({
+  quotation,
+  presetCustomerId,
+  fromDraft = false,
+  presetStatus,
+}: QuotationBuilderProps) {
   const router = useRouter();
   const isEdit = !!quotation;
 
@@ -122,29 +132,49 @@ export function QuotationBuilder({ quotation, presetCustomerId }: QuotationBuild
     mode: "onSubmit",
   });
 
-  const { fields, append, remove } = useFieldArray({ control, name: "items" });
+  const { fields, append, remove, replace } = useFieldArray({ control, name: "items" });
+
+  // Read the calculator hand-off after mount — sessionStorage does not exist
+  // during SSR, so doing it in defaultValues would break hydration.
+  useEffect(() => {
+    if (!fromDraft || isEdit) return;
+    const draft = consumeDraftItems();
+    if (draft?.length) {
+      replace(draft as ItemValues[]);
+      toast.success(`${draft.length} line${draft.length === 1 ? "" : "s"} carried over`);
+    }
+    if (presetStatus) setValue("status", presetStatus);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const watchedItems = watch("items");
   const items = useMemo(() => (watchedItems ?? []) as ItemValues[], [watchedItems]);
-
-  const totals = useMemo(
-    () =>
-      calcTotals(
-        items.map((item) => ({
-          rate_type: item?.rate_type === "piece" ? "piece" : "sqft",
-          width: item?.width,
-          height: item?.height,
-          qty: item?.qty,
-          rate: item?.rate,
-          gst_percent: item?.gst_percent,
-        })),
-      ),
-    [items],
-  );
 
   const activeProducts = useMemo(
     () => (products ?? []).filter((p) => p.is_active),
     [products],
   );
+
+  /** Volume slabs live on the product, so every calculation needs this lookup. */
+  const productById = useMemo(
+    () => new Map((products ?? []).map((p) => [p.id, p])),
+    [products],
+  );
+
+  const toCalcLine = useCallback(
+    (item: ItemValues): CalcLine => ({
+      rate_type: item?.rate_type === "piece" ? "piece" : "sqft",
+      width: item?.width,
+      height: item?.height,
+      qty: item?.qty,
+      rate: item?.rate,
+      gst_percent: item?.gst_percent,
+      slabs: item?.product_id ? (productById.get(item.product_id) ?? null) : null,
+    }),
+    [productById],
+  );
+
+  const totals = useMemo(() => calcTotals(items.map(toCalcLine)), [items, toCalcLine]);
 
   /** Picking a product pre-fills description, rate type, rate and GST. */
   function handleProductChange(index: number, productId: string) {
@@ -163,7 +193,8 @@ export function QuotationBuilder({ quotation, presetCustomerId }: QuotationBuild
     setSubmitting(true);
     try {
       const lines = values.items.map((item) => {
-        const { area, amount } = calcLine(item);
+        const line = toCalcLine(item as ItemValues);
+        const { area, amount, rate } = calcLine(line);
         return {
           product_id: item.product_id ?? null,
           description: item.description,
@@ -172,13 +203,15 @@ export function QuotationBuilder({ quotation, presetCustomerId }: QuotationBuild
           height: item.rate_type === "sqft" ? (item.height ?? null) : null,
           area,
           qty: item.qty,
-          rate: item.rate,
+          // base_rate is what was typed; rate is what the slab actually charges.
+          base_rate: item.rate,
+          rate,
           gst_percent: item.gst_percent,
           amount,
         };
       });
 
-      const computed = calcTotals(values.items);
+      const computed = calcTotals(values.items.map((item) => toCalcLine(item as ItemValues)));
       const payload = {
         quotation: {
           customer_id: values.customer_id,
@@ -396,6 +429,14 @@ export function QuotationBuilder({ quotation, presetCustomerId }: QuotationBuild
                 <span className="text-muted-foreground">GST</span>
                 <span className="font-medium tabular-nums">{formatCurrency(totals.gstAmount)}</span>
               </div>
+              {totals.savings > 0 ? (
+                <div className="flex justify-between text-[var(--success)]">
+                  <span>Volume discount</span>
+                  <span className="font-medium tabular-nums">
+                    −{formatCurrency(totals.savings)}
+                  </span>
+                </div>
+              ) : null}
               <Separator className="my-2" />
               <div className="flex items-baseline justify-between">
                 <span className="font-medium">Grand total</span>

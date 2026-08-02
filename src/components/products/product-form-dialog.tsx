@@ -23,6 +23,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { FormField } from "@/components/shared/form-field";
+import { formatCurrency } from "@/lib/format";
 import {
   productSchema,
   type ProductFormValues,
@@ -39,6 +40,10 @@ const EMPTY: ProductFormValues = {
   default_rate: 0,
   gst_percent: 18,
   is_active: true,
+  slab1_min_area: 500,
+  slab1_discount: 2,
+  slab2_min_area: 1000,
+  slab2_discount: 4,
 };
 
 interface ProductFormDialogProps {
@@ -62,6 +67,7 @@ export function ProductFormDialog({
     reset,
     control,
     setValue,
+    watch,
     formState: { errors },
   } = useForm<ProductFormValues, unknown, ProductPayload>({
     resolver: zodResolver(productSchema),
@@ -80,6 +86,10 @@ export function ProductFormDialog({
             default_rate: Number(product.default_rate),
             gst_percent: Number(product.gst_percent),
             is_active: product.is_active,
+            slab1_min_area: product.slab1_min_area ?? "",
+            slab1_discount: Number(product.slab1_discount ?? 0),
+            slab2_min_area: product.slab2_min_area ?? "",
+            slab2_discount: Number(product.slab2_discount ?? 0),
           }
         : EMPTY,
     );
@@ -101,9 +111,20 @@ export function ProductFormDialog({
     }
   }
 
+  const isSqft = watch("rate_type") === "sqft";
+  const baseRate = Number(watch("default_rate")) || 0;
+  const slab1 = {
+    area: Number(watch("slab1_min_area")) || 0,
+    off: Number(watch("slab1_discount")) || 0,
+  };
+  const slab2 = {
+    area: Number(watch("slab2_min_area")) || 0,
+    off: Number(watch("slab2_discount")) || 0,
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>{product ? "Edit product" : "New product"}</DialogTitle>
           <DialogDescription>
@@ -135,8 +156,14 @@ export function ProductFormDialog({
                     value={field.value}
                     onValueChange={(value) => {
                       field.onChange(value);
-                      // Keep the printed unit in step with the pricing model.
-                      setValue("unit", value === "sqft" ? "sq.ft." : "piece");
+                      // Keep the printed unit in step with the pricing model,
+                      // and drop volume slabs — they only apply to area pricing.
+                      const sqft = value === "sqft";
+                      setValue("unit", sqft ? "sq.ft." : "piece");
+                      setValue("slab1_min_area", sqft ? 500 : "");
+                      setValue("slab1_discount", sqft ? 2 : 0);
+                      setValue("slab2_min_area", sqft ? 1000 : "");
+                      setValue("slab2_discount", sqft ? 4 : 0);
                     }}
                   >
                     <SelectTrigger aria-invalid={!!errors.rate_type}>
@@ -211,6 +238,102 @@ export function ProductFormDialog({
               />
             </FormField>
           </div>
+
+          {isSqft ? (
+            <div className="space-y-3 rounded-xl border border-border bg-muted/30 p-4">
+              <div className="space-y-1">
+                <p className="text-sm font-medium">Volume pricing</p>
+                <p className="text-xs text-muted-foreground">
+                  A larger single piece gets a cheaper rate. The area tested is width ×
+                  height of one piece — quantity does not stack. Leave the area blank to
+                  switch a slab off.
+                </p>
+              </div>
+
+              <div className="grid gap-3 sm:grid-cols-2">
+                <FormField
+                  label="Slab 1 — from (sq.ft.)"
+                  htmlFor="slab1_min_area"
+                  error={errors.slab1_min_area?.message}
+                >
+                  <Input
+                    id="slab1_min_area"
+                    type="number"
+                    step="1"
+                    min="0"
+                    inputMode="decimal"
+                    placeholder="500"
+                    {...register("slab1_min_area")}
+                  />
+                </FormField>
+
+                <FormField
+                  label="Slab 1 — rate off (₹)"
+                  htmlFor="slab1_discount"
+                  error={errors.slab1_discount?.message}
+                >
+                  <Input
+                    id="slab1_discount"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    inputMode="decimal"
+                    placeholder="2"
+                    aria-invalid={!!errors.slab1_discount}
+                    {...register("slab1_discount")}
+                  />
+                </FormField>
+
+                <FormField
+                  label="Slab 2 — from (sq.ft.)"
+                  htmlFor="slab2_min_area"
+                  error={errors.slab2_min_area?.message}
+                >
+                  <Input
+                    id="slab2_min_area"
+                    type="number"
+                    step="1"
+                    min="0"
+                    inputMode="decimal"
+                    placeholder="1000"
+                    aria-invalid={!!errors.slab2_min_area}
+                    {...register("slab2_min_area")}
+                  />
+                </FormField>
+
+                <FormField
+                  label="Slab 2 — rate off (₹)"
+                  htmlFor="slab2_discount"
+                  error={errors.slab2_discount?.message}
+                >
+                  <Input
+                    id="slab2_discount"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    inputMode="decimal"
+                    placeholder="4"
+                    aria-invalid={!!errors.slab2_discount}
+                    {...register("slab2_discount")}
+                  />
+                </FormField>
+              </div>
+
+              <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
+                <span>Under {slab1.area || "—"} sq.ft.: {formatCurrency(baseRate)}</span>
+                {slab1.area && slab1.off ? (
+                  <span>
+                    {slab1.area}+ sq.ft.: {formatCurrency(Math.max(0, baseRate - slab1.off))}
+                  </span>
+                ) : null}
+                {slab2.area && slab2.off ? (
+                  <span>
+                    {slab2.area}+ sq.ft.: {formatCurrency(Math.max(0, baseRate - slab2.off))}
+                  </span>
+                ) : null}
+              </div>
+            </div>
+          ) : null}
 
           <DialogFooter>
             <Button
