@@ -20,13 +20,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { SegmentedControl } from "@/components/shared/segmented-control";
 import { DataList } from "@/components/shared/data-list";
 import { useAsyncData } from "@/hooks/use-async-data";
 import { deleteQuotation, fetchQuotations } from "@/lib/queries";
@@ -43,7 +37,8 @@ export function QuotationsView() {
     errorMessage: "Could not load quotations",
   });
 
-  const [search, setSearch] = useState("");
+  // Seeded from the URL so the topbar search can jump straight into a filter.
+  const [search, setSearch] = useState(searchParams.get("q") ?? "");
   const [filter, setFilter] = useState<Filter>(
     initialFilter === "invoice" || initialFilter === "quotation" ? initialFilter : "all",
   );
@@ -100,18 +95,20 @@ export function QuotationsView() {
               placeholder="Search number or customer…"
             />
             <div className="flex items-center gap-3">
-              <Select value={filter} onValueChange={(value) => setFilter(value as Filter)}>
-                <SelectTrigger className="w-full sm:w-40">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All documents</SelectItem>
-                  <SelectItem value="quotation">Quotations</SelectItem>
-                  <SelectItem value="invoice">Invoices</SelectItem>
-                </SelectContent>
-              </Select>
+              <SegmentedControl
+                value={filter}
+                onChange={setFilter}
+                aria-label="Filter documents"
+                segments={[
+                  { value: "all", label: "All" },
+                  { value: "quotation", label: "Quotations" },
+                  { value: "invoice", label: "Invoices" },
+                ]}
+              />
               {!loading ? (
-                <p className="hidden text-xs text-muted-foreground sm:block">{rows.length} shown</p>
+                <p className="hidden whitespace-nowrap text-xs text-muted-foreground lg:block">
+                  {rows.length} shown
+                </p>
               ) : null}
             </div>
           </div>

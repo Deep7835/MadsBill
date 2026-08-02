@@ -40,14 +40,11 @@ export function DashboardView() {
 
   return (
     <>
-      <PageHeader title="Dashboard" description="Overview of your quotations, invoices and payments.">
-        <Button asChild>
-          <Link href="/quotations/new">
-            <FilePlus2 />
-            New quotation
-          </Link>
-        </Button>
-      </PageHeader>
+      {/* No CTA here — the topbar carries the global "New quotation" button. */}
+      <PageHeader
+        title="Dashboard"
+        description="Overview of your quotations, invoices and payments."
+      />
 
       {loading ? (
         <CardGridSkeleton />

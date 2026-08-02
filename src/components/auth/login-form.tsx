@@ -56,9 +56,9 @@ export function LoginForm() {
   }
 
   return (
-    <Card className="shadow-md">
+    <Card className="rounded-3xl p-2">
       <CardHeader className="items-center text-center">
-        <div className="mx-auto flex size-11 items-center justify-center rounded-xl bg-primary text-primary-foreground">
+        <div className="mx-auto flex size-12 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-[var(--shadow-raised)]">
           <Printer className="size-5" />
         </div>
         <CardTitle className="mt-2 text-xl">Madskraft Flex &amp; Advertising</CardTitle>

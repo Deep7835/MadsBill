@@ -16,7 +16,11 @@ Table.displayName = "Table";
 
 const TableHeader = React.forwardRef<HTMLTableSectionElement, React.ComponentProps<"thead">>(
   ({ className, ...props }, ref) => (
-    <thead ref={ref} className={cn("[&_tr]:border-b", className)} {...props} />
+    <thead
+      ref={ref}
+      className={cn("[&_tr]:border-b [&_tr]:border-border [&_tr]:!bg-transparent", className)}
+      {...props}
+    />
   ),
 );
 TableHeader.displayName = "TableHeader";
@@ -44,7 +48,9 @@ const TableRow = React.forwardRef<HTMLTableRowElement, React.ComponentProps<"tr"
     <tr
       ref={ref}
       className={cn(
-        "border-b border-border transition-colors hover:bg-muted/40 data-[state=selected]:bg-muted",
+        // Zebra striping instead of row rules — lighter, and matches the
+        // dashboard look the tables are modelled on.
+        "transition-colors even:bg-muted/40 hover:bg-accent/45 data-[state=selected]:bg-accent/60",
         className,
       )}
       {...props}
@@ -58,7 +64,7 @@ const TableHead = React.forwardRef<HTMLTableCellElement, React.ComponentProps<"t
     <th
       ref={ref}
       className={cn(
-        "h-11 px-4 text-left align-middle text-xs font-semibold uppercase tracking-wide text-muted-foreground",
+        "h-12 px-5 text-left align-middle text-xs font-semibold uppercase tracking-wide text-muted-foreground",
         className,
       )}
       {...props}
@@ -69,7 +75,7 @@ TableHead.displayName = "TableHead";
 
 const TableCell = React.forwardRef<HTMLTableCellElement, React.ComponentProps<"td">>(
   ({ className, ...props }, ref) => (
-    <td ref={ref} className={cn("px-4 py-3 align-middle", className)} {...props} />
+    <td ref={ref} className={cn("px-5 py-3.5 align-middle", className)} {...props} />
   ),
 );
 TableCell.displayName = "TableCell";

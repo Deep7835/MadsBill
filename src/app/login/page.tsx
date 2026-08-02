@@ -11,9 +11,9 @@ export default function LoginPage() {
   if (!isSupabaseConfigured) return <SetupNotice />;
 
   return (
-    <main className="flex min-h-dvh items-center justify-center bg-muted/40 p-4">
+    <main className="app-shell flex min-h-dvh items-center justify-center p-4">
       <div className="w-full max-w-sm">
-        <Suspense fallback={<Skeleton className="h-[420px] w-full rounded-xl" />}>
+        <Suspense fallback={<Skeleton className="h-[420px] w-full rounded-3xl" />}>
           <LoginForm />
         </Suspense>
       </div>
