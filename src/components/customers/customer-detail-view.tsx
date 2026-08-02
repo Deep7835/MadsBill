@@ -22,14 +22,7 @@ import { StatCard } from "@/components/dashboard/stat-card";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { DataList } from "@/components/shared/data-list";
 import { useAsyncData } from "@/hooks/use-async-data";
 import { fetchCustomer, fetchQuotations } from "@/lib/queries";
 import { formatCurrency, formatDate } from "@/lib/format";
@@ -146,41 +139,49 @@ export function CustomerDetailView({ customerId }: { customerId: string }) {
               }
             />
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Number</TableHead>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Total</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {history.map((q) => (
-                  <TableRow key={q.id}>
-                    <TableCell className="font-medium">
-                      <Link href={`/quotations/${q.id}`} className="hover:text-primary">
-                        {q.quote_number}
-                      </Link>
-                    </TableCell>
-                    <TableCell className="whitespace-nowrap text-muted-foreground">
-                      {formatDate(q.date)}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex flex-wrap gap-1.5">
-                        <DocStatusBadge status={q.status} />
-                        {q.status === "invoice" ? (
-                          <PaymentStatusBadge status={q.payment_status} />
-                        ) : null}
-                      </div>
-                    </TableCell>
-                    <TableCell className="whitespace-nowrap text-right font-medium">
-                      {formatCurrency(q.grand_total)}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+            <DataList
+              rows={history}
+              rowKey={(q) => q.id}
+              href={(q) => `/quotations/${q.id}`}
+              columns={[
+                {
+                  key: "number",
+                  header: "Number",
+                  primary: true,
+                  className: "whitespace-nowrap",
+                  cell: (q) => (
+                    <Link href={`/quotations/${q.id}`} className="font-medium hover:text-primary">
+                      {q.quote_number}
+                    </Link>
+                  ),
+                },
+                {
+                  key: "date",
+                  header: "Date",
+                  className: "whitespace-nowrap",
+                  cell: (q) => <span className="text-muted-foreground">{formatDate(q.date)}</span>,
+                },
+                {
+                  key: "status",
+                  header: "Status",
+                  cell: (q) => (
+                    <div className="flex flex-wrap gap-1.5">
+                      <DocStatusBadge status={q.status} />
+                      {q.status === "invoice" ? (
+                        <PaymentStatusBadge status={q.payment_status} />
+                      ) : null}
+                    </div>
+                  ),
+                },
+                {
+                  key: "total",
+                  header: "Total",
+                  align: "right",
+                  className: "whitespace-nowrap font-medium",
+                  cell: (q) => formatCurrency(q.grand_total),
+                },
+              ]}
+            />
           )}
         </CardContent>
       </Card>

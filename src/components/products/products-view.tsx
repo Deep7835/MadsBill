@@ -19,14 +19,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { DataList } from "@/components/shared/data-list";
 import { useAsyncData } from "@/hooks/use-async-data";
 import { deleteProduct, fetchProducts } from "@/lib/queries";
 import { formatCurrency } from "@/lib/format";
@@ -110,92 +103,117 @@ export function ProductsView() {
               }
             />
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Product</TableHead>
-                  <TableHead className="hidden sm:table-cell">Category</TableHead>
-                  <TableHead>Pricing</TableHead>
-                  <TableHead className="text-right">Rate</TableHead>
-                  <TableHead className="hidden text-right md:table-cell">GST</TableHead>
-                  <TableHead className="w-12" />
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {products.map((product) => (
-                  <TableRow key={product.id} className={product.is_active ? "" : "opacity-60"}>
-                    <TableCell className="font-medium">
-                      <span className="flex items-center gap-2">
-                        {product.name}
-                        {!product.is_active ? (
-                          <Badge variant="outline" className="text-[10px]">
-                            Inactive
-                          </Badge>
-                        ) : null}
-                      </span>
-                    </TableCell>
-                    <TableCell className="hidden text-muted-foreground sm:table-cell">
-                      {product.category || "—"}
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={product.rate_type === "sqft" ? "default" : "secondary"}>
-                        {product.rate_type === "sqft" ? "Per sq.ft." : "Per piece"}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="whitespace-nowrap text-right font-medium">
+            <DataList
+              rows={products}
+              rowKey={(product) => product.id}
+              columns={[
+                {
+                  key: "name",
+                  header: "Product",
+                  primary: true,
+                  cell: (product) => (
+                    <span className="flex items-center gap-2 font-medium">
+                      {product.name}
+                      {!product.is_active ? (
+                        <Badge variant="outline" className="text-[10px]">
+                          Inactive
+                        </Badge>
+                      ) : null}
+                    </span>
+                  ),
+                },
+                {
+                  key: "category",
+                  header: "Category",
+                  subtitle: true,
+                  hideBelow: "lg",
+                  cell: (product) => (
+                    <span className="text-muted-foreground">{product.category || "—"}</span>
+                  ),
+                },
+                {
+                  key: "pricing",
+                  header: "Pricing",
+                  cell: (product) => (
+                    <Badge variant={product.rate_type === "sqft" ? "default" : "secondary"}>
+                      {product.rate_type === "sqft" ? "Per sq.ft." : "Per piece"}
+                    </Badge>
+                  ),
+                },
+                {
+                  key: "rate",
+                  header: "Rate",
+                  align: "right",
+                  className: "whitespace-nowrap font-medium",
+                  cell: (product) => (
+                    <>
                       {formatCurrency(product.default_rate)}
                       <span className="ml-1 text-xs font-normal text-muted-foreground">
                         /{product.unit}
                       </span>
-                      {product.rate_type === "sqft" && product.slab1_min_area ? (
-                        <span className="block text-xs font-normal text-muted-foreground">
-                          {product.slab1_min_area}+:{" "}
-                          {formatCurrency(
-                            Number(product.default_rate) - Number(product.slab1_discount),
-                          )}
-                          {product.slab2_min_area ? (
-                            <>
-                              {" · "}
-                              {product.slab2_min_area}+:{" "}
-                              {formatCurrency(
-                                Number(product.default_rate) - Number(product.slab2_discount),
-                              )}
-                            </>
-                          ) : null}
-                        </span>
-                      ) : null}
-                    </TableCell>
-                    <TableCell className="hidden text-right text-muted-foreground md:table-cell">
-                      {Number(product.gst_percent)}%
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" aria-label="Product actions">
-                            <MoreHorizontal />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem
-                            onSelect={() => {
-                              setEditing(product);
-                              setFormOpen(true);
-                            }}
-                          >
-                            <Pencil />
-                            Edit
-                          </DropdownMenuItem>
-                          <DropdownMenuItem destructive onSelect={() => setDeleting(product)}>
-                            <Trash2 />
-                            Delete
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                    </>
+                  ),
+                },
+                {
+                  key: "slabs",
+                  header: "Volume rate",
+                  align: "right",
+                  cell: (product) =>
+                    product.rate_type === "sqft" && product.slab1_min_area ? (
+                      <span className="text-xs text-muted-foreground">
+                        {product.slab1_min_area}+:{" "}
+                        {formatCurrency(
+                          Number(product.default_rate) - Number(product.slab1_discount),
+                        )}
+                        {product.slab2_min_area ? (
+                          <>
+                            {" · "}
+                            {product.slab2_min_area}+:{" "}
+                            {formatCurrency(
+                              Number(product.default_rate) - Number(product.slab2_discount),
+                            )}
+                          </>
+                        ) : null}
+                      </span>
+                    ) : (
+                      <span className="text-xs text-muted-foreground">—</span>
+                    ),
+                },
+                {
+                  key: "gst",
+                  header: "GST",
+                  align: "right",
+                  hideBelow: "lg",
+                  cell: (product) => (
+                    <span className="text-muted-foreground">{Number(product.gst_percent)}%</span>
+                  ),
+                },
+              ]}
+              actions={(product) => (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon" aria-label="Product actions">
+                      <MoreHorizontal />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem
+                      onSelect={() => {
+                        setEditing(product);
+                        setFormOpen(true);
+                      }}
+                    >
+                      <Pencil />
+                      Edit
+                    </DropdownMenuItem>
+                    <DropdownMenuItem destructive onSelect={() => setDeleting(product)}>
+                      <Trash2 />
+                      Delete
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
+            />
           )}
         </CardContent>
       </Card>

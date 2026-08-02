@@ -79,7 +79,37 @@ export function DocumentPreview({
         </div>
       </section>
 
-      <div className="overflow-hidden rounded-lg border border-border">
+      {/* Line items — stacked cards on phones, ruled table from md up. */}
+      <ul className="space-y-3 md:hidden">
+        {quotation.items.map((item, index) => (
+          <li key={item.id} className="rounded-lg border border-border p-3">
+            <div className="flex items-start justify-between gap-3">
+              <span className="text-sm font-medium">
+                <span className="mr-1.5 text-muted-foreground">{index + 1}.</span>
+                {item.description}
+              </span>
+              <span className="shrink-0 text-sm font-semibold tabular-nums">
+                {formatCurrency(item.amount)}
+              </span>
+            </div>
+            <dl className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1.5 text-xs">
+              {item.rate_type === "sqft" ? (
+                <>
+                  <Field label="Size">
+                    {formatNumber(Number(item.width ?? 0))} × {formatNumber(Number(item.height ?? 0))} ft
+                  </Field>
+                  <Field label="Area">{formatNumber(Number(item.area ?? 0))} sq.ft.</Field>
+                </>
+              ) : null}
+              <Field label="Qty">{formatNumber(Number(item.qty))}</Field>
+              <Field label="Rate">{formatCurrency(item.rate)}</Field>
+              <Field label="GST">{formatNumber(Number(item.gst_percent), 0)}%</Field>
+            </dl>
+          </li>
+        ))}
+      </ul>
+
+      <div className="hidden overflow-hidden rounded-lg border border-border md:block">
         <Table>
           <TableHeader>
             <TableRow className="bg-muted/60">
@@ -165,6 +195,15 @@ export function DocumentPreview({
           </p>
         </div>
       </div>
+    </div>
+  );
+}
+
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="min-w-0">
+      <dt className="text-[11px] uppercase tracking-wide text-muted-foreground">{label}</dt>
+      <dd className="truncate tabular-nums">{children}</dd>
     </div>
   );
 }

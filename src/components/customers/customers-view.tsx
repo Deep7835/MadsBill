@@ -19,14 +19,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { DataList } from "@/components/shared/data-list";
 import { useAsyncData } from "@/hooks/use-async-data";
 import { deleteCustomer, fetchCustomers } from "@/lib/queries";
 import type { Customer } from "@/lib/types/database";
@@ -127,61 +120,78 @@ export function CustomersView() {
               }
             />
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Business</TableHead>
-                  <TableHead className="hidden md:table-cell">Contact</TableHead>
-                  <TableHead>Mobile</TableHead>
-                  <TableHead className="hidden lg:table-cell">City</TableHead>
-                  <TableHead className="hidden lg:table-cell">GSTIN</TableHead>
-                  <TableHead className="w-12" />
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {customers.map((customer) => (
-                  <TableRow key={customer.id}>
-                    <TableCell className="font-medium">
-                      <Link href={`/customers/${customer.id}`} className="hover:text-primary">
-                        {customer.business_name}
-                      </Link>
-                    </TableCell>
-                    <TableCell className="hidden text-muted-foreground md:table-cell">
-                      {customer.contact_person || "—"}
-                    </TableCell>
-                    <TableCell className="whitespace-nowrap">{customer.mobile || "—"}</TableCell>
-                    <TableCell className="hidden text-muted-foreground lg:table-cell">
-                      {customer.city || "—"}
-                    </TableCell>
-                    <TableCell className="hidden font-mono text-xs text-muted-foreground lg:table-cell">
+            <DataList
+              rows={customers}
+              rowKey={(customer) => customer.id}
+              href={(customer) => `/customers/${customer.id}`}
+              columns={[
+                {
+                  key: "business",
+                  header: "Business",
+                  primary: true,
+                  cell: (customer) => (
+                    <Link href={`/customers/${customer.id}`} className="font-medium hover:text-primary">
+                      {customer.business_name}
+                    </Link>
+                  ),
+                },
+                {
+                  key: "contact",
+                  header: "Contact",
+                  subtitle: true,
+                  hideBelow: "lg",
+                  cell: (customer) => (
+                    <span className="text-muted-foreground">{customer.contact_person || "—"}</span>
+                  ),
+                },
+                {
+                  key: "mobile",
+                  header: "Mobile",
+                  className: "whitespace-nowrap",
+                  cell: (customer) => customer.mobile || "—",
+                },
+                {
+                  key: "city",
+                  header: "City",
+                  hideBelow: "lg",
+                  cell: (customer) => (
+                    <span className="text-muted-foreground">{customer.city || "—"}</span>
+                  ),
+                },
+                {
+                  key: "gstin",
+                  header: "GSTIN",
+                  hideBelow: "lg",
+                  cell: (customer) => (
+                    <span className="font-mono text-xs text-muted-foreground">
                       {customer.gst_number || "—"}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" aria-label="Customer actions">
-                            <MoreHorizontal />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem asChild>
-                            <Link href={`/customers/${customer.id}`}>View history</Link>
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onSelect={() => openEdit(customer)}>
-                            <Pencil />
-                            Edit
-                          </DropdownMenuItem>
-                          <DropdownMenuItem destructive onSelect={() => setDeleting(customer)}>
-                            <Trash2 />
-                            Delete
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                    </span>
+                  ),
+                },
+              ]}
+              actions={(customer) => (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon" aria-label="Customer actions">
+                      <MoreHorizontal />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem asChild>
+                      <Link href={`/customers/${customer.id}`}>View history</Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onSelect={() => openEdit(customer)}>
+                      <Pencil />
+                      Edit
+                    </DropdownMenuItem>
+                    <DropdownMenuItem destructive onSelect={() => setDeleting(customer)}>
+                      <Trash2 />
+                      Delete
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
+            />
           )}
         </CardContent>
       </Card>

@@ -27,14 +27,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { DataList } from "@/components/shared/data-list";
 import { useAsyncData } from "@/hooks/use-async-data";
 import { deleteQuotation, fetchQuotations } from "@/lib/queries";
 import { formatCurrency, formatDate } from "@/lib/format";
@@ -108,7 +101,7 @@ export function QuotationsView() {
             />
             <div className="flex items-center gap-3">
               <Select value={filter} onValueChange={(value) => setFilter(value as Filter)}>
-                <SelectTrigger className="w-40">
+                <SelectTrigger className="w-full sm:w-40">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -143,73 +136,85 @@ export function QuotationsView() {
               }
             />
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Number</TableHead>
-                  <TableHead>Customer</TableHead>
-                  <TableHead className="hidden sm:table-cell">Date</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Total</TableHead>
-                  <TableHead className="w-12" />
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {rows.map((row) => (
-                  <TableRow key={row.id}>
-                    <TableCell className="font-medium">
-                      <Link href={`/quotations/${row.id}`} className="hover:text-primary">
-                        {row.quote_number}
+            <DataList
+              rows={rows}
+              rowKey={(row) => row.id}
+              href={(row) => `/quotations/${row.id}`}
+              columns={[
+                {
+                  key: "number",
+                  header: "Number",
+                  primary: true,
+                  className: "whitespace-nowrap",
+                  cell: (row) => (
+                    <Link href={`/quotations/${row.id}`} className="font-medium hover:text-primary">
+                      {row.quote_number}
+                    </Link>
+                  ),
+                },
+                {
+                  key: "customer",
+                  header: "Customer",
+                  subtitle: true,
+                  className: "max-w-[16rem] truncate",
+                  cell: (row) => row.customer?.business_name ?? "—",
+                },
+                {
+                  key: "date",
+                  header: "Date",
+                  className: "whitespace-nowrap",
+                  cell: (row) => (
+                    <span className="text-muted-foreground">{formatDate(row.date)}</span>
+                  ),
+                },
+                {
+                  key: "status",
+                  header: "Status",
+                  cell: (row) => (
+                    <div className="flex flex-wrap gap-1.5">
+                      <DocStatusBadge status={row.status} />
+                      {row.status === "invoice" ? (
+                        <PaymentStatusBadge status={row.payment_status} />
+                      ) : null}
+                    </div>
+                  ),
+                },
+                {
+                  key: "total",
+                  header: "Total",
+                  align: "right",
+                  className: "whitespace-nowrap font-medium",
+                  cell: (row) => formatCurrency(row.grand_total),
+                },
+              ]}
+              actions={(row) => (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon" aria-label="Document actions">
+                      <MoreHorizontal />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem asChild>
+                      <Link href={`/quotations/${row.id}`}>
+                        <ReceiptText />
+                        Open
                       </Link>
-                    </TableCell>
-                    <TableCell className="max-w-[16rem] truncate">
-                      {row.customer?.business_name ?? "—"}
-                    </TableCell>
-                    <TableCell className="hidden whitespace-nowrap text-muted-foreground sm:table-cell">
-                      {formatDate(row.date)}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex flex-wrap gap-1.5">
-                        <DocStatusBadge status={row.status} />
-                        {row.status === "invoice" ? (
-                          <PaymentStatusBadge status={row.payment_status} />
-                        ) : null}
-                      </div>
-                    </TableCell>
-                    <TableCell className="whitespace-nowrap text-right font-medium">
-                      {formatCurrency(row.grand_total)}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" aria-label="Document actions">
-                            <MoreHorizontal />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem asChild>
-                            <Link href={`/quotations/${row.id}`}>
-                              <ReceiptText />
-                              Open
-                            </Link>
-                          </DropdownMenuItem>
-                          <DropdownMenuItem asChild>
-                            <Link href={`/quotations/${row.id}/edit`}>
-                              <Pencil />
-                              Edit
-                            </Link>
-                          </DropdownMenuItem>
-                          <DropdownMenuItem destructive onSelect={() => setDeleting(row)}>
-                            <Trash2 />
-                            Delete
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link href={`/quotations/${row.id}/edit`}>
+                        <Pencil />
+                        Edit
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem destructive onSelect={() => setDeleting(row)}>
+                      <Trash2 />
+                      Delete
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
+            />
           )}
         </CardContent>
       </Card>

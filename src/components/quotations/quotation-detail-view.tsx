@@ -173,28 +173,35 @@ export function QuotationDetailView({ quotationId }: { quotationId: string }) {
           title={data.quote_number}
           description={`${data.customer?.business_name ?? "Customer"} · ${formatDate(data.date)} · ${formatCurrency(data.grand_total)}`}
         >
-          <Button variant="outline" onClick={handlePrint} loading={busy === "print"}>
-            <Printer />
-            Print
-          </Button>
-          <Button variant="outline" onClick={handleDownload} loading={busy === "pdf"}>
-            <Download />
-            Download PDF
-          </Button>
-          <Button variant="outline" onClick={() => setShareOpen(true)}>
-            <MessageCircle />
-            WhatsApp
-          </Button>
-          <Button asChild variant="outline">
-            <Link href={`/quotations/${data.id}/edit`}>
-              <Pencil />
-              Edit
-            </Link>
-          </Button>
-          <Button variant="outline" className="text-destructive" onClick={() => setConfirmDelete(true)}>
-            <Trash2 />
-            Delete
-          </Button>
+          {/* Five actions: a 2-up grid on phones, an inline row from sm up. */}
+          <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:flex-wrap">
+            <Button variant="outline" onClick={handlePrint} loading={busy === "print"}>
+              <Printer />
+              Print
+            </Button>
+            <Button variant="outline" onClick={handleDownload} loading={busy === "pdf"}>
+              <Download />
+              <span className="truncate">Download PDF</span>
+            </Button>
+            <Button variant="outline" onClick={() => setShareOpen(true)}>
+              <MessageCircle />
+              WhatsApp
+            </Button>
+            <Button asChild variant="outline">
+              <Link href={`/quotations/${data.id}/edit`}>
+                <Pencil />
+                Edit
+              </Link>
+            </Button>
+            <Button
+              variant="outline"
+              className="col-span-2 text-destructive sm:col-span-1"
+              onClick={() => setConfirmDelete(true)}
+            >
+              <Trash2 />
+              Delete
+            </Button>
+          </div>
         </PageHeader>
       </div>
 

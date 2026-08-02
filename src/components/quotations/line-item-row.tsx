@@ -66,12 +66,27 @@ export function LineItemRow({
     message ? <p className="mt-1 text-xs font-medium text-destructive">{message}</p> : null;
 
   return (
-    <div className="rounded-xl border border-border bg-card p-4">
-      <div className="flex items-start justify-between gap-3">
+    <div className="rounded-xl border border-border bg-card p-3 sm:p-4">
+      {/* Index and remove sit on their own row so the fields get full width. */}
+      <div className="mb-3 flex items-center justify-between gap-2">
         <span className="flex size-6 shrink-0 items-center justify-center rounded-md bg-muted text-xs font-semibold text-muted-foreground">
           {index + 1}
         </span>
-        <div className="grid flex-1 gap-3 sm:grid-cols-2 lg:grid-cols-12">
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          className="-mr-1 shrink-0 text-muted-foreground hover:text-destructive"
+          onClick={() => onRemove(index)}
+          disabled={!removable}
+          aria-label={`Remove line ${index + 1}`}
+        >
+          <Trash2 />
+        </Button>
+      </div>
+
+      <div>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-12">
           {/* Product */}
           <div className="lg:col-span-4">
             <Label className="text-xs text-muted-foreground">Product</Label>
@@ -204,18 +219,6 @@ export function LineItemRow({
             </div>
           </div>
         </div>
-
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          className="shrink-0 text-muted-foreground hover:text-destructive"
-          onClick={() => onRemove(index)}
-          disabled={!removable}
-          aria-label={`Remove line ${index + 1}`}
-        >
-          <Trash2 />
-        </Button>
       </div>
     </div>
   );

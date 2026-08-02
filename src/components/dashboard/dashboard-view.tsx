@@ -20,14 +20,7 @@ import { EmptyState } from "@/components/shared/empty-state";
 import { DocStatusBadge, PaymentStatusBadge } from "@/components/shared/status-badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { DataList } from "@/components/shared/data-list";
 import { useAsyncData } from "@/hooks/use-async-data";
 import { fetchDashboard } from "@/lib/queries";
 import { formatCurrency, formatDate } from "@/lib/format";
@@ -121,45 +114,57 @@ export function DashboardView() {
                 }
               />
             ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Number</TableHead>
-                    <TableHead>Customer</TableHead>
-                    <TableHead className="hidden sm:table-cell">Date</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead className="text-right">Total</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {data.recent.map((q) => (
-                    <TableRow key={q.id} className="cursor-pointer">
-                      <TableCell className="font-medium">
-                        <Link href={`/quotations/${q.id}`} className="hover:text-primary">
-                          {q.quote_number}
-                        </Link>
-                      </TableCell>
-                      <TableCell className="max-w-[14rem] truncate">
-                        {q.customer?.business_name ?? "—"}
-                      </TableCell>
-                      <TableCell className="hidden whitespace-nowrap text-muted-foreground sm:table-cell">
-                        {formatDate(q.date)}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex flex-wrap gap-1.5">
-                          <DocStatusBadge status={q.status} />
-                          {q.status === "invoice" ? (
-                            <PaymentStatusBadge status={q.payment_status} />
-                          ) : null}
-                        </div>
-                      </TableCell>
-                      <TableCell className="whitespace-nowrap text-right font-medium">
-                        {formatCurrency(q.grand_total)}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+              <DataList
+                rows={data.recent}
+                rowKey={(q) => q.id}
+                href={(q) => `/quotations/${q.id}`}
+                columns={[
+                  {
+                    key: "number",
+                    header: "Number",
+                    primary: true,
+                    className: "whitespace-nowrap",
+                    cell: (q) => (
+                      <Link href={`/quotations/${q.id}`} className="font-medium hover:text-primary">
+                        {q.quote_number}
+                      </Link>
+                    ),
+                  },
+                  {
+                    key: "customer",
+                    header: "Customer",
+                    subtitle: true,
+                    className: "max-w-[14rem] truncate",
+                    cell: (q) => q.customer?.business_name ?? "—",
+                  },
+                  {
+                    key: "date",
+                    header: "Date",
+                    hideBelow: "lg",
+                    className: "whitespace-nowrap",
+                    cell: (q) => <span className="text-muted-foreground">{formatDate(q.date)}</span>,
+                  },
+                  {
+                    key: "status",
+                    header: "Status",
+                    cell: (q) => (
+                      <div className="flex flex-wrap gap-1.5">
+                        <DocStatusBadge status={q.status} />
+                        {q.status === "invoice" ? (
+                          <PaymentStatusBadge status={q.payment_status} />
+                        ) : null}
+                      </div>
+                    ),
+                  },
+                  {
+                    key: "total",
+                    header: "Total",
+                    align: "right",
+                    className: "whitespace-nowrap font-medium",
+                    cell: (q) => formatCurrency(q.grand_total),
+                  },
+                ]}
+              />
             )}
           </CardContent>
         </Card>

@@ -13,7 +13,9 @@ export function PageHeader({ title, description, children }: PageHeaderProps) {
         <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
         {description ? <p className="text-sm text-muted-foreground">{description}</p> : null}
       </div>
-      {children ? <div className="flex flex-wrap items-center gap-2">{children}</div> : null}
+      {children ? (
+        <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">{children}</div>
+      ) : null}
     </div>
   );
 }
