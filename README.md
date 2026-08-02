@@ -11,13 +11,30 @@ Supabase (Postgres + Auth) · React Hook Form + Zod · jsPDF
 
 ## 1. Supabase setup
 
-1. Create a project at [supabase.com](https://supabase.com).
-2. Open **SQL Editor** and run, in order:
-   - [`supabase/schema.sql`](supabase/schema.sql) — tables, enums, triggers, RLS policies, the
-     `MK-0001…` quote-number sequence.
-   - [`supabase/seed.sql`](supabase/seed.sql) — company settings row and the 13 seed products.
-3. Create your login under **Authentication → Users → Add user** (email + password,
-   "Auto Confirm User" on). A `profiles` row is created automatically by trigger.
+Create a project at [supabase.com](https://supabase.com), then apply the schema by
+either route.
+
+**Option A — SQL Editor (no tooling).** Paste and run, in order:
+
+- [`supabase/migrations/20260802000000_init_schema.sql`](supabase/migrations/20260802000000_init_schema.sql)
+  — tables, enums, triggers, RLS policies, the `MK-0001…` quote-number sequence.
+- [`supabase/seed.sql`](supabase/seed.sql) — company settings row and the 13 seed products.
+
+**Option B — Supabase CLI.** The CLI is a dev dependency, so `npx supabase` works
+without a global install:
+
+```bash
+npx supabase login
+npx supabase link --project-ref <your-project-ref>
+npx supabase db push
+```
+
+`db push` applies the migration. `seed.sql` is wired into `config.toml` and runs on
+`npx supabase db reset` (local); against the hosted project, run it once from the SQL
+Editor.
+
+Finally, create your login under **Authentication → Users → Add user** (email +
+password, "Auto Confirm User" on). A `profiles` row is created automatically by trigger.
 
 ### Data model
 

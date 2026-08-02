@@ -21,7 +21,10 @@ export function SetupNotice() {
               Create a project at <span className="font-medium text-foreground">supabase.com</span>.
             </li>
             <li>
-              Run <code className="rounded bg-muted px-1 py-0.5 font-mono text-xs">supabase/schema.sql</code>{" "}
+              Run the migration in{" "}
+              <code className="rounded bg-muted px-1 py-0.5 font-mono text-xs">
+                supabase/migrations/
+              </code>{" "}
               then{" "}
               <code className="rounded bg-muted px-1 py-0.5 font-mono text-xs">supabase/seed.sql</code>{" "}
               in the SQL editor.
