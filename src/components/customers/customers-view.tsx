@@ -2,31 +2,20 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { HugeiconsIcon } from "@hugeicons/react";
-import {
-  Add01Icon,
-  UserGroupIcon,
-  MoreHorizontalIcon,
-  PencilEdit01Icon,
-  Delete02Icon,
-} from "@hugeicons/core-free-icons";
+import { Plus, Users, MoreHorizontal, Edit, Trash2, Phone, Mail, Building2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { PageHeader } from "@/components/shared/page-header";
-import { SearchInput } from "@/components/shared/search-input";
-import { EmptyState } from "@/components/shared/empty-state";
-import { TableSkeleton } from "@/components/shared/table-skeleton";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { CustomerFormDialog } from "@/components/customers/customer-form-dialog";
+import { DataTable, type Column } from "@/components/shared/data-table";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { DataList } from "@/components/shared/data-list";
 import { useAsyncData } from "@/hooks/use-async-data";
 import { deleteCustomer, fetchCustomers } from "@/lib/queries";
 import type { Customer } from "@/lib/types/database";
@@ -36,21 +25,9 @@ export function CustomersView() {
     errorMessage: "Could not load customers",
   });
 
-  const [search, setSearch] = useState("");
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<Customer | null>(null);
   const [deleting, setDeleting] = useState<Customer | null>(null);
-
-  const customers = useMemo(() => {
-    const list = data ?? [];
-    const q = search.trim().toLowerCase();
-    if (!q) return list;
-    return list.filter((c) =>
-      [c.business_name, c.contact_person, c.mobile, c.email, c.city, c.gst_number]
-        .filter(Boolean)
-        .some((field) => String(field).toLowerCase().includes(q)),
-    );
-  }, [data, search]);
 
   function openNew() {
     setEditing(null);
@@ -82,126 +59,101 @@ export function CustomersView() {
     }
   }
 
+  const columns: Column<Customer>[] = [
+    {
+      key: "business_name",
+      header: "Business Name",
+      sortable: true,
+      render: (c) => (
+        <div className="flex items-center gap-3">
+          <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-indigo-100 font-bold text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300 text-xs">
+            {c.business_name.charAt(0).toUpperCase()}
+          </div>
+          <div>
+            <Link href={`/customers/${c.id}`} className="font-bold text-slate-900 hover:text-indigo-600 dark:text-slate-100 dark:hover:text-indigo-400">
+              {c.business_name}
+            </Link>
+            {c.contact_person && (
+              <p className="text-[11px] font-normal text-slate-400">{c.contact_person}</p>
+            )}
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: "mobile",
+      header: "Phone",
+      render: (c) => (
+        <div className="flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-300">
+          <Phone className="size-3.5 text-slate-400" />
+          <span>{c.mobile || "—"}</span>
+        </div>
+      ),
+    },
+    {
+      key: "city",
+      header: "City",
+      sortable: true,
+      render: (c) => (
+        <span className="rounded-lg bg-slate-100 px-2 py-1 text-xs font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-400">
+          {c.city || "—"}
+        </span>
+      ),
+    },
+    {
+      key: "gst_number",
+      header: "GSTIN",
+      render: (c) => (
+        <span className="font-mono text-xs text-slate-500">
+          {c.gst_number || "Unregistered"}
+        </span>
+      ),
+    },
+    {
+      key: "actions",
+      header: "Actions",
+      className: "w-16 text-right",
+      render: (customer) => (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon" className="size-8 rounded-lg" aria-label="Customer actions">
+              <MoreHorizontal className="size-4 text-slate-500" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="rounded-xl">
+            <DropdownMenuItem asChild>
+              <Link href={`/customers/${customer.id}`}>View History</Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => openEdit(customer)}>
+              <Edit className="mr-2 size-4 text-slate-500" />
+              Edit
+            </DropdownMenuItem>
+            <DropdownMenuItem destructive onSelect={() => setDeleting(customer)}>
+              <Trash2 className="mr-2 size-4 text-rose-500" />
+              Delete
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      ),
+    },
+  ];
+
   return (
-    <>
-      <PageHeader title="Customers" description="Your address book for quotations and invoices.">
-        <Button onClick={openNew}>
-          <HugeiconsIcon icon={Add01Icon} />
-          New customer
+    <div className="space-y-6">
+      <PageHeader title="Customer Directory" description="Manage clients, ledger history, contact information and GST details.">
+        <Button onClick={openNew} className="rounded-xl bg-indigo-600 font-semibold text-white shadow-md shadow-indigo-600/20 hover:bg-indigo-700">
+          <Plus className="mr-1.5 size-4" />
+          Add Customer
         </Button>
       </PageHeader>
 
-      <Card>
-        <CardContent className="p-0">
-          <div className="flex flex-col gap-3 border-b border-border p-4 sm:flex-row sm:items-center sm:justify-between">
-            <SearchInput
-              value={search}
-              onChange={setSearch}
-              placeholder="Search name, mobile, city…"
-            />
-            {!loading ? (
-              <p className="text-xs text-muted-foreground">
-                {customers.length} of {data?.length ?? 0} customers
-              </p>
-            ) : null}
-          </div>
-
-          {loading ? (
-            <TableSkeleton rows={6} cols={5} />
-          ) : !customers.length ? (
-            <EmptyState
-              icon={UserGroupIcon}
-              title={search ? "No matching customers" : "No customers yet"}
-              description={
-                search
-                  ? "Try a different name, mobile number or city."
-                  : "Add your first customer to start quoting."
-              }
-              action={
-                search ? null : (
-                  <Button size="sm" onClick={openNew}>
-                    <HugeiconsIcon icon={Add01Icon} />
-                    New customer
-                  </Button>
-                )
-              }
-            />
-          ) : (
-            <DataList
-              rows={customers}
-              rowKey={(customer) => customer.id}
-              href={(customer) => `/customers/${customer.id}`}
-              columns={[
-                {
-                  key: "business",
-                  header: "Business",
-                  primary: true,
-                  cell: (customer) => (
-                    <Link href={`/customers/${customer.id}`} className="font-medium hover:text-primary">
-                      {customer.business_name}
-                    </Link>
-                  ),
-                },
-                {
-                  key: "contact",
-                  header: "Contact",
-                  subtitle: true,
-                  hideBelow: "lg",
-                  cell: (customer) => (
-                    <span className="text-muted-foreground">{customer.contact_person || "—"}</span>
-                  ),
-                },
-                {
-                  key: "mobile",
-                  header: "Mobile",
-                  className: "whitespace-nowrap",
-                  cell: (customer) => customer.mobile || "—",
-                },
-                {
-                  key: "city",
-                  header: "City",
-                  hideBelow: "lg",
-                  cell: (customer) => (
-                    <span className="text-muted-foreground">{customer.city || "—"}</span>
-                  ),
-                },
-                {
-                  key: "gstin",
-                  header: "GSTIN",
-                  hideBelow: "lg",
-                  cell: (customer) => (
-                    <span className="font-mono text-xs text-muted-foreground">
-                      {customer.gst_number || "—"}
-                    </span>
-                  ),
-                },
-              ]}
-              actions={(customer) => (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" aria-label="Customer actions">
-                      <HugeiconsIcon icon={MoreHorizontalIcon} />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem asChild>
-                      <Link href={`/customers/${customer.id}`}>View history</Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onSelect={() => openEdit(customer)}>
-                      <HugeiconsIcon icon={PencilEdit01Icon} />
-                      Edit
-                    </DropdownMenuItem>
-                    <DropdownMenuItem destructive onSelect={() => setDeleting(customer)}>
-                      <HugeiconsIcon icon={Delete02Icon} />
-                      Delete
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              )}
-            />
-          )}
-        </CardContent>
-      </Card>
+      <DataTable
+        data={data ?? []}
+        columns={columns}
+        isLoading={loading}
+        searchPlaceholder="Search business name, phone, city, GSTIN..."
+        emptyMessage="No customers found. Click 'Add Customer' to start building your client ledger."
+      />
 
       <CustomerFormDialog
         open={formOpen}
@@ -218,6 +170,6 @@ export function CustomersView() {
         confirmLabel="Delete"
         onConfirm={handleDelete}
       />
-    </>
+    </div>
   );
 }

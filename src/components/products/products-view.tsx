@@ -212,32 +212,35 @@ export function ProductsView() {
                 },
               ]}
               actions={(product) => (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" aria-label="Product actions">
-                      <HugeiconsIcon icon={MoreHorizontalIcon} />
+                <div className="flex items-center gap-1">
+                  <a
+                    href={`/products/${product.id}/edit`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    title="Edit product"
+                  >
+                    <Button variant="ghost" size="icon" aria-label="Edit product" className="text-primary hover:bg-primary/10">
+                      <HugeiconsIcon icon={PencilEdit01Icon} className="h-4 w-4" />
                     </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem
-                      onSelect={() => {
-                        setEditing(product);
-                        setFormOpen(true);
-                      }}
-                    >
-                      <HugeiconsIcon icon={PencilEdit01Icon} />
-                      Edit Rate Slabs
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onSelect={() => openHistory(product.id)}>
-                      <HugeiconsIcon icon={Clock01Icon} />
-                      View Slab History
-                    </DropdownMenuItem>
-                    <DropdownMenuItem destructive onSelect={() => setDeleting(product)}>
-                      <HugeiconsIcon icon={Delete02Icon} />
-                      Delete
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                  </a>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon" aria-label="More actions">
+                        <HugeiconsIcon icon={MoreHorizontalIcon} className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onSelect={() => openHistory(product.id)}>
+                        <HugeiconsIcon icon={Clock01Icon} />
+                        View Slab History
+                      </DropdownMenuItem>
+                      <DropdownMenuItem destructive onSelect={() => setDeleting(product)}>
+                        <HugeiconsIcon icon={Delete02Icon} />
+                        Delete
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
               )}
             />
           )}

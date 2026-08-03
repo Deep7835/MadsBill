@@ -1,10 +1,34 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 
-const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
-const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
+const sfProRounded = localFont({
+  src: [
+    {
+      path: "../../node_modules/@fontpkg/sf-pro-rounded/SF-Pro-Rounded-Regular.otf",
+      weight: "400",
+      style: "normal",
+    },
+    {
+      path: "../../node_modules/@fontpkg/sf-pro-rounded/SF-Pro-Rounded-Medium.otf",
+      weight: "500",
+      style: "normal",
+    },
+    {
+      path: "../../node_modules/@fontpkg/sf-pro-rounded/SF-Pro-Rounded-Semibold.otf",
+      weight: "600",
+      style: "normal",
+    },
+    {
+      path: "../../node_modules/@fontpkg/sf-pro-rounded/SF-Pro-Rounded-Bold.otf",
+      weight: "700",
+      style: "normal",
+    },
+  ],
+  variable: "--font-sf-pro-rounded",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: {
@@ -16,7 +40,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full`}>
+    <html lang="en" className={`${sfProRounded.variable} h-full`}>
       <body className="min-h-full bg-background font-sans text-foreground antialiased">
         {children}
         <Toaster />

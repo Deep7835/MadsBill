@@ -68,6 +68,11 @@ export async function deleteCustomer(id: string): Promise<void> {
 
 /* ------------------------------------------------------------------- products */
 
+export async function fetchProduct(id: string): Promise<Product> {
+  const supabase = createClient();
+  return unwrap(await supabase.from("products").select("*").eq("id", id).single()) as Product;
+}
+
 export async function fetchProducts(): Promise<Product[]> {
   const supabase = createClient();
   return unwrap(

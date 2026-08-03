@@ -3,67 +3,46 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { HugeiconsIcon } from "@hugeicons/react";
-import {
-  Add01Icon,
-  Invoice01Icon,
-  MoreHorizontalIcon,
-  PencilEdit01Icon,
-  ReceiptTextIcon,
-  Delete02Icon,
-} from "@hugeicons/core-free-icons";
+import { Plus, MoreHorizontal, Edit, Trash2, ExternalLink, FileText, Filter } from "lucide-react";
 import { toast } from "sonner";
 
 import { PageHeader } from "@/components/shared/page-header";
-import { SearchInput } from "@/components/shared/search-input";
-import { EmptyState } from "@/components/shared/empty-state";
-import { TableSkeleton } from "@/components/shared/table-skeleton";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { DocStatusBadge, PaymentStatusBadge } from "@/components/shared/status-badge";
+import { DataTable, type Column } from "@/components/shared/data-table";
+import { SegmentedControl } from "@/components/shared/segmented-control";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { SegmentedControl } from "@/components/shared/segmented-control";
-import { DataList } from "@/components/shared/data-list";
 import { useAsyncData } from "@/hooks/use-async-data";
 import { deleteQuotation, fetchQuotations } from "@/lib/queries";
 import { formatCurrency, formatDate } from "@/lib/format";
 import type { QuotationWithCustomer } from "@/lib/types/database";
 
-type Filter = "all" | "quotation" | "invoice";
+type FilterStatus = "all" | "quotation" | "invoice";
 
 export function QuotationsView() {
   const searchParams = useSearchParams();
-  const initialFilter = (searchParams.get("status") as Filter) ?? "all";
+  const initialFilter = (searchParams.get("status") as FilterStatus) ?? "all";
 
   const { data, loading, refresh } = useAsyncData(() => fetchQuotations(), [], {
     errorMessage: "Could not load quotations",
   });
 
-  // Seeded from the URL so the topbar search can jump straight into a filter.
-  const [search, setSearch] = useState(searchParams.get("q") ?? "");
-  const [filter, setFilter] = useState<Filter>(
-    initialFilter === "invoice" || initialFilter === "quotation" ? initialFilter : "all",
+  const [filter, setFilter] = useState<FilterStatus>(
+    initialFilter === "invoice" || initialFilter === "quotation" ? initialFilter : "all"
   );
   const [deleting, setDeleting] = useState<QuotationWithCustomer | null>(null);
 
-  const rows = useMemo(() => {
+  const filteredRows = useMemo(() => {
     let list = data ?? [];
     if (filter !== "all") list = list.filter((q) => q.status === filter);
-
-    const q = search.trim().toLowerCase();
-    if (!q) return list;
-    return list.filter((row) =>
-      [row.quote_number, row.customer?.business_name, row.customer?.mobile]
-        .filter(Boolean)
-        .some((field) => String(field).toLowerCase().includes(q)),
-    );
-  }, [data, filter, search]);
+    return list;
+  }, [data, filter]);
 
   async function handleDelete() {
     if (!deleting) return;
@@ -80,149 +59,125 @@ export function QuotationsView() {
     }
   }
 
+  const columns: Column<QuotationWithCustomer>[] = [
+    {
+      key: "quote_number",
+      header: "Document No.",
+      sortable: true,
+      render: (row) => (
+        <div className="flex items-center gap-2.5">
+          <div className="flex size-8 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-950 dark:text-indigo-400 font-bold">
+            <FileText className="size-4" />
+          </div>
+          <Link href={`/quotations/${row.id}`} className="font-bold text-slate-900 hover:text-indigo-600 dark:text-slate-100 dark:hover:text-indigo-400">
+            {row.quote_number}
+          </Link>
+        </div>
+      ),
+    },
+    {
+      key: "customer",
+      header: "Customer",
+      sortable: true,
+      render: (row) => (
+        <span className="font-semibold text-slate-700 dark:text-slate-300">
+          {row.customer?.business_name ?? "—"}
+        </span>
+      ),
+    },
+    {
+      key: "date",
+      header: "Date",
+      sortable: true,
+      render: (row) => (
+        <span className="text-xs text-slate-500">{formatDate(row.date)}</span>
+      ),
+    },
+    {
+      key: "status",
+      header: "Status",
+      render: (row) => (
+        <div className="flex items-center gap-1.5">
+          <DocStatusBadge status={row.status} />
+          {row.status === "invoice" && <PaymentStatusBadge status={row.payment_status} />}
+        </div>
+      ),
+    },
+    {
+      key: "grand_total",
+      header: "Amount",
+      sortable: true,
+      className: "text-right font-bold text-slate-900 dark:text-slate-100",
+      render: (row) => formatCurrency(row.grand_total),
+    },
+    {
+      key: "actions",
+      header: "Actions",
+      className: "w-16 text-right",
+      render: (row) => (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon" className="size-8 rounded-lg" aria-label="Document actions">
+              <MoreHorizontal className="size-4 text-slate-500" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="rounded-xl">
+            <DropdownMenuItem asChild>
+              <Link href={`/quotations/${row.id}`}>
+                <ExternalLink className="mr-2 size-4 text-slate-500" />
+                Open Details
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link href={`/quotations/${row.id}/edit`}>
+                <Edit className="mr-2 size-4 text-slate-500" />
+                Edit
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem destructive onSelect={() => setDeleting(row)}>
+              <Trash2 className="mr-2 size-4 text-rose-500" />
+              Delete
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      ),
+    },
+  ];
+
   return (
-    <>
+    <div className="space-y-6">
       <PageHeader
-        title="Quotations &amp; invoices"
-        description="Everything you have quoted and billed, newest first."
+        title="Quotations &amp; Invoices"
+        description="View, manage, and filter all generated client documents."
       >
-        <Button asChild>
+        <Button asChild className="rounded-xl bg-indigo-600 font-semibold text-white shadow-md shadow-indigo-600/20 hover:bg-indigo-700">
           <Link href="/quotations/new">
-            <HugeiconsIcon icon={Add01Icon} />
-            New quotation
+            <Plus className="mr-1.5 size-4" />
+            New Quotation
           </Link>
         </Button>
       </PageHeader>
 
-      <Card>
-        <CardContent className="p-0">
-          <div className="flex flex-col gap-3 border-b border-border p-4 sm:flex-row sm:items-center sm:justify-between">
-            <SearchInput
-              value={search}
-              onChange={setSearch}
-              placeholder="Search number or customer…"
-            />
-            <div className="flex items-center gap-3">
-              <SegmentedControl
-                value={filter}
-                onChange={setFilter}
-                aria-label="Filter documents"
-                segments={[
-                  { value: "all", label: "All" },
-                  { value: "quotation", label: "Quotations" },
-                  { value: "invoice", label: "Invoices" },
-                ]}
-              />
-              {!loading ? (
-                <p className="hidden whitespace-nowrap text-xs text-muted-foreground lg:block">
-                  {rows.length} shown
-                </p>
-              ) : null}
-            </div>
-          </div>
+      <div className="flex items-center justify-between">
+        <SegmentedControl
+          value={filter}
+          onChange={setFilter}
+          aria-label="Filter documents"
+          segments={[
+            { value: "all", label: "All Documents" },
+            { value: "quotation", label: "Quotations Only" },
+            { value: "invoice", label: "Tax Invoices Only" },
+          ]}
+        />
+      </div>
 
-          {loading ? (
-            <TableSkeleton rows={6} cols={6} />
-          ) : !rows.length ? (
-            <EmptyState
-              icon={Invoice01Icon}
-              title={search || filter !== "all" ? "Nothing matches" : "No quotations yet"}
-              description={
-                search || filter !== "all"
-                  ? "Try clearing the search or the filter."
-                  : "Create your first quotation — the number is generated for you."
-              }
-              action={
-                search || filter !== "all" ? null : (
-                  <Button asChild size="sm">
-                    <Link href="/quotations/new">New quotation</Link>
-                  </Button>
-                )
-              }
-            />
-          ) : (
-            <DataList
-              rows={rows}
-              rowKey={(row) => row.id}
-              href={(row) => `/quotations/${row.id}`}
-              columns={[
-                {
-                  key: "number",
-                  header: "Number",
-                  primary: true,
-                  className: "whitespace-nowrap",
-                  cell: (row) => (
-                    <Link href={`/quotations/${row.id}`} className="font-medium hover:text-primary">
-                      {row.quote_number}
-                    </Link>
-                  ),
-                },
-                {
-                  key: "customer",
-                  header: "Customer",
-                  subtitle: true,
-                  className: "max-w-[16rem] truncate",
-                  cell: (row) => row.customer?.business_name ?? "—",
-                },
-                {
-                  key: "date",
-                  header: "Date",
-                  className: "whitespace-nowrap",
-                  cell: (row) => (
-                    <span className="text-muted-foreground">{formatDate(row.date)}</span>
-                  ),
-                },
-                {
-                  key: "status",
-                  header: "Status",
-                  cell: (row) => (
-                    <div className="flex flex-wrap gap-1.5">
-                      <DocStatusBadge status={row.status} />
-                      {row.status === "invoice" ? (
-                        <PaymentStatusBadge status={row.payment_status} />
-                      ) : null}
-                    </div>
-                  ),
-                },
-                {
-                  key: "total",
-                  header: "Total",
-                  align: "right",
-                  className: "whitespace-nowrap font-medium",
-                  cell: (row) => formatCurrency(row.grand_total),
-                },
-              ]}
-              actions={(row) => (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" aria-label="Document actions">
-                      <HugeiconsIcon icon={MoreHorizontalIcon} />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem asChild>
-                      <Link href={`/quotations/${row.id}`}>
-                        <HugeiconsIcon icon={ReceiptTextIcon} />
-                        Open
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link href={`/quotations/${row.id}/edit`}>
-                        <HugeiconsIcon icon={PencilEdit01Icon} />
-                        Edit
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem destructive onSelect={() => setDeleting(row)}>
-                      <HugeiconsIcon icon={Delete02Icon} />
-                      Delete
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              )}
-            />
-          )}
-        </CardContent>
-      </Card>
+      <DataTable
+        data={filteredRows}
+        columns={columns}
+        isLoading={loading}
+        searchPlaceholder="Search quote number or customer name..."
+        emptyMessage="No documents match your filter. Click 'New Quotation' to create one."
+      />
 
       <ConfirmDialog
         open={!!deleting}
@@ -232,6 +187,6 @@ export function QuotationsView() {
         confirmLabel="Delete"
         onConfirm={handleDelete}
       />
-    </>
+    </div>
   );
 }

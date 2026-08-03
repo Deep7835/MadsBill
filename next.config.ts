@@ -9,6 +9,9 @@ const nextConfig: NextConfig = {
    * directory so a verification build can never disturb `npm run dev`.
    */
   distDir: process.env.NEXT_DIST_DIR || ".next",
+  experimental: {
+    useTypeScriptCli: true,
+  },
 };
 
 export default nextConfig;

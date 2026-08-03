@@ -1,18 +1,22 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { HugeiconsIcon } from "@hugeicons/react";
 import {
-  Menu01Icon,
-  Search01Icon,
-  Add01Icon,
-  Notification01Icon,
-  UserIcon,
-  ArrowDown01Icon,
-  Logout01Icon,
-} from "@hugeicons/core-free-icons";
+  Menu,
+  Search,
+  Plus,
+  Bell,
+  User,
+  ChevronDown,
+  LogOut,
+  Command,
+  Sun,
+  Moon,
+  Sparkles,
+  Settings,
+} from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -32,6 +36,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { SidebarBrand, SidebarFooter, SidebarNav } from "@/components/layout/sidebar";
+import { CommandPalette } from "@/components/ui/command-palette";
 import { createClient } from "@/lib/supabase/client";
 
 interface TopbarProps {
@@ -43,8 +48,23 @@ interface TopbarProps {
 export function Topbar({ companyName, userEmail, userName }: TopbarProps) {
   const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [cmdOpen, setCmdOpen] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
-  const [query, setQuery] = useState("");
+  const [isDarkMode, setIsDarkMode] = useState(false);
+
+  useEffect(() => {
+    setIsDarkMode(document.documentElement.classList.contains("dark"));
+  }, []);
+
+  const toggleTheme = () => {
+    const next = !isDarkMode;
+    setIsDarkMode(next);
+    if (next) {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+  };
 
   async function handleSignOut() {
     setSigningOut(true);
@@ -57,103 +77,125 @@ export function Topbar({ companyName, userEmail, userName }: TopbarProps) {
     window.location.href = "/login";
   }
 
-  /** Search jumps to the quotations list pre-filtered — no fake search box. */
-  function handleSearch(event: React.FormEvent) {
-    event.preventDefault();
-    const term = query.trim();
-    if (!term) return;
-    router.push(`/quotations?q=${encodeURIComponent(term)}`);
-  }
-
   const initial = (userName || userEmail || "U").charAt(0).toUpperCase();
 
   return (
-    <header className="flex items-center gap-3 py-4">
-      <Dialog open={mobileOpen} onOpenChange={setMobileOpen}>
-        <DialogTrigger asChild>
-          <Button variant="outline" size="icon" className="lg:hidden" aria-label="Open menu">
-            <HugeiconsIcon icon={Menu01Icon} />
+    <>
+      <header className="flex items-center gap-3 py-4">
+        {/* Mobile menu trigger */}
+        <Dialog open={mobileOpen} onOpenChange={setMobileOpen}>
+          <DialogTrigger asChild>
+            <Button variant="outline" size="icon" className="rounded-xl lg:hidden" aria-label="Open navigation menu">
+              <Menu className="size-5 text-slate-700 dark:text-slate-200" />
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-xs gap-0 p-0">
+            <DialogHeader className="sr-only">
+              <DialogTitle>Navigation</DialogTitle>
+            </DialogHeader>
+            <SidebarBrand companyName={companyName} />
+            <SidebarNav onNavigate={() => setMobileOpen(false)} />
+            <SidebarFooter />
+          </DialogContent>
+        </Dialog>
+
+        {/* Global Search Bar with Ctrl+K trigger */}
+        <div className="relative flex min-w-0 flex-1 sm:max-w-md">
+          <button
+            type="button"
+            onClick={() => setCmdOpen(true)}
+            className="flex h-11 w-full items-center justify-between rounded-[5px] border border-slate-200 bg-white px-3.5 text-xs text-slate-400 shadow-xs transition-all hover:border-indigo-300 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-indigo-800"
+          >
+            <div className="flex items-center gap-2.5">
+              <Search className="size-4 text-slate-400" />
+              <span className="truncate font-medium text-slate-400">Search commands, pages, invoices...</span>
+            </div>
+            <kbd className="hidden items-center gap-0.5 rounded-[5px] bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-500 sm:inline-flex dark:bg-slate-800 dark:text-slate-400">
+              <Command className="size-3" /> K
+            </kbd>
+          </button>
+        </div>
+
+        {/* Header Right Actions */}
+        <div className="ml-auto flex items-center gap-2 sm:gap-3">
+          {/* Quick Action Button */}
+          <Button asChild className="hidden rounded-[5px] bg-indigo-600 font-semibold text-white shadow-xs hover:bg-indigo-700 sm:inline-flex">
+            <Link href="/quotations/new">
+              <Plus className="mr-1.5 size-4" />
+              New Quotation
+            </Link>
           </Button>
-        </DialogTrigger>
-        <DialogContent className="max-w-xs gap-0 p-0">
-          <DialogHeader className="sr-only">
-            <DialogTitle>Navigation</DialogTitle>
-          </DialogHeader>
-          <SidebarBrand companyName={companyName} />
-          <SidebarNav onNavigate={() => setMobileOpen(false)} />
-          <SidebarFooter />
-        </DialogContent>
-      </Dialog>
 
-      <form onSubmit={handleSearch} className="relative min-w-0 flex-1 sm:max-w-md">
-        <HugeiconsIcon icon={Search01Icon} className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-        <input
-          type="search"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search quotations…"
-          aria-label="Search quotations"
-          className="h-11 w-full rounded-2xl border border-border/70 bg-card pl-11 pr-4 text-sm shadow-[var(--shadow-raised)] transition-colors placeholder:text-muted-foreground focus:border-primary/40 focus:outline-none focus:ring-2 focus:ring-ring/25"
-        />
-      </form>
+          {/* Theme Toggle */}
+          <button
+            type="button"
+            onClick={toggleTheme}
+            aria-label="Toggle dark mode"
+            className="flex size-10 items-center justify-center rounded-[5px] border border-slate-200 bg-white text-slate-600 shadow-xs transition-colors hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
+          >
+            {isDarkMode ? <Sun className="size-4 text-amber-400" /> : <Moon className="size-4" />}
+          </button>
 
-      <div className="ml-auto flex items-center gap-2 sm:gap-3">
-        <Button asChild className="hidden sm:inline-flex">
-          <Link href="/quotations/new">
-            <HugeiconsIcon icon={Add01Icon} />
-            New quotation
+          {/* Notifications button */}
+          <Link
+            href="/quotations?status=invoice"
+            aria-label="Unpaid invoices notifications"
+            className="relative flex size-10 shrink-0 items-center justify-center rounded-[5px] border border-slate-200 bg-white text-slate-600 shadow-xs transition-colors hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
+          >
+            <Bell className="size-4" />
+            <span className="absolute right-2 top-2 size-2 rounded-full bg-indigo-600 ring-2 ring-white dark:ring-slate-900" />
           </Link>
-        </Button>
-        <Button asChild size="icon" className="sm:hidden" aria-label="New quotation">
-          <Link href="/quotations/new">
-            <HugeiconsIcon icon={Add01Icon} />
-          </Link>
-        </Button>
 
-        <Link
-          href="/quotations?status=invoice"
-          aria-label="Unpaid invoices"
-          className="hidden size-11 shrink-0 items-center justify-center rounded-2xl border border-border/70 bg-card text-muted-foreground shadow-[var(--shadow-raised)] transition-colors hover:text-foreground sm:inline-flex"
-        >
-          <HugeiconsIcon icon={Notification01Icon} className="size-[18px]" />
-        </Link>
+          {/* User Account Dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                type="button"
+                aria-label="Account menu"
+                className="flex h-10 shrink-0 items-center gap-2.5 rounded-[5px] border border-slate-200 bg-white px-2.5 shadow-xs transition-colors hover:border-indigo-300 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-indigo-800"
+              >
+                <span className="flex size-7 items-center justify-center rounded-[5px] bg-indigo-100 text-xs font-bold text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
+                  {initial}
+                </span>
+                <span className="hidden max-w-28 truncate text-xs font-bold text-slate-800 sm:block dark:text-slate-200">
+                  {userName}
+                </span>
+                <ChevronDown className="hidden size-3.5 text-slate-400 sm:block" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56 rounded-[5px] p-1.5 shadow-xl">
+              <DropdownMenuLabel className="flex items-center gap-2.5 p-2 font-normal">
+                <div className="flex size-8 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 font-bold dark:bg-indigo-950 dark:text-indigo-400">
+                  {initial}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <span className="block truncate text-xs font-bold text-slate-900 dark:text-slate-100">{userName}</span>
+                  <span className="block truncate text-[11px] text-slate-400">{userEmail}</span>
+                </div>
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem asChild className="rounded-xl text-xs font-medium">
+                <Link href="/settings" className="flex items-center gap-2">
+                  <Settings className="size-4 text-slate-500" />
+                  Company Settings
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                disabled={signingOut}
+                onSelect={handleSignOut}
+                className="rounded-xl text-xs font-semibold text-rose-600 focus:bg-rose-50 focus:text-rose-600 dark:text-rose-400 dark:focus:bg-rose-950"
+              >
+                <LogOut className="mr-2 size-4" />
+                {signingOut ? "Signing out…" : "Sign Out"}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      </header>
 
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <button
-              type="button"
-              aria-label="Account menu"
-              className="flex h-11 shrink-0 items-center gap-2 rounded-2xl border border-border/70 bg-card px-2 shadow-[var(--shadow-raised)] transition-colors hover:border-primary/40 sm:px-3"
-            >
-              <span className="flex size-7 items-center justify-center rounded-full bg-accent text-xs font-bold text-accent-foreground">
-                {initial}
-              </span>
-              <span className="hidden max-w-28 truncate text-sm font-semibold sm:block">
-                {userName}
-              </span>
-              <HugeiconsIcon icon={ArrowDown01Icon} className="hidden size-4 text-muted-foreground sm:block" />
-            </button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-56">
-            <DropdownMenuLabel className="flex items-center gap-2 font-normal">
-              <HugeiconsIcon icon={UserIcon} className="size-4 text-muted-foreground" />
-              <span className="min-w-0">
-                <span className="block truncate text-sm font-medium">{userName}</span>
-                <span className="block truncate text-xs text-muted-foreground">{userEmail}</span>
-              </span>
-            </DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem asChild>
-              <Link href="/settings">Company settings</Link>
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem destructive disabled={signingOut} onSelect={handleSignOut}>
-              <HugeiconsIcon icon={Logout01Icon} />
-              {signingOut ? "Signing out…" : "Sign out"}
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
-    </header>
+      {/* Global Command Palette */}
+      <CommandPalette open={cmdOpen} onOpenChange={setCmdOpen} />
+    </>
   );
 }
