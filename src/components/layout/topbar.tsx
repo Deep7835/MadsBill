@@ -40,12 +40,11 @@ import { CommandPalette } from "@/components/ui/command-palette";
 import { createClient } from "@/lib/supabase/client";
 
 interface TopbarProps {
-  companyName: string;
   userEmail: string;
   userName: string;
 }
 
-export function Topbar({ companyName, userEmail, userName }: TopbarProps) {
+export function Topbar({ userEmail, userName }: TopbarProps) {
   const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [cmdOpen, setCmdOpen] = useState(false);
@@ -93,7 +92,7 @@ export function Topbar({ companyName, userEmail, userName }: TopbarProps) {
             <DialogHeader className="sr-only">
               <DialogTitle>Navigation</DialogTitle>
             </DialogHeader>
-            <SidebarBrand companyName={companyName} />
+            <SidebarBrand />
             <SidebarNav onNavigate={() => setMobileOpen(false)} />
             <SidebarFooter />
           </DialogContent>

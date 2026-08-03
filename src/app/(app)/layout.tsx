@@ -16,19 +16,19 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   if (!user) redirect("/login");
 
-  const [{ data: settings }, { data: profile }] = await Promise.all([
-    supabase.from("settings").select("company_name").eq("id", 1).maybeSingle(),
-    supabase.from("profiles").select("full_name").eq("id", user.id).maybeSingle(),
-  ]);
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("full_name")
+    .eq("id", user.id)
+    .maybeSingle();
 
-  const companyName = settings?.company_name ?? "Madskraft Flex & Advertising";
   const userName = profile?.full_name ?? user.email?.split("@")[0] ?? "User";
 
   return (
     <div className="app-shell flex min-h-dvh gap-3 px-2 sm:px-3 lg:px-3.5">
-      <Sidebar companyName={companyName} />
+      <Sidebar />
       <div className="flex min-w-0 flex-1 flex-col">
-        <Topbar companyName={companyName} userEmail={user.email ?? ""} userName={userName} />
+        <Topbar userEmail={user.email ?? ""} userName={userName} />
         <main className="flex-1 pb-8">
           <div className="w-full space-y-5">{children}</div>
         </main>

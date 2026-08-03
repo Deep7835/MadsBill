@@ -19,10 +19,11 @@ const optionalPattern = (regex: RegExp, message: string, max = 500) =>
 
 export const settingsSchema = z.object({
   company_name: z.string().trim().min(2, "Company name is required").max(150),
-  logo_url: optionalPattern(/^https?:\/\/\S+$/i, "Enter a valid image URL (http/https or data URI)", 1000),
+  logo_url: optionalPattern(/^https?:\/\/\S+$|^data:image\/\w+;base64,\S+$/i, "Enter a valid image URL or data URI", 200000),
   stamp_url: optionalPattern(/^https?:\/\/\S+$|^data:image\/\w+;base64,\S+$/i, "Enter a valid image URL or data URI", 200000),
   signature_url: optionalPattern(/^https?:\/\/\S+$|^data:image\/\w+;base64,\S+$/i, "Enter a valid image URL or data URI", 200000),
   gst_number: optionalPattern(/^[0-9A-Z]{15}$/, "GSTIN must be 15 characters (A-Z, 0-9)", 15),
+  default_hsn: optionalPattern(/^\d{4,8}$/, "HSN/SAC is 4 to 8 digits", 8),
   address: optionalText(400),
   city: optionalText(80),
   state: optionalText(80),

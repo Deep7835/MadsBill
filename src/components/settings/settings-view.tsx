@@ -15,6 +15,7 @@ import { toast } from "sonner";
 
 import { PageHeader } from "@/components/shared/page-header";
 import { FormField } from "@/components/shared/form-field";
+import { ImageUploadField } from "@/components/shared/image-upload-field";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -34,6 +35,7 @@ const EMPTY: SettingsFormValues = {
   stamp_url: "",
   signature_url: "",
   gst_number: "",
+  default_hsn: "",
   address: "",
   city: "",
   state: "",
@@ -59,6 +61,7 @@ export function SettingsView() {
     handleSubmit,
     reset,
     watch,
+    setValue,
     formState: { errors, isDirty },
   } = useForm<SettingsFormValues, unknown, SettingsPayload>({
     resolver: zodResolver(settingsSchema),
@@ -73,6 +76,7 @@ export function SettingsView() {
       stamp_url: data.stamp_url ?? "",
       signature_url: data.signature_url ?? "",
       gst_number: data.gst_number ?? "",
+      default_hsn: data.default_hsn ?? "",
       address: data.address ?? "",
       city: data.city ?? "",
       state: data.state ?? "",
@@ -91,6 +95,11 @@ export function SettingsView() {
   const logoUrl = watch("logo_url");
   const stampUrl = watch("stamp_url");
   const signatureUrl = watch("signature_url");
+
+  /** Storage uploads write straight into the form, so Save persists the URL. */
+  function setAssetUrl(field: "logo_url" | "stamp_url" | "signature_url", url: string | null) {
+    setValue(field, url ?? "", { shouldDirty: true, shouldValidate: true });
+  }
 
   async function onSubmit(values: SettingsPayload) {
     setSubmitting(true);
@@ -145,25 +154,16 @@ export function SettingsView() {
               <Input id="company_name" {...register("company_name")} />
             </FormField>
 
-            <FormField
-              label="Logo URL"
-              htmlFor="logo_url"
+            <ImageUploadField
+              label="Company logo"
+              asset="logo"
+              value={logoUrl}
+              onChange={(url) => setAssetUrl("logo_url", url)}
               error={errors.logo_url?.message}
-              hint="Public image URL or Data URI. Printed on header."
+              hint="Printed at the top-left of every quotation and invoice."
+              aspect="wide"
               className="sm:col-span-2"
-            >
-              <Input id="logo_url" placeholder="https://…/logo.png" {...register("logo_url")} />
-            </FormField>
-
-            {logoUrl && !errors.logo_url ? (
-              <div className="sm:col-span-2 flex items-center gap-3">
-                <span className="text-xs text-muted-foreground">Logo Preview:</span>
-                <div className="relative flex h-16 w-32 items-center justify-center overflow-hidden rounded-md border bg-muted p-1">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={logoUrl} alt="Logo preview" className="max-h-full max-w-full object-contain" />
-                </div>
-              </div>
-            ) : null}
+            />
 
             <FormField label="GSTIN" htmlFor="gst_number" error={errors.gst_number?.message}>
               <Input
@@ -174,6 +174,15 @@ export function SettingsView() {
                   setValueAs: (v: string) => (v ?? "").toUpperCase().trim(),
                 })}
               />
+            </FormField>
+
+            <FormField
+              label="Default HSN / SAC"
+              htmlFor="default_hsn"
+              error={errors.default_hsn?.message}
+              hint="Printed against every invoice line. 998912 covers printing services."
+            >
+              <Input id="default_hsn" inputMode="numeric" placeholder="998912" {...register("default_hsn")} />
             </FormField>
 
             <FormField label="Phone" htmlFor="phone" error={errors.phone?.message}>
@@ -210,51 +219,29 @@ export function SettingsView() {
               Digital Sign &amp; Stamp
             </CardTitle>
             <CardDescription>
-              Upload or specify graphics for Authorized Signature and Company Stamp. Both will automatically embed into all PDF documents and invoice views.
+              Upload the company stamp and authorised signature. Both are stored securely and printed in the
+              signatory block of every invoice and quotation PDF.
             </CardDescription>
           </CardHeader>
           <CardContent className="grid gap-6 sm:grid-cols-2">
-            <div className="space-y-3">
-              <FormField
-                label="Company Stamp URL"
-                htmlFor="stamp_url"
-                error={errors.stamp_url?.message}
-                hint="Transparent PNG stamp recommended."
-              >
-                <Input id="stamp_url" placeholder="https://…/company-stamp.png" {...register("stamp_url")} />
-              </FormField>
+            <ImageUploadField
+              label="Company stamp"
+              asset="stamp"
+              value={stampUrl}
+              onChange={(url) => setAssetUrl("stamp_url", url)}
+              error={errors.stamp_url?.message}
+              hint="Round or rectangular stamp. Transparent PNG keeps the paper visible behind it."
+            />
 
-              {stampUrl && !errors.stamp_url ? (
-                <div className="flex flex-col gap-1">
-                  <span className="text-xs text-muted-foreground font-medium">Stamp Preview:</span>
-                  <div className="relative flex h-24 w-24 items-center justify-center overflow-hidden rounded-lg border border-indigo-200 bg-indigo-50/30 p-2 dark:border-indigo-900/40">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={stampUrl} alt="Company Stamp" className="max-h-full max-w-full object-contain" />
-                  </div>
-                </div>
-              ) : null}
-            </div>
-
-            <div className="space-y-3">
-              <FormField
-                label="Authorized Signature URL"
-                htmlFor="signature_url"
-                error={errors.signature_url?.message}
-                hint="Transparent signature image URL or base64."
-              >
-                <Input id="signature_url" placeholder="https://…/auth-signature.png" {...register("signature_url")} />
-              </FormField>
-
-              {signatureUrl && !errors.signature_url ? (
-                <div className="flex flex-col gap-1">
-                  <span className="text-xs text-muted-foreground font-medium">Signature Preview:</span>
-                  <div className="relative flex h-24 w-40 items-center justify-center overflow-hidden rounded-lg border border-emerald-200 bg-emerald-50/30 p-2 dark:border-emerald-900/40">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={signatureUrl} alt="Authorized Signature" className="max-h-full max-w-full object-contain" />
-                  </div>
-                </div>
-              ) : null}
-            </div>
+            <ImageUploadField
+              label="Authorised signature"
+              asset="signature"
+              value={signatureUrl}
+              onChange={(url) => setAssetUrl("signature_url", url)}
+              error={errors.signature_url?.message}
+              hint="Scan the signature on white paper and save it as a transparent PNG."
+              aspect="wide"
+            />
           </CardContent>
         </Card>
 

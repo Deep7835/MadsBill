@@ -96,6 +96,8 @@ export interface Settings {
   stamp_url: string | null;
   signature_url: string | null;
   gst_number: string | null;
+  /** HSN/SAC printed against every invoice line. */
+  default_hsn: string | null;
   address: string | null;
   city: string | null;
   state: string | null;

@@ -5,7 +5,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
-  PrinterIcon,
   CustomerSupportIcon,
   WhatsappIcon,
   Logout01Icon,
@@ -13,6 +12,7 @@ import {
 import { toast } from "sonner";
 
 import { MAIN_NAV_ITEMS, MANAGEMENT_NAV_ITEMS, type NavItem } from "@/components/layout/nav-items";
+import { BrandLogo } from "@/components/shared/brand-logo";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 
@@ -87,20 +87,10 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
   );
 }
 
-export function SidebarBrand({ companyName }: { companyName: string }) {
+export function SidebarBrand() {
   return (
-    <Link href="/dashboard" className="flex items-center gap-3 px-5 py-5 transition-opacity hover:opacity-90">
-      <div className="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-indigo-600 text-white shadow-md shadow-indigo-600/25 dark:bg-indigo-500">
-        <HugeiconsIcon icon={PrinterIcon} className="size-5" />
-      </div>
-      <div className="min-w-0">
-        <span className="block truncate text-sm font-bold leading-tight tracking-tight text-slate-900 dark:text-slate-100">
-          {companyName}
-        </span>
-        <span className="block text-[11px] font-medium text-slate-500 dark:text-slate-400">
-          Quotation &amp; Billing
-        </span>
-      </div>
+    <Link href="/dashboard" className="flex items-center px-5 py-5 transition-opacity hover:opacity-90">
+      <BrandLogo className="h-11" />
     </Link>
   );
 }
@@ -153,11 +143,11 @@ export function SidebarFooter() {
   );
 }
 
-export function Sidebar({ companyName }: { companyName: string }) {
+export function Sidebar() {
   return (
     <aside className="hidden w-[260px] shrink-0 lg:block">
       <div className="sticky top-4 flex h-[calc(100dvh-2rem)] flex-col overflow-hidden rounded-[5px] border border-slate-200/80 bg-white text-slate-900 shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100">
-        <SidebarBrand companyName={companyName} />
+        <SidebarBrand />
         <div className="flex-1 overflow-y-auto py-2">
           <SidebarNav />
         </div>
