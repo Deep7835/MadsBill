@@ -14,6 +14,7 @@ import {
   PAGE,
 } from "@/lib/pdf/theme";
 import type { QuotationFull, Settings } from "@/lib/types/database";
+import type { LoadedPdfAssets } from "@/lib/pdf/quotation-pdf";
 
 const PAYMENT_LABEL: Record<string, string> = {
   unpaid: "Unpaid",
@@ -21,16 +22,17 @@ const PAYMENT_LABEL: Record<string, string> = {
   paid: "Paid",
 };
 
-/**
- * Bordered, grid-ruled invoice: company block over a meta table, Bill To /
- * Ship To split, navy items table, and a tinted totals panel beside the terms.
- */
 export function drawInvoice(
   doc: jsPDF,
   quotation: QuotationFull,
   settings: Settings | null,
-  logo: { dataUrl: string; format: string } | null,
+  assets: LoadedPdfAssets | { dataUrl: string; format: string } | null,
 ): void {
+  const logo = assets && "logo" in assets ? assets.logo : (assets as { dataUrl: string; format: string } | null);
+  const stamp = assets && "stamp" in assets ? assets.stamp : null;
+  const signature = assets && "signature" in assets ? assets.signature : null;
+  const upiQr = assets && "upiQr" in assets ? assets.upiQr : null;
+
   const { margin } = PAGE;
   const company = settings?.company_name ?? "Madskraft Flex & Advertising";
   const half = CONTENT_WIDTH / 2;
@@ -58,232 +60,181 @@ export function drawInvoice(
   headerY += 5;
   const addressLines = [
     settings?.address,
-    [settings?.city, settings?.state].filter(Boolean).join(" "),
-    [settings?.phone, settings?.email].filter(Boolean).join("  |  "),
-    settings?.gst_number ? `GSTIN: ${settings.gst_number}` : "",
-  ].filter(Boolean) as string[];
+    [settings?.city, settings?.state].filter(Boolean).join(", "),
+    settings?.phone ? `Ph: ${settings.phone}` : null,
+    settings?.email ? `Email: ${settings.email}` : null,
+    settings?.gst_number ? `GSTIN: ${settings.gst_number}` : null,
+  ].filter((l): l is string => Boolean(l));
 
   headerY = textBlock(doc, addressLines.join("\n"), textX, headerY, {
-    size: FONT.small,
+    size: FONT.tiny,
     color: COLORS.muted,
-    maxWidth: half - 10,
-    lineHeight: 4.1,
+    lineHeight: 3.6,
   });
 
-  text(doc, "INVOICE", CONTENT_RIGHT - 4, y + 18, {
+  const leftHeaderHeight = Math.max(34, headerY - y + 4);
+  box(doc, margin, headerTop, half, leftHeaderHeight);
+
+  /* -------------------------------------------------------- doc meta cell */
+  box(doc, margin + half, headerTop, half, leftHeaderHeight);
+
+  text(doc, "TAX INVOICE", CONTENT_RIGHT - 4, y + 10, {
     size: FONT.title,
-    style: "normal",
+    style: "bold",
     color: COLORS.navy,
     align: "right",
   });
 
-  const headerHeight = Math.max(headerY - headerTop + 4, 34);
-  box(doc, margin, headerTop, CONTENT_WIDTH, headerHeight);
-  y = headerTop + headerHeight;
-
-  /* ------------------------------------------------------------ meta cell */
   const metaRows: [string, string][] = [
-    ["Invoice#", quotation.quote_number],
+    ["Invoice No.", quotation.quote_number],
     ["Invoice Date", formatDate(quotation.date)],
-    ["Payment", PAYMENT_LABEL[quotation.payment_status] ?? quotation.payment_status],
+    ["Payment Status", PAYMENT_LABEL[quotation.payment_status] ?? quotation.payment_status],
   ];
-  if (quotation.valid_until) metaRows.push(["Due Date", formatDate(quotation.valid_until)]);
 
-  const metaHeight = metaRows.length * 6 + 6;
-  box(doc, margin, y, half, metaHeight);
-  box(doc, margin + half, y, half, metaHeight);
-
-  metaRows.forEach(([label, value], i) => {
-    const rowY = y + 8 + i * 6;
-    text(doc, label, margin + 4, rowY, { size: FONT.small, color: COLORS.muted });
-    text(doc, value, margin + 36, rowY, { size: FONT.small, style: "bold", color: COLORS.ink });
+  let metaY = y + 17;
+  metaRows.forEach(([label, value]) => {
+    text(doc, label, margin + half + 4, metaY, {
+      size: FONT.tiny,
+      color: COLORS.muted,
+    });
+    text(doc, value, CONTENT_RIGHT - 4, metaY, {
+      size: FONT.tiny,
+      style: "bold",
+      color: COLORS.ink,
+      align: "right",
+    });
+    metaY += 4.5;
   });
-  y += metaHeight;
 
-  /* ------------------------------------------------------ bill to / ship to */
-  sectionBar(doc, "Bill To", margin, y, half);
-  sectionBar(doc, "Ship To", margin + half, y, half);
-  y += 6.5;
+  y += leftHeaderHeight;
 
-  const customer = quotation.customer;
-  const addressBlock = [
-    customer?.address,
-    [customer?.city, customer?.state].filter(Boolean).join(" "),
-    customer?.mobile ? `Mobile: ${customer.mobile}` : "",
-    customer?.gst_number ? `GSTIN: ${customer.gst_number}` : "",
-  ]
-    .filter(Boolean)
-    .join("\n");
-
-  let billY = y + 6;
-  text(doc, customer?.business_name ?? "—", margin + 4, billY, {
-    size: 10.5,
-    style: "bold",
+  /* ------------------------------------------------------------- customer */
+  const custBarY = y;
+  sectionBar(doc, "BILL TO (CUSTOMER DETAILS)", margin, custBarY, CONTENT_WIDTH, {
+    fill: COLORS.bandGrey,
     color: COLORS.ink,
   });
-  billY += 5;
-  if (customer?.contact_person) {
-    text(doc, `Attn: ${customer.contact_person}`, margin + 4, billY, {
-      size: FONT.small,
-      color: COLORS.body,
-    });
-    billY += 4.2;
-  }
-  const billEnd = textBlock(doc, addressBlock, margin + 4, billY, {
+  y += 6.5;
+
+  const c = quotation.customer;
+  const custLines = c
+    ? [
+        c.business_name,
+        c.contact_person ? `Attn: ${c.contact_person}` : null,
+        c.address,
+        [c.city, c.state].filter(Boolean).join(", "),
+        c.gst_number ? `GSTIN: ${c.gst_number}` : null,
+        c.mobile ? `Mobile: ${c.mobile}` : null,
+      ].filter((l): l is string => Boolean(l))
+    : ["Walk-in Customer"];
+
+  const custTopY = y + 4;
+  const custBottomY = textBlock(doc, custLines.join("\n"), margin + 4, custTopY, {
     size: FONT.small,
-    color: COLORS.body,
-    maxWidth: half - 8,
+    color: COLORS.ink,
     lineHeight: 4.2,
   });
 
-  const shipEnd = textBlock(doc, addressBlock || "—", margin + half + 4, y + 6, {
-    size: FONT.small,
-    color: COLORS.body,
-    maxWidth: half - 8,
-    lineHeight: 4.2,
-  });
-
-  const partyHeight = Math.max(billEnd, shipEnd) - y + 4;
-  box(doc, margin, y, half, partyHeight);
-  box(doc, margin + half, y, half, partyHeight);
-  y += partyHeight;
+  const custBlockHeight = Math.max(24, custBottomY - y + 4);
+  box(doc, margin, y, CONTENT_WIDTH, custBlockHeight);
+  y += custBlockHeight;
 
   /* ---------------------------------------------------------- items table */
-  // The description cell holds only the item name; the size/area sub-line is
-  // drawn underneath it in grey, with extra bottom padding reserved for it so
-  // it can never collide with a description that wraps.
-  const detailByRow = new Map<number, string>();
+  y += 3;
 
   autoTable(doc, {
     startY: y,
-    head: [["#", "Item & Description", "Qty", `Rate (${CURRENCY})`, `Amount (${CURRENCY})`]],
-    body: quotation.items.map((item, i) => [
-      String(i + 1),
-      item.description,
-      formatNumber(Number(item.qty)),
-      formatAmount(Number(item.rate)),
-      formatAmount(Number(item.amount)),
-    ]),
+    margin: { left: margin, right: margin },
     theme: "grid",
-    margin: { left: margin, right: margin, bottom: 24 },
+    head: [["S.N.", "Description of Goods / Services", "Size (W×H)", "Qty", "Rate", "Amount"]],
+    body: quotation.items.map((item, index) => [
+      String(index + 1),
+      itemDetailLine(item),
+      item.width && item.height ? `${item.width} × ${item.height} ft` : "—",
+      formatNumber(item.qty),
+      `${CURRENCY} ${formatNumber(item.rate)}`,
+      `${CURRENCY} ${formatAmount(item.amount)}`,
+    ]),
     styles: {
       font: "helvetica",
-      fontSize: FONT.small,
-      cellPadding: { top: 2.6, right: 2.5, bottom: 2.6, left: 2.5 },
+      fontSize: 8.5,
+      cellPadding: { top: 2.5, right: 3, bottom: 2.5, left: 3 },
+      textColor: COLORS.body,
       lineColor: COLORS.line,
-      lineWidth: 0.25,
-      textColor: COLORS.ink,
+      lineWidth: 0.2,
       valign: "middle",
     },
     headStyles: {
       fillColor: COLORS.navy,
       textColor: COLORS.white,
       fontStyle: "bold",
-      fontSize: FONT.small,
+      fontSize: 8.5,
+      halign: "left",
     },
     columnStyles: {
-      0: { cellWidth: 9, halign: "center", textColor: COLORS.muted },
-      1: { cellWidth: 92 },
-      2: { cellWidth: 18, halign: "right" },
-      3: { cellWidth: 27, halign: "right" },
-      4: { cellWidth: 40, halign: "right" },
-    },
-    didParseCell({ cell, column, section, row }) {
-      if (section !== "body" || column.index !== 1) return;
-      const item = quotation.items[row.index];
-      const detail = item ? itemDetailLine(item) : "";
-      if (!detail) return;
-      detailByRow.set(row.index, detail);
-      cell.styles.cellPadding = { top: 2.6, right: 2.5, bottom: 7, left: 2.5 };
-    },
-    didDrawCell({ cell, column, section, row }) {
-      if (section !== "body" || column.index !== 1) return;
-      const detail = detailByRow.get(row.index);
-      if (!detail) return;
-      text(doc, detail, cell.x + 2.5, cell.y + cell.height - 3, {
-        size: FONT.tiny,
-        color: COLORS.muted,
-      });
+      0: { halign: "center", cellWidth: 10 },
+      1: { cellWidth: "auto" },
+      2: { halign: "center", cellWidth: 26 },
+      3: { halign: "right", cellWidth: 16 },
+      4: { halign: "right", cellWidth: 26 },
+      5: { halign: "right", cellWidth: 28 },
     },
   });
 
-  type WithAutoTable = jsPDF & { lastAutoTable?: { finalY: number } };
-  y = ((doc as WithAutoTable).lastAutoTable?.finalY ?? y) + 0;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  y = (doc as any).lastAutoTable.finalY;
 
-  /* -------------------------------------------------------- sub total row */
-  const totalsWidth = 67;
-  const totalsX = CONTENT_RIGHT - totalsWidth;
-
-  if (y > BODY_BOTTOM - 60) {
-    doc.addPage();
-    y = PAGE.margin;
-  }
-
-  box(doc, margin, y, CONTENT_WIDTH - totalsWidth, 8);
-  box(doc, totalsX, y, totalsWidth, 8);
-  text(doc, "Sub Total", totalsX - 3, y + 5.4, {
-    size: FONT.body,
-    style: "bold",
+  /* ---------------------------------------------------- amount in words bar */
+  const wordsText = `Amount in words: ${amountInWords(quotation.grand_total)}`;
+  sectionBar(doc, wordsText, margin, y, CONTENT_WIDTH, {
+    fill: COLORS.bandGrey,
     color: COLORS.ink,
-    align: "right",
+    size: FONT.tiny,
   });
-  text(doc, formatAmount(quotation.subtotal), CONTENT_RIGHT - 3, y + 5.4, {
-    size: FONT.body,
-    color: COLORS.ink,
-    align: "right",
-  });
-  y += 8;
+  y += 6.5;
 
-  /* ------------------------------------------- terms block + totals panel */
-  // We track payment as a status, not a part-paid amount, so a "partial"
-  // invoice still shows the full figure as outstanding.
-  const balanceDue = quotation.payment_status === "paid" ? 0 : Number(quotation.grand_total);
+  /* ------------------------------------------------ totals / bank & terms */
+  const totalsWidth = 65;
+  const leftWidth = CONTENT_WIDTH - totalsWidth;
+  const totalsX = margin + leftWidth;
 
   const panelRows: [string, string, boolean][] = [
-    ["GST", `${CURRENCY} ${formatAmount(quotation.gst_amount)}`, false],
-    ["Total", `${CURRENCY} ${formatAmount(quotation.grand_total)}`, true],
-    ["Balance Due", `${CURRENCY} ${formatAmount(balanceDue)}`, true],
+    ["Subtotal", `${CURRENCY} ${formatAmount(quotation.subtotal)}`, false],
+    [`GST (${formatNumber(quotation.items[0]?.gst_percent ?? 18)}%)`, `${CURRENCY} ${formatAmount(quotation.gst_amount)}`, false],
+    ["Grand Total", `${CURRENCY} ${formatAmount(quotation.grand_total)}`, true],
   ];
-  const panelHeight = panelRows.length * 7 + 5;
 
-  const leftWidth = CONTENT_WIDTH - totalsWidth;
-  let leftY = y + 6;
-  leftY = textBlock(doc, `Amount in words: ${amountInWords(Number(quotation.grand_total))}`, margin + 4, leftY, {
-    size: FONT.tiny,
-    style: "italic",
-    color: COLORS.muted,
-    maxWidth: leftWidth - 8,
-    lineHeight: 3.8,
-  });
-
-  if (quotation.notes) {
-    leftY += 4;
-    text(doc, "Notes", margin + 4, leftY, { size: FONT.small, style: "bold", color: COLORS.ink });
-    leftY += 4;
-    leftY = textBlock(doc, quotation.notes, margin + 4, leftY, {
-      size: FONT.tiny,
-      color: COLORS.muted,
-      maxWidth: leftWidth - 8,
-      lineHeight: 3.8,
-    });
-  }
+  const panelHeight = panelRows.length * 7 + 4;
+  let leftY = y + 4;
 
   if (settings?.bank_details) {
-    leftY += 4;
-    text(doc, "Bank Details", margin + 4, leftY, { size: FONT.small, style: "bold", color: COLORS.ink });
+    text(doc, "Bank Details for Payment", margin + 4, leftY, {
+      size: FONT.tiny,
+      style: "bold",
+      color: COLORS.ink,
+    });
     leftY += 4;
     leftY = textBlock(doc, settings.bank_details, margin + 4, leftY, {
       size: FONT.tiny,
       color: COLORS.muted,
-      maxWidth: leftWidth - 8,
-      lineHeight: 3.8,
+      maxWidth: leftWidth - 32,
+      lineHeight: 3.6,
     });
   }
 
+  if (upiQr) {
+    try {
+      doc.addImage(upiQr.dataUrl, "PNG", margin + leftWidth - 26, y + 4, 22, 22);
+      text(doc, "Scan UPI QR", margin + leftWidth - 26, y + 27, { size: FONT.tiny, color: COLORS.muted });
+    } catch {
+      // Ignore graphic error
+    }
+  }
+
   if (settings?.terms) {
-    leftY += 4;
+    leftY += 3;
     text(doc, "Terms & Conditions", margin + 4, leftY, {
-      size: FONT.small,
+      size: FONT.tiny,
       style: "bold",
       color: COLORS.ink,
     });
@@ -312,17 +263,36 @@ export function drawInvoice(
 
   y += blockHeight;
 
-  /* ------------------------------------------------------------ signature */
-  const signHeight = 22;
+  /* ------------------------------------------------------------ stamp & signature */
+  const signHeight = 26;
   if (y + signHeight < BODY_BOTTOM) {
     box(doc, margin, y, CONTENT_WIDTH, signHeight);
-    line(doc, CONTENT_RIGHT - 58, y + 14, CONTENT_RIGHT - 6, y + 14, COLORS.muted);
-    text(doc, `For ${company}`, CONTENT_RIGHT - 6, y + 6, {
+
+    // Render stamp image if uploaded
+    if (stamp) {
+      try {
+        doc.addImage(stamp.dataUrl, stamp.format, margin + 8, y + 3, 20, 20);
+      } catch {
+        // stamp fallback
+      }
+    }
+
+    // Render signature image if uploaded
+    if (signature) {
+      try {
+        doc.addImage(signature.dataUrl, signature.format, CONTENT_RIGHT - 54, y + 2, 36, 14);
+      } catch {
+        // signature fallback
+      }
+    }
+
+    line(doc, CONTENT_RIGHT - 58, y + 17, CONTENT_RIGHT - 6, y + 17, COLORS.muted);
+    text(doc, `For ${company}`, CONTENT_RIGHT - 6, y + 5, {
       size: FONT.tiny,
       color: COLORS.muted,
       align: "right",
     });
-    text(doc, "Authorised Signatory", CONTENT_RIGHT - 6, y + 18, {
+    text(doc, "Authorised Signatory", CONTENT_RIGHT - 6, y + 21, {
       size: FONT.small,
       style: "bold",
       color: COLORS.ink,

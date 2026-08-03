@@ -1,22 +1,37 @@
 import type { jsPDF } from "jspdf";
+import QRCode from "qrcode";
 
 import { text } from "@/lib/pdf/draw";
 import { drawInvoice } from "@/lib/pdf/layouts/invoice";
 import { drawQuotation } from "@/lib/pdf/layouts/quotation";
 import { COLORS, CONTENT_RIGHT, FONT, PAGE } from "@/lib/pdf/theme";
 import type { QuotationFull, Settings } from "@/lib/types/database";
+import { buildUpiUrl } from "@/components/shared/qr-code";
 
 export interface BuildPdfOptions {
   quotation: QuotationFull;
   settings: Settings | null;
 }
 
-export interface LoadedLogo {
+export interface LoadedImage {
   dataUrl: string;
   format: string;
 }
 
-async function loadLogo(url: string): Promise<LoadedLogo | null> {
+export interface LoadedPdfAssets {
+  logo: LoadedImage | null;
+  stamp: LoadedImage | null;
+  signature: LoadedImage | null;
+  upiQr: LoadedImage | null;
+}
+
+async function loadImage(url: string | null | undefined): Promise<LoadedImage | null> {
+  if (!url) return null;
+  if (url.startsWith("data:image/")) {
+    const match = url.match(/^data:image\/(\w+);base64,/);
+    const format = match ? (match[1].toUpperCase() === "PNG" ? "PNG" : "JPEG") : "JPEG";
+    return { dataUrl: url, format };
+  }
   try {
     const response = await fetch(url);
     if (!response.ok) return null;
@@ -25,12 +40,31 @@ async function loadLogo(url: string): Promise<LoadedLogo | null> {
     const dataUrl = await new Promise<string>((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = () => resolve(String(reader.result));
-      reader.onerror = () => reject(new Error("logo read failed"));
+      reader.onerror = () => reject(new Error("image read failed"));
       reader.readAsDataURL(blob);
     });
     return { dataUrl, format };
   } catch {
-    // A missing or CORS-blocked logo must never block the document.
+    return null;
+  }
+}
+
+async function generateUpiQrDataUrl(
+  settings: Settings | null,
+  amount: number,
+  quoteNumber: string
+): Promise<LoadedImage | null> {
+  if (!settings?.upi_id) return null;
+  try {
+    const upiUrl = buildUpiUrl(
+      settings.upi_id,
+      settings.upi_name || settings.company_name,
+      amount,
+      `Payment for ${quoteNumber}`
+    );
+    const dataUrl = await QRCode.toDataURL(upiUrl, { width: 200, margin: 1 });
+    return { dataUrl, format: "PNG" };
+  } catch {
     return null;
   }
 }
@@ -72,17 +106,23 @@ export async function buildQuotationPdf({
   quotation,
   settings,
 }: BuildPdfOptions): Promise<jsPDF> {
-  // jsPDF is ~150 kB — loaded only when someone actually asks for a document.
   const { jsPDF: JsPDF } = await import("jspdf");
   const doc = new JsPDF({ unit: "mm", format: "a4", orientation: "portrait" });
 
-  const logo = settings?.logo_url ? await loadLogo(settings.logo_url) : null;
+  const [logo, stamp, signature, upiQr] = await Promise.all([
+    loadImage(settings?.logo_url),
+    loadImage(settings?.stamp_url),
+    loadImage(settings?.signature_url),
+    generateUpiQrDataUrl(settings, quotation.grand_total, quotation.quote_number),
+  ]);
+
   const company = settings?.company_name ?? "Madskraft Flex & Advertising";
+  const assets: LoadedPdfAssets = { logo, stamp, signature, upiQr };
 
   if (quotation.status === "invoice") {
-    drawInvoice(doc, quotation, settings, logo);
+    drawInvoice(doc, quotation, settings, assets);
   } else {
-    drawQuotation(doc, quotation, settings, logo);
+    drawQuotation(doc, quotation, settings, assets);
   }
 
   paintChrome(doc, quotation, company);

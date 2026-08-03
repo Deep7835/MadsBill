@@ -2,7 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { SUPABASE_ANON_KEY, SUPABASE_URL, isSupabaseConfigured } from "@/lib/supabase/env";
 
-const PUBLIC_PATHS = ["/login", "/auth", "/setup"];
+const PUBLIC_PATHS = ["/", "/login", "/auth", "/setup"];
 
 /** Refreshes the Supabase session cookie and guards protected routes. */
 export async function updateSession(request: NextRequest) {
@@ -35,7 +35,7 @@ export async function updateSession(request: NextRequest) {
     .catch(() => null);
 
   const { pathname } = request.nextUrl;
-  const isPublic = PUBLIC_PATHS.some((p) => pathname.startsWith(p));
+  const isPublic = PUBLIC_PATHS.some((p) => (p === "/" ? pathname === "/" : pathname.startsWith(p)));
 
   if (!user && !isPublic) {
     const url = request.nextUrl.clone();

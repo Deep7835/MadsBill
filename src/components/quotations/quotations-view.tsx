@@ -3,7 +3,15 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { FileText, MoreHorizontal, Pencil, Plus, ReceiptText, Trash2 } from "lucide-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import {
+  Add01Icon,
+  Invoice01Icon,
+  MoreHorizontalIcon,
+  PencilEdit01Icon,
+  ReceiptTextIcon,
+  Delete02Icon,
+} from "@hugeicons/core-free-icons";
 import { toast } from "sonner";
 
 import { PageHeader } from "@/components/shared/page-header";
@@ -80,7 +88,7 @@ export function QuotationsView() {
       >
         <Button asChild>
           <Link href="/quotations/new">
-            <Plus />
+            <HugeiconsIcon icon={Add01Icon} />
             New quotation
           </Link>
         </Button>
@@ -117,7 +125,7 @@ export function QuotationsView() {
             <TableSkeleton rows={6} cols={6} />
           ) : !rows.length ? (
             <EmptyState
-              icon={FileText}
+              icon={Invoice01Icon}
               title={search || filter !== "all" ? "Nothing matches" : "No quotations yet"}
               description={
                 search || filter !== "all"
@@ -188,24 +196,24 @@ export function QuotationsView() {
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" size="icon" aria-label="Document actions">
-                      <MoreHorizontal />
+                      <HugeiconsIcon icon={MoreHorizontalIcon} />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem asChild>
                       <Link href={`/quotations/${row.id}`}>
-                        <ReceiptText />
+                        <HugeiconsIcon icon={ReceiptTextIcon} />
                         Open
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
                       <Link href={`/quotations/${row.id}/edit`}>
-                        <Pencil />
+                        <HugeiconsIcon icon={PencilEdit01Icon} />
                         Edit
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem destructive onSelect={() => setDeleting(row)}>
-                      <Trash2 />
+                      <HugeiconsIcon icon={Delete02Icon} />
                       Delete
                     </DropdownMenuItem>
                   </DropdownMenuContent>

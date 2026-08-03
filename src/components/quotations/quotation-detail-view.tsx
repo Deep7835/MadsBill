@@ -3,15 +3,16 @@
 import { useCallback, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { HugeiconsIcon } from "@hugeicons/react";
 import {
-  ArrowLeft,
-  Download,
-  MessageCircle,
-  Pencil,
-  Printer,
-  ReceiptText,
-  Trash2,
-} from "lucide-react";
+  ArrowLeft01Icon,
+  Download01Icon,
+  Comment01Icon,
+  PencilEdit01Icon,
+  PrinterIcon,
+  ReceiptTextIcon,
+  Delete02Icon,
+} from "@hugeicons/core-free-icons";
 import { toast } from "sonner";
 
 import { PageHeader } from "@/components/shared/page-header";
@@ -163,7 +164,7 @@ export function QuotationDetailView({ quotationId }: { quotationId: string }) {
     <>
       <Button asChild variant="ghost" size="sm" className="-ml-2 w-fit no-print">
         <Link href="/quotations">
-          <ArrowLeft />
+          <HugeiconsIcon icon={ArrowLeft01Icon} />
           All quotations
         </Link>
       </Button>
@@ -176,20 +177,20 @@ export function QuotationDetailView({ quotationId }: { quotationId: string }) {
           {/* Five actions: a 2-up grid on phones, an inline row from sm up. */}
           <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:flex-wrap">
             <Button variant="outline" onClick={handlePrint} loading={busy === "print"}>
-              <Printer />
+              <HugeiconsIcon icon={PrinterIcon} />
               Print
             </Button>
             <Button variant="outline" onClick={handleDownload} loading={busy === "pdf"}>
-              <Download />
+              <HugeiconsIcon icon={Download01Icon} />
               <span className="truncate">Download PDF</span>
             </Button>
             <Button variant="outline" onClick={() => setShareOpen(true)}>
-              <MessageCircle />
+              <HugeiconsIcon icon={Comment01Icon} />
               WhatsApp
             </Button>
             <Button asChild variant="outline">
               <Link href={`/quotations/${data.id}/edit`}>
-                <Pencil />
+                <HugeiconsIcon icon={PencilEdit01Icon} />
                 Edit
               </Link>
             </Button>
@@ -198,7 +199,7 @@ export function QuotationDetailView({ quotationId }: { quotationId: string }) {
               className="col-span-2 text-destructive sm:col-span-1"
               onClick={() => setConfirmDelete(true)}
             >
-              <Trash2 />
+              <HugeiconsIcon icon={Delete02Icon} />
               Delete
             </Button>
           </div>
@@ -236,7 +237,7 @@ export function QuotationDetailView({ quotationId }: { quotationId: string }) {
               </div>
             ) : (
               <Button onClick={() => setConfirmConvert(true)} loading={busy === "convert"}>
-                <ReceiptText />
+                <HugeiconsIcon icon={ReceiptTextIcon} />
                 Convert to invoice
               </Button>
             )}

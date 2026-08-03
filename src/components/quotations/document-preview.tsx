@@ -7,10 +7,11 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Separator } from "@/components/ui/separator";
+import { UpiQrCode } from "@/components/shared/qr-code";
 import { amountInWords, formatCurrency, formatDate, formatNumber } from "@/lib/format";
 import type { QuotationFull, Settings } from "@/lib/types/database";
 
-/** On-screen mirror of the PDF so the user can check before sending. */
+/** On-screen mirror of the document so the user can check before sending. */
 export function DocumentPreview({
   quotation,
   settings,
@@ -22,25 +23,33 @@ export function DocumentPreview({
   const customer = quotation.customer;
 
   return (
-    <div className="space-y-6 rounded-xl border border-border bg-card p-5 sm:p-8">
+    <div className="space-y-6 rounded-xl border border-border bg-card p-5 sm:p-8 shadow-xs">
       <header className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div className="space-y-1">
-          <h2 className="text-lg font-semibold">{settings?.company_name ?? "Madskraft Flex & Advertising"}</h2>
-          <div className="text-xs leading-relaxed text-muted-foreground">
-            {settings?.address ? <p>{settings.address}</p> : null}
-            {settings?.city || settings?.state ? (
-              <p>{[settings?.city, settings?.state].filter(Boolean).join(", ")}</p>
-            ) : null}
-            {settings?.phone || settings?.email ? (
-              <p>{[settings?.phone, settings?.email].filter(Boolean).join(" • ")}</p>
-            ) : null}
-            {settings?.gst_number ? <p>GSTIN: {settings.gst_number}</p> : null}
+        <div className="flex gap-4 items-start">
+          {settings?.logo_url ? (
+            <div className="relative flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-md border bg-muted p-1">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={settings.logo_url} alt="Logo" className="max-h-full max-w-full object-contain" />
+            </div>
+          ) : null}
+          <div className="space-y-1">
+            <h2 className="text-lg font-semibold">{settings?.company_name ?? "Madskraft Flex & Advertising"}</h2>
+            <div className="text-xs leading-relaxed text-muted-foreground">
+              {settings?.address ? <p>{settings.address}</p> : null}
+              {settings?.city || settings?.state ? (
+                <p>{[settings?.city, settings?.state].filter(Boolean).join(", ")}</p>
+              ) : null}
+              {settings?.phone || settings?.email ? (
+                <p>{[settings?.phone, settings?.email].filter(Boolean).join(" • ")}</p>
+              ) : null}
+              {settings?.gst_number ? <p>GSTIN: {settings.gst_number}</p> : null}
+            </div>
           </div>
         </div>
 
         <div className="sm:text-right">
           <p className="text-xl font-semibold uppercase tracking-wide text-primary">
-            {isInvoice ? "Invoice" : "Quotation"}
+            {isInvoice ? "Tax Invoice" : "Quotation"}
           </p>
           <dl className="mt-2 space-y-0.5 text-xs">
             <div className="flex gap-2 sm:justify-end">
@@ -154,10 +163,25 @@ export function DocumentPreview({
         </Table>
       </div>
 
-      <div className="flex flex-col gap-6 sm:flex-row sm:justify-between">
-        <p className="max-w-sm text-xs italic text-muted-foreground">
-          Amount in words: {amountInWords(Number(quotation.grand_total))}
-        </p>
+      <div className="flex flex-col gap-6 sm:flex-row sm:justify-between items-start">
+        <div className="space-y-3">
+          <p className="max-w-sm text-xs italic text-muted-foreground">
+            Amount in words: {amountInWords(Number(quotation.grand_total))}
+          </p>
+
+          {/* UPI Payment QR Code view */}
+          {settings?.upi_id && isInvoice ? (
+            <div className="pt-2">
+              <UpiQrCode
+                upiId={settings.upi_id}
+                payeeName={settings.upi_name || settings.company_name}
+                amount={quotation.grand_total}
+                note={`Inv ${quotation.quote_number}`}
+                size={120}
+              />
+            </div>
+          ) : null}
+        </div>
 
         <dl className="w-full max-w-xs space-y-1.5 text-sm sm:ml-auto">
           <div className="flex justify-between">
@@ -187,12 +211,30 @@ export function DocumentPreview({
         </div>
       ) : null}
 
-      <div className="flex justify-end pt-6">
-        <div className="w-52 border-t border-border pt-2 text-right text-xs">
-          <p className="font-medium">Authorised Signatory</p>
-          <p className="text-muted-foreground">
-            For {settings?.company_name ?? "Madskraft Flex & Advertising"}
-          </p>
+      {/* Digital Stamp & Authorized Signature Display */}
+      <div className="flex justify-between items-end pt-6 border-t border-border/80">
+        <div>
+          {settings?.stamp_url ? (
+            <div className="relative flex h-20 w-20 items-center justify-center p-1">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={settings.stamp_url} alt="Company Stamp" className="max-h-full max-w-full object-contain" />
+            </div>
+          ) : null}
+        </div>
+
+        <div className="flex flex-col items-end gap-1">
+          {settings?.signature_url ? (
+            <div className="relative flex h-16 w-36 items-center justify-center p-1">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={settings.signature_url} alt="Authorized Signature" className="max-h-full max-w-full object-contain" />
+            </div>
+          ) : null}
+          <div className="w-52 border-t border-border pt-1.5 text-right text-xs">
+            <p className="font-semibold text-foreground">Authorised Signatory</p>
+            <p className="text-muted-foreground text-[11px]">
+              For {settings?.company_name ?? "Madskraft Flex & Advertising"}
+            </p>
+          </div>
         </div>
       </div>
     </div>

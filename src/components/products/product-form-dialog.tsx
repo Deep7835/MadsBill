@@ -60,6 +60,7 @@ export function ProductFormDialog({
   onSaved,
 }: ProductFormDialogProps) {
   const [submitting, setSubmitting] = useState(false);
+  const [changeReason, setChangeReason] = useState("");
 
   const {
     register,
@@ -76,6 +77,7 @@ export function ProductFormDialog({
 
   useEffect(() => {
     if (!open) return;
+    setChangeReason("");
     reset(
       product
         ? {
@@ -98,8 +100,8 @@ export function ProductFormDialog({
   async function onSubmit(values: ProductPayload) {
     setSubmitting(true);
     try {
-      const saved = await saveProduct(values, product?.id);
-      toast.success(product ? "Product updated" : "Product added");
+      const saved = await saveProduct(values, product?.id, changeReason || "Admin rate card update");
+      toast.success(product ? "Product & Rate Slabs updated" : "Product added");
       onSaved(saved);
       onOpenChange(false);
     } catch (err) {
@@ -126,9 +128,9 @@ export function ProductFormDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>{product ? "Edit product" : "New product"}</DialogTitle>
+          <DialogTitle>{product ? "Edit Rate Slab & Product" : "New Rate Card Product"}</DialogTitle>
           <DialogDescription>
-            Rate type decides whether the quotation builder asks for size or quantity.
+            Admin rate management. Adjust base per sq.ft. rates and volume discount slabs.
           </DialogDescription>
         </DialogHeader>
 
@@ -136,7 +138,7 @@ export function ProductFormDialog({
           <FormField label="Name" htmlFor="name" error={errors.name?.message} required>
             <Input
               id="name"
-              placeholder="Star Flex"
+              placeholder="Star Flex 220 GSM"
               aria-invalid={!!errors.name}
               {...register("name")}
             />
@@ -144,7 +146,7 @@ export function ProductFormDialog({
 
           <div className="grid gap-4 sm:grid-cols-2">
             <FormField label="Category" htmlFor="category" error={errors.category?.message}>
-              <Input id="category" placeholder="Flex / Print" {...register("category")} />
+              <Input id="category" placeholder="Flex / Vinyl / Banner" {...register("category")} />
             </FormField>
 
             <FormField label="Rate type" error={errors.rate_type?.message} required>
@@ -156,8 +158,6 @@ export function ProductFormDialog({
                     value={field.value}
                     onValueChange={(value) => {
                       field.onChange(value);
-                      // Keep the printed unit in step with the pricing model,
-                      // and drop volume slabs — they only apply to area pricing.
                       const sqft = value === "sqft";
                       setValue("unit", sqft ? "sq.ft." : "piece");
                       setValue("slab1_min_area", sqft ? 500 : "");
@@ -183,7 +183,7 @@ export function ProductFormDialog({
             </FormField>
 
             <FormField
-              label="Default rate (₹)"
+              label="Default Base Rate (₹)"
               htmlFor="default_rate"
               error={errors.default_rate?.message}
               required
@@ -242,17 +242,15 @@ export function ProductFormDialog({
           {isSqft ? (
             <div className="space-y-3 rounded-xl border border-border bg-muted/30 p-4">
               <div className="space-y-1">
-                <p className="text-sm font-medium">Volume pricing</p>
+                <p className="text-sm font-medium text-primary">Volume Rate Slabs</p>
                 <p className="text-xs text-muted-foreground">
-                  A larger single piece gets a cheaper rate. The area tested is width ×
-                  height of one piece — quantity does not stack. Leave the area blank to
-                  switch a slab off.
+                  Configure lower per sq.ft. rates when single piece size exceeds slab thresholds.
                 </p>
               </div>
 
               <div className="grid gap-3 sm:grid-cols-2">
                 <FormField
-                  label="Slab 1 — from (sq.ft.)"
+                  label="Slab 1 — Min Area (sq.ft.)"
                   htmlFor="slab1_min_area"
                   error={errors.slab1_min_area?.message}
                 >
@@ -261,14 +259,13 @@ export function ProductFormDialog({
                     type="number"
                     step="1"
                     min="0"
-                    inputMode="decimal"
                     placeholder="500"
                     {...register("slab1_min_area")}
                   />
                 </FormField>
 
                 <FormField
-                  label="Slab 1 — rate off (₹)"
+                  label="Slab 1 — Rate Discount (₹)"
                   htmlFor="slab1_discount"
                   error={errors.slab1_discount?.message}
                 >
@@ -277,15 +274,13 @@ export function ProductFormDialog({
                     type="number"
                     step="0.01"
                     min="0"
-                    inputMode="decimal"
                     placeholder="2"
-                    aria-invalid={!!errors.slab1_discount}
                     {...register("slab1_discount")}
                   />
                 </FormField>
 
                 <FormField
-                  label="Slab 2 — from (sq.ft.)"
+                  label="Slab 2 — Min Area (sq.ft.)"
                   htmlFor="slab2_min_area"
                   error={errors.slab2_min_area?.message}
                 >
@@ -294,15 +289,13 @@ export function ProductFormDialog({
                     type="number"
                     step="1"
                     min="0"
-                    inputMode="decimal"
                     placeholder="1000"
-                    aria-invalid={!!errors.slab2_min_area}
                     {...register("slab2_min_area")}
                   />
                 </FormField>
 
                 <FormField
-                  label="Slab 2 — rate off (₹)"
+                  label="Slab 2 — Rate Discount (₹)"
                   htmlFor="slab2_discount"
                   error={errors.slab2_discount?.message}
                 >
@@ -311,28 +304,37 @@ export function ProductFormDialog({
                     type="number"
                     step="0.01"
                     min="0"
-                    inputMode="decimal"
                     placeholder="4"
-                    aria-invalid={!!errors.slab2_discount}
                     {...register("slab2_discount")}
                   />
                 </FormField>
               </div>
 
-              <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
-                <span>Under {slab1.area || "—"} sq.ft.: {formatCurrency(baseRate)}</span>
+              <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs font-medium text-muted-foreground pt-1 border-t">
+                <span>Standard: {formatCurrency(baseRate)}</span>
                 {slab1.area && slab1.off ? (
-                  <span>
-                    {slab1.area}+ sq.ft.: {formatCurrency(Math.max(0, baseRate - slab1.off))}
+                  <span className="text-emerald-600 dark:text-emerald-400">
+                    {slab1.area}+ sq.ft: {formatCurrency(Math.max(0, baseRate - slab1.off))} (-₹{slab1.off})
                   </span>
                 ) : null}
                 {slab2.area && slab2.off ? (
-                  <span>
-                    {slab2.area}+ sq.ft.: {formatCurrency(Math.max(0, baseRate - slab2.off))}
+                  <span className="text-emerald-600 dark:text-emerald-400">
+                    {slab2.area}+ sq.ft: {formatCurrency(Math.max(0, baseRate - slab2.off))} (-₹{slab2.off})
                   </span>
                 ) : null}
               </div>
             </div>
+          ) : null}
+
+          {product ? (
+            <FormField label="Reason for Rate Change (Optional Log)" htmlFor="change_reason">
+              <Input
+                id="change_reason"
+                placeholder="e.g. Raw material price reduction / Supplier discount"
+                value={changeReason}
+                onChange={(e) => setChangeReason(e.target.value)}
+              />
+            </FormField>
           ) : null}
 
           <DialogFooter>
@@ -345,7 +347,7 @@ export function ProductFormDialog({
               Cancel
             </Button>
             <Button type="submit" loading={submitting}>
-              {product ? "Save changes" : "Add product"}
+              {product ? "Save Rate Slabs" : "Add Product"}
             </Button>
           </DialogFooter>
         </form>

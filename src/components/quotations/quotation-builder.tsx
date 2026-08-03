@@ -5,7 +5,13 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowLeft, Plus, Save, UserPlus } from "lucide-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import {
+  ArrowLeft01Icon,
+  Add01Icon,
+  UserAdd01Icon,
+  FloppyDiskIcon,
+} from "@hugeicons/core-free-icons";
 import { toast } from "sonner";
 
 import { PageHeader } from "@/components/shared/page-header";
@@ -248,7 +254,7 @@ export function QuotationBuilder({
     <>
       <Button asChild variant="ghost" size="sm" className="-ml-2 w-fit">
         <Link href={isEdit ? `/quotations/${quotation.id}` : "/quotations"}>
-          <ArrowLeft />
+          <HugeiconsIcon icon={ArrowLeft01Icon} />
           {isEdit ? "Back to quotation" : "All quotations"}
         </Link>
       </Button>
@@ -304,7 +310,7 @@ export function QuotationBuilder({
                     onClick={() => setCustomerDialogOpen(true)}
                     aria-label="Add customer"
                   >
-                    <UserPlus />
+                    <HugeiconsIcon icon={UserAdd01Icon} />
                   </Button>
                 </div>
               )}
@@ -362,7 +368,7 @@ export function QuotationBuilder({
           <CardHeader className="flex-row items-center justify-between">
             <CardTitle>Line items</CardTitle>
             <Button type="button" variant="outline" size="sm" onClick={() => append(blankItem())}>
-              <Plus />
+              <HugeiconsIcon icon={Add01Icon} />
               Add item
             </Button>
           </CardHeader>
@@ -378,6 +384,7 @@ export function QuotationBuilder({
                   key={field.id}
                   index={index}
                   register={register}
+                  setValue={setValue}
                   errors={errors.items}
                   products={activeProducts}
                   value={items[index] ?? blankItem()}
@@ -446,7 +453,7 @@ export function QuotationBuilder({
               </div>
 
               <Button type="submit" className="mt-4 w-full" loading={submitting}>
-                <Save />
+                <HugeiconsIcon icon={FloppyDiskIcon} />
                 {isEdit ? "Save changes" : "Create quotation"}
               </Button>
             </CardContent>

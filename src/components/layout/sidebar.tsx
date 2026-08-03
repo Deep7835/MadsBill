@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { LogOut, MessageCircle, Printer } from "lucide-react";
+import { usePathname } from "next/navigation";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { PrinterIcon, Comment01Icon, Logout01Icon } from "@hugeicons/core-free-icons";
 import { toast } from "sonner";
 
 import { NAV_ITEMS } from "@/components/layout/nav-items";
@@ -17,7 +18,6 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
     <nav className="flex flex-col gap-1 px-3">
       {NAV_ITEMS.map((item) => {
         const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
-        const Icon = item.icon;
         return (
           <Link
             key={item.href}
@@ -27,12 +27,17 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
             className={cn(
               "group relative flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium transition-colors",
               active
-                ? "bg-accent text-accent-foreground"
+                ? "bg-accent text-accent-foreground font-semibold"
                 : "text-muted-foreground hover:bg-muted hover:text-foreground",
             )}
           >
-            <Icon className={cn("size-[18px] shrink-0", active && "text-primary")} />
-            {item.label}
+            <HugeiconsIcon icon={item.icon} className={cn("size-[18px] shrink-0", active && "text-primary")} />
+            <span className="flex-1 truncate">{item.label}</span>
+            {item.badge ? (
+              <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold text-primary">
+                {item.badge}
+              </span>
+            ) : null}
             {/* Right-edge marker on the active row. */}
             {active ? (
               <span className="absolute -right-3 top-1/2 h-7 w-1 -translate-y-1/2 rounded-l-full bg-primary" />
@@ -48,7 +53,7 @@ export function SidebarBrand({ companyName }: { companyName: string }) {
   return (
     <Link href="/dashboard" className="flex items-center gap-2.5 px-5 py-5">
       <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground">
-        <Printer className="size-[18px]" />
+        <HugeiconsIcon icon={PrinterIcon} className="size-[18px]" />
       </span>
       <span className="min-w-0">
         <span className="block truncate text-[15px] font-bold leading-tight tracking-tight">
@@ -62,7 +67,6 @@ export function SidebarBrand({ companyName }: { companyName: string }) {
 
 /** Support panel + logout, pinned to the bottom of the rail. */
 export function SidebarFooter() {
-  const router = useRouter();
   const [signingOut, setSigningOut] = useState(false);
 
   async function handleSignOut() {
@@ -73,8 +77,7 @@ export function SidebarFooter() {
       toast.error(error.message);
       return;
     }
-    router.replace("/login");
-    router.refresh();
+    window.location.href = "/login";
   }
 
   return (
@@ -90,7 +93,7 @@ export function SidebarFooter() {
           rel="noopener noreferrer"
           className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground shadow-[var(--shadow-raised)] transition-colors hover:bg-primary/90"
         >
-          <MessageCircle className="size-4" />
+          <HugeiconsIcon icon={Comment01Icon} className="size-4" />
           Support
         </a>
       </div>
@@ -101,7 +104,7 @@ export function SidebarFooter() {
         disabled={signingOut}
         className="flex w-full items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium text-destructive transition-colors hover:bg-destructive/10 disabled:opacity-60"
       >
-        <LogOut className="size-[18px]" />
+        <HugeiconsIcon icon={Logout01Icon} className="size-[18px]" />
         {signingOut ? "Signing out…" : "Logout"}
       </button>
     </div>

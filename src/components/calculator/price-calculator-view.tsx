@@ -2,7 +2,15 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Calculator, FileText, Plus, ReceiptText, RotateCcw, Trash2 } from "lucide-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import {
+  CalculatorIcon,
+  Invoice01Icon,
+  Add01Icon,
+  ReceiptTextIcon,
+  RotateLeft01Icon,
+  Delete02Icon,
+} from "@hugeicons/core-free-icons";
 import { toast } from "sonner";
 
 import { PageHeader } from "@/components/shared/page-header";
@@ -157,7 +165,7 @@ export function PriceCalculatorView() {
         description="Quote a price on the spot — no customer needed. Carry it into a quotation or invoice once they agree."
       >
         <Button variant="outline" onClick={() => setRows([newRow()])}>
-          <RotateCcw />
+          <HugeiconsIcon icon={RotateLeft01Icon} />
           Reset
         </Button>
       </PageHeader>
@@ -206,7 +214,7 @@ export function PriceCalculatorView() {
                           disabled={rows.length === 1}
                           aria-label={`Remove line ${index + 1}`}
                         >
-                          <Trash2 />
+                          <HugeiconsIcon icon={Delete02Icon} />
                         </Button>
                       </div>
                     </div>
@@ -362,7 +370,7 @@ export function PriceCalculatorView() {
             className="w-full"
             onClick={() => setRows((current) => [...current, newRow()])}
           >
-            <Plus />
+            <HugeiconsIcon icon={Add01Icon} />
             Add another item
           </Button>
         </div>
@@ -370,7 +378,7 @@ export function PriceCalculatorView() {
         <Card className="lg:sticky lg:top-20 lg:h-fit">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Calculator className="size-4 text-primary" />
+              <HugeiconsIcon icon={CalculatorIcon} className="size-4 text-primary" />
               Quote
             </CardTitle>
           </CardHeader>
@@ -405,7 +413,7 @@ export function PriceCalculatorView() {
 
             <div className="grid gap-2 pt-2">
               <Button onClick={() => handOff("quotation")} disabled={!hasPricedLine}>
-                <FileText />
+                <HugeiconsIcon icon={Invoice01Icon} />
                 Create quotation
               </Button>
               <Button
@@ -413,7 +421,7 @@ export function PriceCalculatorView() {
                 onClick={() => handOff("invoice")}
                 disabled={!hasPricedLine}
               >
-                <ReceiptText />
+                <HugeiconsIcon icon={ReceiptTextIcon} />
                 Create invoice
               </Button>
             </div>

@@ -1,6 +1,7 @@
 "use client";
 
-import { Search, X } from "lucide-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Search01Icon, Cancel01Icon } from "@hugeicons/core-free-icons";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
@@ -14,7 +15,7 @@ interface SearchInputProps {
 export function SearchInput({ value, onChange, placeholder = "Search…", className }: SearchInputProps) {
   return (
     <div className={cn("relative w-full sm:max-w-xs", className)}>
-      <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+      <HugeiconsIcon icon={Search01Icon} className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
       <Input
         value={value}
         onChange={(e) => onChange(e.target.value)}
@@ -29,7 +30,7 @@ export function SearchInput({ value, onChange, placeholder = "Search…", classN
           className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-muted-foreground hover:bg-muted"
           aria-label="Clear search"
         >
-          <X className="size-3.5" />
+          <HugeiconsIcon icon={Cancel01Icon} className="size-3.5" />
         </button>
       ) : null}
     </div>

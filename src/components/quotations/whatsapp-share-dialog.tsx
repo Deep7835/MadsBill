@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Download, MessageCircle } from "lucide-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Download01Icon, Comment01Icon } from "@hugeicons/core-free-icons";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -98,11 +99,11 @@ export function WhatsappShareDialog({
 
         <DialogFooter>
           <Button type="button" variant="outline" onClick={handleDownload} loading={downloading}>
-            <Download />
+            <HugeiconsIcon icon={Download01Icon} />
             Download PDF
           </Button>
           <Button type="button" onClick={handleOpenWhatsapp}>
-            <MessageCircle />
+            <HugeiconsIcon icon={Comment01Icon} />
             Open WhatsApp
           </Button>
         </DialogFooter>

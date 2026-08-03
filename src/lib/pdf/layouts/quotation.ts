@@ -2,7 +2,7 @@ import type { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 
 import { amountInWords, formatAmount, formatDate, formatNumber } from "@/lib/format";
-import { box, line, sectionBar, text, textBlock } from "@/lib/pdf/draw";
+import { box, line, text, textBlock } from "@/lib/pdf/draw";
 import { itemDetailLine } from "@/lib/pdf/items";
 import {
   BODY_BOTTOM,
@@ -14,23 +14,23 @@ import {
   PAGE,
 } from "@/lib/pdf/theme";
 import type { QuotationFull, Settings } from "@/lib/types/database";
+import type { LoadedPdfAssets } from "@/lib/pdf/quotation-pdf";
 
 const DISCLAIMER =
-  "This quotation is not a contract or a bill. It is our best estimate of the total price for the " +
-  "work and goods described above. The customer will be billed after indicating acceptance of this " +
-  "quotation. Payment will be due prior to the delivery of the work and goods. Please sign and " +
-  "return the quotation to the address listed above.";
+  "This quotation is an estimate of the total price for the work described above. " +
+  "The customer will be billed after indicating acceptance of this quotation. " +
+  "Payment terms as agreed. Please sign and return this quotation to Madskraft.";
 
-/**
- * Quotation sheet: grey section bars, a boxed quote-meta grid, itemised costs
- * and a customer acceptance strip — the classic printed quote format.
- */
 export function drawQuotation(
   doc: jsPDF,
   quotation: QuotationFull,
   settings: Settings | null,
-  logo: { dataUrl: string; format: string } | null,
+  assets: LoadedPdfAssets | { dataUrl: string; format: string } | null,
 ): void {
+  const logo = assets && "logo" in assets ? assets.logo : (assets as { dataUrl: string; format: string } | null);
+  const stamp = assets && "stamp" in assets ? assets.stamp : null;
+  const signature = assets && "signature" in assets ? assets.signature : null;
+
   const { margin } = PAGE;
   const company = settings?.company_name ?? "Madskraft Flex & Advertising";
   let y = margin;
@@ -39,254 +39,202 @@ export function drawQuotation(
   let textX = margin;
   if (logo) {
     try {
-      doc.addImage(logo.dataUrl, logo.format, margin, y, 17, 17);
-      textX = margin + 21;
+      doc.addImage(logo.dataUrl, logo.format, margin, y, 20, 20);
+      textX = margin + 24;
     } catch {
       textX = margin;
     }
   }
 
-  text(doc, company, textX, y + 6, { size: FONT.company, style: "bold", color: COLORS.ink });
-  text(doc, "QUOTATION", CONTENT_RIGHT, y + 7, {
-    size: 22,
+  text(doc, company, textX, y + 6, {
+    size: FONT.company,
     style: "bold",
     color: COLORS.ink,
+  });
+
+  const addressLines = [
+    settings?.address,
+    [settings?.city, settings?.state].filter(Boolean).join(", "),
+    settings?.phone ? `Ph: ${settings.phone}` : null,
+    settings?.email ? `Email: ${settings.email}` : null,
+    settings?.gst_number ? `GSTIN: ${settings.gst_number}` : null,
+  ].filter((l): l is string => Boolean(l));
+
+  textBlock(doc, addressLines.join("\n"), textX, y + 11, {
+    size: FONT.tiny,
+    color: COLORS.muted,
+    lineHeight: 3.6,
+  });
+
+  text(doc, "QUOTATION", CONTENT_RIGHT, y + 8, {
+    size: FONT.title,
+    style: "bold",
+    color: COLORS.navy,
     align: "right",
   });
 
-  const companyLines = [
-    settings?.address,
-    [settings?.city, settings?.state].filter(Boolean).join(" "),
-    settings?.phone ? `Phone: ${settings.phone}` : "",
-    settings?.email,
-    settings?.gst_number ? `GSTIN: ${settings.gst_number}` : "",
-  ].filter(Boolean) as string[];
+  y += 28;
 
-  const headerEnd = textBlock(doc, companyLines.join("\n"), textX, y + 12, {
+  /* --------------------------------------------------------- meta-bar grid */
+  const half = CONTENT_WIDTH / 2;
+  const leftX = margin;
+  const rightX = margin + half;
+
+  box(doc, leftX, y, half, 6.5, { fill: COLORS.navy, stroke: COLORS.navy });
+  text(doc, "PREPARED FOR", leftX + 3, y + 4.5, {
+    size: FONT.tiny,
+    style: "bold",
+    color: COLORS.white,
+  });
+
+  box(doc, rightX, y, half, 6.5, { fill: COLORS.navy, stroke: COLORS.navy });
+  text(doc, "QUOTATION DETAILS", rightX + 3, y + 4.5, {
+    size: FONT.tiny,
+    style: "bold",
+    color: COLORS.white,
+  });
+
+  y += 6.5;
+
+  const c = quotation.customer;
+  const custLines = c
+    ? [
+        c.business_name,
+        c.contact_person ? `Attn: ${c.contact_person}` : null,
+        c.address,
+        [c.city, c.state].filter(Boolean).join(", "),
+        c.mobile ? `Ph: ${c.mobile}` : null,
+        c.gst_number ? `GSTIN: ${c.gst_number}` : null,
+      ].filter((l): l is string => Boolean(l))
+    : ["Walk-in Customer"];
+
+  const custBottomY = textBlock(doc, custLines.join("\n"), leftX + 3, y + 4, {
     size: FONT.small,
-    color: COLORS.body,
-    maxWidth: 85,
+    color: COLORS.ink,
     lineHeight: 4.2,
   });
 
-  /* ------------------------------------------------- quote meta grid (top right) */
-  const metaWidth = 78;
-  const metaX = CONTENT_RIGHT - metaWidth;
-  const colW = metaWidth / 2;
-  let metaY = y + 14;
-
-  const metaPairs: [string, string, string, string][] = [
-    ["QUOTE #", quotation.quote_number, "DATE", formatDate(quotation.date)],
-    [
-      "CUSTOMER",
-      (quotation.customer?.business_name ?? "—").slice(0, 18),
-      "VALID UNTIL",
-      quotation.valid_until ? formatDate(quotation.valid_until) : "—",
-    ],
+  const metaRows: [string, string][] = [
+    ["Quote Number:", quotation.quote_number],
+    ["Date:", formatDate(quotation.date)],
+    ["Valid Until:", quotation.valid_until ? formatDate(quotation.valid_until) : "15 Days"],
   ];
 
-  for (const [l1, v1, l2, v2] of metaPairs) {
-    box(doc, metaX, metaY, colW, 5.5, { fill: COLORS.bandGrey });
-    box(doc, metaX + colW, metaY, colW, 5.5, { fill: COLORS.bandGrey });
-    text(doc, l1, metaX + colW / 2, metaY + 3.8, {
+  let metaY = y + 4;
+  metaRows.forEach(([label, value]) => {
+    text(doc, label, rightX + 3, metaY, {
+      size: FONT.tiny,
+      color: COLORS.muted,
+    });
+    text(doc, value, CONTENT_RIGHT - 3, metaY, {
       size: FONT.tiny,
       style: "bold",
       color: COLORS.ink,
-      align: "center",
+      align: "right",
     });
-    text(doc, l2, metaX + colW * 1.5, metaY + 3.8, {
-      size: FONT.tiny,
-      style: "bold",
-      color: COLORS.ink,
-      align: "center",
-    });
-    metaY += 5.5;
-
-    box(doc, metaX, metaY, colW, 6);
-    box(doc, metaX + colW, metaY, colW, 6);
-    text(doc, v1, metaX + colW / 2, metaY + 4.1, {
-      size: FONT.small,
-      color: COLORS.ink,
-      align: "center",
-    });
-    text(doc, v2, metaX + colW * 1.5, metaY + 4.1, {
-      size: FONT.small,
-      color: COLORS.ink,
-      align: "center",
-    });
-    metaY += 6;
-  }
-
-  y = Math.max(headerEnd, metaY) + 6;
-
-  /* -------------------------------------------------------- customer info */
-  y = sectionBar(doc, "CUSTOMER INFO", margin, y, CONTENT_WIDTH);
-  const customer = quotation.customer;
-  const customerLines = [
-    customer?.contact_person,
-    customer?.business_name,
-    customer?.address,
-    [customer?.city, customer?.state].filter(Boolean).join(" "),
-    [customer?.mobile, customer?.email].filter(Boolean).join("  |  "),
-    customer?.gst_number ? `GSTIN: ${customer.gst_number}` : "",
-  ].filter(Boolean) as string[];
-
-  const infoEnd = textBlock(doc, customerLines.join("\n"), margin + 3, y + 5, {
-    size: FONT.small,
-    color: COLORS.body,
-    maxWidth: CONTENT_WIDTH - 6,
-    lineHeight: 4.2,
+    metaY += 4.5;
   });
-  const infoHeight = infoEnd - y + 3;
-  box(doc, margin, y, CONTENT_WIDTH, infoHeight);
-  y += infoHeight + 5;
 
-  /* ---------------------------------------------------- description of work */
-  if (quotation.notes) {
-    y = sectionBar(doc, "DESCRIPTION OF WORK", margin, y, CONTENT_WIDTH);
-    const notesEnd = textBlock(doc, quotation.notes, margin + 3, y + 5, {
-      size: FONT.small,
-      color: COLORS.body,
-      maxWidth: CONTENT_WIDTH - 6,
-      lineHeight: 4.2,
-    });
-    const notesHeight = Math.max(notesEnd - y + 3, 12);
-    box(doc, margin, y, CONTENT_WIDTH, notesHeight);
-    y += notesHeight + 5;
-  }
+  const blockHeight = Math.max(26, custBottomY - y + 4, metaY - y + 2);
+  box(doc, leftX, y, half, blockHeight);
+  box(doc, rightX, y, half, blockHeight);
+  y += blockHeight + 4;
 
-  /* ------------------------------------------------------- itemised costs */
-  const detailByRow = new Map<number, string>();
-
+  /* ---------------------------------------------------------- items table */
   autoTable(doc, {
     startY: y,
-    head: [["ITEMISED COSTS", "QTY", `UNIT PRICE (${CURRENCY})`, `AMOUNT (${CURRENCY})`]],
+    margin: { left: margin, right: margin },
+    theme: "plain",
+    head: [["Description", "Dimensions", "Qty", "Rate", "Amount"]],
     body: quotation.items.map((item) => [
-      item.description,
-      formatNumber(Number(item.qty)),
-      formatAmount(Number(item.rate)),
-      formatAmount(Number(item.amount)),
+      itemDetailLine(item),
+      item.width && item.height ? `${item.width} × ${item.height} ft` : "—",
+      formatNumber(item.qty),
+      `${CURRENCY} ${formatNumber(item.rate)}`,
+      `${CURRENCY} ${formatAmount(item.amount)}`,
     ]),
-    theme: "grid",
-    margin: { left: margin, right: margin, bottom: 24 },
     styles: {
       font: "helvetica",
-      fontSize: FONT.small,
-      cellPadding: { top: 2.4, right: 2.5, bottom: 2.4, left: 2.5 },
+      fontSize: 8.5,
+      cellPadding: { top: 3, right: 3, bottom: 3, left: 3 },
+      textColor: COLORS.body,
       lineColor: COLORS.line,
-      lineWidth: 0.25,
-      textColor: COLORS.ink,
+      lineWidth: 0.2,
       valign: "middle",
     },
     headStyles: {
       fillColor: COLORS.bandGrey,
       textColor: COLORS.ink,
       fontStyle: "bold",
-      fontSize: FONT.tiny,
+      fontSize: 8.5,
+      halign: "left",
     },
     columnStyles: {
-      0: { cellWidth: 96 },
-      1: { cellWidth: 18, halign: "right" },
-      2: { cellWidth: 34, halign: "right" },
-      3: { cellWidth: 38, halign: "right" },
-    },
-    didParseCell({ cell, column, section, row }) {
-      if (section !== "body" || column.index !== 0) return;
-      const item = quotation.items[row.index];
-      const detail = item ? itemDetailLine(item) : "";
-      if (!detail) return;
-      detailByRow.set(row.index, detail);
-      cell.styles.cellPadding = { top: 2.4, right: 2.5, bottom: 7, left: 2.5 };
-    },
-    didDrawCell({ cell, column, section, row }) {
-      if (section !== "body" || column.index !== 0) return;
-      const detail = detailByRow.get(row.index);
-      if (!detail) return;
-      text(doc, detail, cell.x + 2.5, cell.y + cell.height - 3, {
-        size: FONT.tiny,
-        color: COLORS.muted,
-      });
+      0: { cellWidth: "auto" },
+      1: { halign: "center", cellWidth: 26 },
+      2: { halign: "right", cellWidth: 16 },
+      3: { halign: "right", cellWidth: 26 },
+      4: { halign: "right", cellWidth: 28 },
     },
   });
 
-  type WithAutoTable = jsPDF & { lastAutoTable?: { finalY: number } };
-  y = (doc as WithAutoTable).lastAutoTable?.finalY ?? y;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  y = (doc as any).lastAutoTable.finalY + 2;
 
-  /* ---------------------------------------------------------------- totals */
-  if (y > BODY_BOTTOM - 55) {
-    doc.addPage();
-    y = PAGE.margin;
-  }
-
-  const totalsWidth = 72;
+  /* --------------------------------------------------------- totals block */
+  const totalsWidth = 70;
   const totalsX = CONTENT_RIGHT - totalsWidth;
-  const noteWidth = CONTENT_WIDTH - totalsWidth;
 
-  const totalRows: [string, string, boolean][] = [
-    ["SUBTOTAL", formatAmount(quotation.subtotal), false],
-    ["GST", formatAmount(quotation.gst_amount), false],
-    ["TOTAL QUOTE", `${CURRENCY} ${formatAmount(quotation.grand_total)}`, true],
+  const totalsRows: [string, string, boolean][] = [
+    ["Subtotal:", `${CURRENCY} ${formatAmount(quotation.subtotal)}`, false],
+    [`GST (${formatNumber(quotation.items[0]?.gst_percent ?? 18)}%):`, `${CURRENCY} ${formatAmount(quotation.gst_amount)}`, false],
+    ["Total:", `${CURRENCY} ${formatAmount(quotation.grand_total)}`, true],
   ];
 
-  totalRows.forEach(([label, value, strong], i) => {
-    const rowY = y + i * 7;
-    box(doc, totalsX, rowY, totalsWidth * 0.52, 7, { fill: strong ? COLORS.bandGrey : undefined });
-    box(doc, totalsX + totalsWidth * 0.52, rowY, totalsWidth * 0.48, 7, {
-      fill: strong ? COLORS.bandGrey : undefined,
-    });
-    text(doc, label, totalsX + 3, rowY + 4.8, {
-      size: FONT.small,
+  totalsRows.forEach(([label, value, strong]) => {
+    text(doc, label, totalsX, y + 4, {
+      size: strong ? 10 : 9,
       style: strong ? "bold" : "normal",
       color: COLORS.ink,
     });
-    text(doc, value, CONTENT_RIGHT - 3, rowY + 4.8, {
-      size: FONT.small,
+    text(doc, value, CONTENT_RIGHT, y + 4, {
+      size: strong ? 10 : 9,
       style: strong ? "bold" : "normal",
       color: COLORS.ink,
       align: "right",
     });
+    y += 5.5;
   });
 
-  const totalsHeight = totalRows.length * 7;
-  box(doc, margin, y, noteWidth, totalsHeight);
-  text(doc, "Thank you for your business!", margin + 4, y + totalsHeight / 2 + 1, {
-    size: FONT.small,
-    style: "italic",
-    color: COLORS.body,
-  });
-  y += totalsHeight + 4;
-
-  y = textBlock(doc, `Amount in words: ${amountInWords(Number(quotation.grand_total))}`, margin, y + 2, {
+  y += 2;
+  const wordsText = `Amount in words: ${amountInWords(quotation.grand_total)}`;
+  text(doc, wordsText, margin, y, {
     size: FONT.tiny,
     style: "italic",
     color: COLORS.muted,
-    maxWidth: CONTENT_WIDTH,
-    lineHeight: 3.8,
   });
-  y += 4;
+  y += 6;
 
-  /* ------------------------------------------------------ terms + bank block */
-  for (const [heading, content] of [
-    ["Bank Details", settings?.bank_details],
-    ["Terms & Conditions", settings?.terms],
-  ] as const) {
-    if (!content) continue;
-    if (y > BODY_BOTTOM - 30) {
-      doc.addPage();
-      y = PAGE.margin;
-    }
-    text(doc, heading, margin, y, { size: FONT.small, style: "bold", color: COLORS.ink });
-    y = textBlock(doc, content, margin, y + 4, {
+  /* ----------------------------------------------- terms and disclaimers */
+  if (settings?.terms) {
+    text(doc, "Terms & Conditions", margin, y, {
+      size: FONT.tiny,
+      style: "bold",
+      color: COLORS.ink,
+    });
+    y += 3.5;
+    y = textBlock(doc, settings.terms, margin, y, {
       size: FONT.tiny,
       color: COLORS.muted,
       maxWidth: CONTENT_WIDTH,
       lineHeight: 3.6,
     });
-    y += 3;
+    y += 4;
   }
 
-  y = textBlock(doc, DISCLAIMER, margin, y + 1, {
+  y = textBlock(doc, DISCLAIMER, margin, y, {
     size: FONT.tiny,
+    style: "italic",
     color: COLORS.muted,
     maxWidth: CONTENT_WIDTH,
     lineHeight: 3.6,
@@ -294,27 +242,42 @@ export function drawQuotation(
   y += 4;
 
   /* -------------------------------------------------- customer acceptance */
-  const acceptHeight = 15;
-  const acceptBlock = acceptHeight + 4.5; // heading + boxes
+  const acceptHeight = 16;
+  const acceptBlock = acceptHeight + 4.5;
 
   if (y + acceptBlock > BODY_BOTTOM) {
     doc.addPage();
     y = PAGE.margin;
   }
-  // Sit the signature strip on the bottom rule, the way a printed quote does,
-  // rather than floating it directly under the terms.
   y = Math.max(y, BODY_BOTTOM - acceptBlock);
 
-  text(doc, "Customer Acceptance", margin, y, {
+  text(doc, "Customer Acceptance & Sign Off", margin, y, {
     size: FONT.small,
     style: "bold",
     color: COLORS.ink,
   });
+
+  if (stamp) {
+    try {
+      doc.addImage(stamp.dataUrl, stamp.format, CONTENT_RIGHT - 65, y - 10, 18, 18);
+    } catch {
+      // Stamp fallback
+    }
+  }
+
+  if (signature) {
+    try {
+      doc.addImage(signature.dataUrl, signature.format, CONTENT_RIGHT - 40, y - 10, 32, 12);
+    } catch {
+      // Signature fallback
+    }
+  }
+
   y += 2.5;
 
   const cols = [CONTENT_WIDTH * 0.4, CONTENT_WIDTH * 0.35, CONTENT_WIDTH * 0.25];
   let colX = margin;
-  ["Signature", "Printed Name", "Date"].forEach((label, i) => {
+  ["Customer Signature", "Printed Name", "Date"].forEach((label, i) => {
     box(doc, colX, y, cols[i], acceptHeight);
     text(doc, label, colX + 2.5, y + acceptHeight - 2.5, {
       size: FONT.tiny,

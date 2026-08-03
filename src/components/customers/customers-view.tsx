@@ -2,7 +2,14 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { MoreHorizontal, Pencil, Plus, Trash2, Users } from "lucide-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import {
+  Add01Icon,
+  UserGroupIcon,
+  MoreHorizontalIcon,
+  PencilEdit01Icon,
+  Delete02Icon,
+} from "@hugeicons/core-free-icons";
 import { toast } from "sonner";
 
 import { PageHeader } from "@/components/shared/page-header";
@@ -79,7 +86,7 @@ export function CustomersView() {
     <>
       <PageHeader title="Customers" description="Your address book for quotations and invoices.">
         <Button onClick={openNew}>
-          <Plus />
+          <HugeiconsIcon icon={Add01Icon} />
           New customer
         </Button>
       </PageHeader>
@@ -103,7 +110,7 @@ export function CustomersView() {
             <TableSkeleton rows={6} cols={5} />
           ) : !customers.length ? (
             <EmptyState
-              icon={Users}
+              icon={UserGroupIcon}
               title={search ? "No matching customers" : "No customers yet"}
               description={
                 search
@@ -113,7 +120,7 @@ export function CustomersView() {
               action={
                 search ? null : (
                   <Button size="sm" onClick={openNew}>
-                    <Plus />
+                    <HugeiconsIcon icon={Add01Icon} />
                     New customer
                   </Button>
                 )
@@ -173,7 +180,7 @@ export function CustomersView() {
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" size="icon" aria-label="Customer actions">
-                      <MoreHorizontal />
+                      <HugeiconsIcon icon={MoreHorizontalIcon} />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
@@ -181,11 +188,11 @@ export function CustomersView() {
                       <Link href={`/customers/${customer.id}`}>View history</Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem onSelect={() => openEdit(customer)}>
-                      <Pencil />
+                      <HugeiconsIcon icon={PencilEdit01Icon} />
                       Edit
                     </DropdownMenuItem>
                     <DropdownMenuItem destructive onSelect={() => setDeleting(customer)}>
-                      <Trash2 />
+                      <HugeiconsIcon icon={Delete02Icon} />
                       Delete
                     </DropdownMenuItem>
                   </DropdownMenuContent>

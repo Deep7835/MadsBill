@@ -1,7 +1,8 @@
 "use client";
 
-import { Trash2 } from "lucide-react";
-import type { UseFormRegister, FieldErrors } from "react-hook-form";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Delete02Icon } from "@hugeicons/core-free-icons";
+import type { UseFormRegister, FieldErrors, UseFormSetValue } from "react-hook-form";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,6 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+import { UnitConverter } from "@/components/calculator/unit-converter";
 import { calcLine } from "@/lib/calc";
 import { formatCurrency, formatNumber } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -24,6 +26,7 @@ import type { QuotationFormValues } from "@/lib/validations/quotation";
 interface LineItemRowProps {
   index: number;
   register: UseFormRegister<QuotationFormValues>;
+  setValue?: UseFormSetValue<QuotationFormValues>;
   errors?: FieldErrors<QuotationFormValues>["items"];
   products: Product[];
   value: NonNullable<QuotationFormValues["items"]>[number];
@@ -35,6 +38,7 @@ interface LineItemRowProps {
 export function LineItemRow({
   index,
   register,
+  setValue,
   errors,
   products,
   value,
@@ -65,13 +69,30 @@ export function LineItemRow({
   const fieldError = (message?: string) =>
     message ? <p className="mt-1 text-xs font-medium text-destructive">{message}</p> : null;
 
+  function handleApplyConvertedUnit(widthFt: number, heightFt: number) {
+    if (setValue) {
+      setValue(`items.${index}.width`, widthFt, { shouldValidate: true, shouldDirty: true });
+      setValue(`items.${index}.height`, heightFt, { shouldValidate: true, shouldDirty: true });
+    }
+  }
+
   return (
     <div className="rounded-xl border border-border bg-card p-3 sm:p-4">
       {/* Index and remove sit on their own row so the fields get full width. */}
       <div className="mb-3 flex items-center justify-between gap-2">
-        <span className="flex size-6 shrink-0 items-center justify-center rounded-md bg-muted text-xs font-semibold text-muted-foreground">
-          {index + 1}
-        </span>
+        <div className="flex items-center gap-2">
+          <span className="flex size-6 shrink-0 items-center justify-center rounded-md bg-muted text-xs font-semibold text-muted-foreground">
+            {index + 1}
+          </span>
+          {isSqft ? (
+            <UnitConverter
+              onApply={handleApplyConvertedUnit}
+              triggerLabel="Convert CM / Inches"
+              variant="outline"
+              size="sm"
+            />
+          ) : null}
+        </div>
         <Button
           type="button"
           variant="ghost"
@@ -81,7 +102,7 @@ export function LineItemRow({
           disabled={!removable}
           aria-label={`Remove line ${index + 1}`}
         >
-          <Trash2 />
+          <HugeiconsIcon icon={Delete02Icon} />
         </Button>
       </div>
 

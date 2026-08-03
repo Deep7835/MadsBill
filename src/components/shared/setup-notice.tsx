@@ -1,4 +1,5 @@
-import { AlertTriangle } from "lucide-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Alert01Icon } from "@hugeicons/core-free-icons";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 /** Shown when the Supabase env vars are missing, instead of a network error. */
@@ -8,7 +9,7 @@ export function SetupNotice() {
       <Card className="w-full max-w-lg">
         <CardHeader>
           <span className="flex size-10 items-center justify-center rounded-lg bg-[var(--warning)]/15 text-[var(--warning)]">
-            <AlertTriangle className="size-5" />
+            <HugeiconsIcon icon={Alert01Icon} className="size-5" />
           </span>
           <CardTitle className="mt-2">Connect Supabase to continue</CardTitle>
           <CardDescription>

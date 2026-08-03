@@ -44,6 +44,20 @@ const HIDE_CLASS: Record<NonNullable<DataColumn<unknown>["hideBelow"]>, string> 
   lg: "hidden lg:table-cell",
 };
 
+function isLinkElement(node: React.ReactNode): boolean {
+  if (!React.isValidElement(node)) return false;
+  if (node.type === Link || node.type === "a") return true;
+  const props = node.props as { href?: string; children?: React.ReactNode };
+  if (props?.href) return true;
+  if (props?.children) {
+    if (Array.isArray(props.children)) {
+      return props.children.some(isLinkElement);
+    }
+    return isLinkElement(props.children);
+  }
+  return false;
+}
+
 /**
  * One data set, two presentations: a table from `md` up, stacked full-width
  * cards below it. Tables cannot be made to work on a 360px screen without
@@ -62,9 +76,12 @@ export function DataList<T>({ rows, columns, rowKey, actions, href }: DataListPr
       <ul className="divide-y divide-border md:hidden">
         {rows.map((row) => {
           const link = href?.(row);
+          const primaryCellNode = primary.cell(row);
+          const hasLinkInCell = isLinkElement(primaryCellNode);
+
           const heading = (
             <span className="block truncate text-sm font-semibold text-foreground">
-              {primary.cell(row)}
+              {primaryCellNode}
             </span>
           );
 
@@ -72,7 +89,7 @@ export function DataList<T>({ rows, columns, rowKey, actions, href }: DataListPr
             <li key={rowKey(row)} className="p-4">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0 flex-1">
-                  {link ? (
+                  {link && !hasLinkInCell ? (
                     <Link href={link} className="block min-w-0">
                       {heading}
                     </Link>

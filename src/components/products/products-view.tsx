@@ -1,7 +1,15 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { MoreHorizontal, Package, Pencil, Plus, Trash2 } from "lucide-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import {
+  Clock01Icon,
+  MoreHorizontalIcon,
+  PackageIcon,
+  PencilEdit01Icon,
+  Add01Icon,
+  Delete02Icon,
+} from "@hugeicons/core-free-icons";
 import { toast } from "sonner";
 
 import { PageHeader } from "@/components/shared/page-header";
@@ -10,6 +18,7 @@ import { EmptyState } from "@/components/shared/empty-state";
 import { TableSkeleton } from "@/components/shared/table-skeleton";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { ProductFormDialog } from "@/components/products/product-form-dialog";
+import { RateSlabHistoryDialog } from "@/components/products/rate-slab-history-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -32,6 +41,8 @@ export function ProductsView() {
 
   const [search, setSearch] = useState("");
   const [formOpen, setFormOpen] = useState(false);
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const [selectedProductId, setSelectedProductId] = useState<string | undefined>();
   const [editing, setEditing] = useState<Product | null>(null);
   const [deleting, setDeleting] = useState<Product | null>(null);
 
@@ -47,6 +58,11 @@ export function ProductsView() {
   function openNew() {
     setEditing(null);
     setFormOpen(true);
+  }
+
+  function openHistory(productId?: string) {
+    setSelectedProductId(productId);
+    setHistoryOpen(true);
   }
 
   async function handleDelete() {
@@ -66,11 +82,17 @@ export function ProductsView() {
 
   return (
     <>
-      <PageHeader title="Products" description="Rate card used by the quotation builder.">
-        <Button onClick={openNew}>
-          <Plus />
-          New product
-        </Button>
+      <PageHeader title="Products & Rate Slabs" description="Manage flex/print items, volume discounts, and rate card history.">
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => openHistory()}>
+            <HugeiconsIcon icon={Clock01Icon} className="h-4 w-4 mr-1 text-primary" />
+            Rate History
+          </Button>
+          <Button onClick={openNew}>
+            <HugeiconsIcon icon={Add01Icon} />
+            New Product
+          </Button>
+        </div>
       </PageHeader>
 
       <Card>
@@ -88,7 +110,7 @@ export function ProductsView() {
             <TableSkeleton rows={7} cols={5} />
           ) : !products.length ? (
             <EmptyState
-              icon={Package}
+              icon={PackageIcon}
               title={search ? "No matching products" : "No products yet"}
               description={
                 search ? "Try a different name or category." : "Add the items you print and sell."
@@ -96,7 +118,7 @@ export function ProductsView() {
               action={
                 search ? null : (
                   <Button size="sm" onClick={openNew}>
-                    <Plus />
+                    <HugeiconsIcon icon={Add01Icon} />
                     New product
                   </Button>
                 )
@@ -193,7 +215,7 @@ export function ProductsView() {
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" size="icon" aria-label="Product actions">
-                      <MoreHorizontal />
+                      <HugeiconsIcon icon={MoreHorizontalIcon} />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
@@ -203,11 +225,15 @@ export function ProductsView() {
                         setFormOpen(true);
                       }}
                     >
-                      <Pencil />
-                      Edit
+                      <HugeiconsIcon icon={PencilEdit01Icon} />
+                      Edit Rate Slabs
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onSelect={() => openHistory(product.id)}>
+                      <HugeiconsIcon icon={Clock01Icon} />
+                      View Slab History
                     </DropdownMenuItem>
                     <DropdownMenuItem destructive onSelect={() => setDeleting(product)}>
-                      <Trash2 />
+                      <HugeiconsIcon icon={Delete02Icon} />
                       Delete
                     </DropdownMenuItem>
                   </DropdownMenuContent>
@@ -223,6 +249,12 @@ export function ProductsView() {
         onOpenChange={setFormOpen}
         product={editing}
         onSaved={() => void refresh()}
+      />
+
+      <RateSlabHistoryDialog
+        open={historyOpen}
+        onOpenChange={setHistoryOpen}
+        productId={selectedProductId}
       />
 
       <ConfirmDialog

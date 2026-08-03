@@ -1,4 +1,5 @@
-import type { LucideIcon } from "lucide-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import type { IconElement } from "@/components/ui/icon";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
@@ -6,7 +7,7 @@ interface StatCardProps {
   label: string;
   value: string;
   hint?: string;
-  icon: LucideIcon;
+  icon: IconElement | React.ComponentType<{ className?: string }>;
   tone?: "default" | "success" | "warning";
 }
 
@@ -17,6 +18,8 @@ const TONE: Record<NonNullable<StatCardProps["tone"]>, string> = {
 };
 
 export function StatCard({ label, value, hint, icon: Icon, tone = "default" }: StatCardProps) {
+  const isIconObject = typeof Icon === "object" && Icon !== null;
+
   return (
     <Card className="transition-shadow hover:shadow-[0_2px_4px_rgb(16_24_40/0.05),0_16px_40px_-18px_rgb(16_24_40/0.22)]">
       <CardContent className="flex items-start justify-between gap-3 p-5">
@@ -33,7 +36,12 @@ export function StatCard({ label, value, hint, icon: Icon, tone = "default" }: S
         <span
           className={cn("flex size-10 shrink-0 items-center justify-center rounded-2xl", TONE[tone])}
         >
-          <Icon className="size-[18px]" />
+          {isIconObject ? (
+            <HugeiconsIcon icon={Icon as IconElement} className="size-[18px]" />
+          ) : (
+            /* @ts-ignore fallback */
+            <Icon className="size-[18px]" />
+          )}
         </span>
       </CardContent>
     </Card>
