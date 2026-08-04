@@ -2,31 +2,22 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import {
   Menu,
   Search,
   Plus,
   Bell,
-  User,
   ChevronDown,
   LogOut,
   Command,
   Sun,
   Moon,
-  Sparkles,
   Settings,
 } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -35,7 +26,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { SidebarBrand, SidebarFooter, SidebarNav } from "@/components/layout/sidebar";
+import { MobileNavDrawer } from "@/components/layout/sidebar";
+import { NAV_ITEMS } from "@/components/layout/nav-items";
 import { CommandPalette } from "@/components/ui/command-palette";
 import { createClient } from "@/lib/supabase/client";
 
@@ -44,12 +36,22 @@ interface TopbarProps {
   userName: string;
 }
 
+/** Longest matching nav href wins, so /quotations/new resolves to Quotations. */
+function useSectionLabel() {
+  const pathname = usePathname();
+
+  return (
+    NAV_ITEMS.filter((item) => pathname === item.href || pathname.startsWith(`${item.href}/`))
+      .sort((a, b) => b.href.length - a.href.length)[0]?.label ?? "Dashboard"
+  );
+}
+
 export function Topbar({ userEmail, userName }: TopbarProps) {
-  const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [cmdOpen, setCmdOpen] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const sectionLabel = useSectionLabel();
 
   useEffect(() => {
     setIsDarkMode(document.documentElement.classList.contains("dark"));
@@ -80,26 +82,34 @@ export function Topbar({ userEmail, userName }: TopbarProps) {
 
   return (
     <>
-      <header className="flex items-center gap-3 py-4">
+      <header className="flex items-center gap-2 py-3 sm:gap-3 sm:py-4">
         {/* Mobile menu trigger */}
-        <Dialog open={mobileOpen} onOpenChange={setMobileOpen}>
-          <DialogTrigger asChild>
-            <Button variant="outline" size="icon" className="rounded-xl lg:hidden" aria-label="Open navigation menu">
-              <Menu className="size-5 text-slate-700 dark:text-slate-200" />
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-xs gap-0 p-0">
-            <DialogHeader className="sr-only">
-              <DialogTitle>Navigation</DialogTitle>
-            </DialogHeader>
-            <SidebarBrand />
-            <SidebarNav onNavigate={() => setMobileOpen(false)} />
-            <SidebarFooter />
-          </DialogContent>
-        </Dialog>
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={() => setMobileOpen(true)}
+          className="size-10 shrink-0 rounded-[5px] lg:hidden"
+          aria-label="Open navigation menu"
+        >
+          <Menu className="size-5 text-slate-700 dark:text-slate-200" />
+        </Button>
 
-        {/* Global Search Bar with Ctrl+K trigger */}
-        <div className="relative flex min-w-0 flex-1 sm:max-w-md">
+        {/* Current section — the sidebar is hidden below lg, so this is the only cue */}
+        <span className="min-w-0 flex-1 truncate text-sm font-bold text-slate-800 lg:hidden dark:text-slate-200">
+          {sectionLabel}
+        </span>
+
+        {/* Search: full field from sm up, icon button on phones */}
+        <button
+          type="button"
+          onClick={() => setCmdOpen(true)}
+          aria-label="Search"
+          className="flex size-10 shrink-0 items-center justify-center rounded-[5px] border border-slate-200 bg-white text-slate-500 shadow-xs transition-colors hover:bg-slate-50 sm:hidden dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
+        >
+          <Search className="size-4" />
+        </button>
+
+        <div className="relative hidden min-w-0 flex-1 sm:flex sm:max-w-md">
           <button
             type="button"
             onClick={() => setCmdOpen(true)}
@@ -109,16 +119,29 @@ export function Topbar({ userEmail, userName }: TopbarProps) {
               <Search className="size-4 text-slate-400" />
               <span className="truncate font-medium text-slate-400">Search commands, pages, invoices...</span>
             </div>
-            <kbd className="hidden items-center gap-0.5 rounded-[5px] bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-500 sm:inline-flex dark:bg-slate-800 dark:text-slate-400">
+            <kbd className="hidden items-center gap-0.5 rounded-[5px] bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-500 md:inline-flex dark:bg-slate-800 dark:text-slate-400">
               <Command className="size-3" /> K
             </kbd>
           </button>
         </div>
 
         {/* Header Right Actions */}
-        <div className="ml-auto flex items-center gap-2 sm:gap-3">
-          {/* Quick Action Button */}
-          <Button asChild className="hidden rounded-[5px] bg-indigo-600 font-semibold text-white shadow-xs hover:bg-indigo-700 sm:inline-flex">
+        <div className="ml-auto flex shrink-0 items-center gap-2 sm:gap-3">
+          {/* Quick Action Button — icon only on phones */}
+          <Button
+            asChild
+            size="icon"
+            className="size-10 rounded-[5px] bg-indigo-600 text-white shadow-xs hover:bg-indigo-700 sm:hidden"
+          >
+            <Link href="/quotations/new" aria-label="New quotation">
+              <Plus className="size-4" />
+            </Link>
+          </Button>
+
+          <Button
+            asChild
+            className="hidden rounded-[5px] bg-indigo-600 font-semibold text-white shadow-xs hover:bg-indigo-700 sm:inline-flex"
+          >
             <Link href="/quotations/new">
               <Plus className="mr-1.5 size-4" />
               New Quotation
@@ -130,7 +153,7 @@ export function Topbar({ userEmail, userName }: TopbarProps) {
             type="button"
             onClick={toggleTheme}
             aria-label="Toggle dark mode"
-            className="flex size-10 items-center justify-center rounded-[5px] border border-slate-200 bg-white text-slate-600 shadow-xs transition-colors hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
+            className="hidden size-10 items-center justify-center rounded-[5px] border border-slate-200 bg-white text-slate-600 shadow-xs transition-colors hover:bg-slate-50 sm:flex dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
           >
             {isDarkMode ? <Sun className="size-4 text-amber-400" /> : <Moon className="size-4" />}
           </button>
@@ -151,20 +174,20 @@ export function Topbar({ userEmail, userName }: TopbarProps) {
               <button
                 type="button"
                 aria-label="Account menu"
-                className="flex h-10 shrink-0 items-center gap-2.5 rounded-[5px] border border-slate-200 bg-white px-2.5 shadow-xs transition-colors hover:border-indigo-300 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-indigo-800"
+                className="flex h-10 shrink-0 items-center gap-2.5 rounded-[5px] border border-slate-200 bg-white px-2 shadow-xs transition-colors hover:border-indigo-300 sm:px-2.5 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-indigo-800"
               >
                 <span className="flex size-7 items-center justify-center rounded-[5px] bg-indigo-100 text-xs font-bold text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
                   {initial}
                 </span>
-                <span className="hidden max-w-28 truncate text-xs font-bold text-slate-800 sm:block dark:text-slate-200">
+                <span className="hidden max-w-28 truncate text-xs font-bold text-slate-800 lg:block dark:text-slate-200">
                   {userName}
                 </span>
-                <ChevronDown className="hidden size-3.5 text-slate-400 sm:block" />
+                <ChevronDown className="hidden size-3.5 text-slate-400 lg:block" />
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56 rounded-[5px] p-1.5 shadow-xl">
               <DropdownMenuLabel className="flex items-center gap-2.5 p-2 font-normal">
-                <div className="flex size-8 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 font-bold dark:bg-indigo-950 dark:text-indigo-400">
+                <div className="flex size-8 items-center justify-center rounded-xl bg-indigo-50 font-bold text-indigo-600 dark:bg-indigo-950 dark:text-indigo-400">
                   {initial}
                 </div>
                 <div className="min-w-0 flex-1">
@@ -173,6 +196,14 @@ export function Topbar({ userEmail, userName }: TopbarProps) {
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
+              <DropdownMenuItem onSelect={toggleTheme} className="rounded-xl text-xs font-medium sm:hidden">
+                {isDarkMode ? (
+                  <Sun className="mr-2 size-4 text-amber-400" />
+                ) : (
+                  <Moon className="mr-2 size-4 text-slate-500" />
+                )}
+                {isDarkMode ? "Light mode" : "Dark mode"}
+              </DropdownMenuItem>
               <DropdownMenuItem asChild className="rounded-xl text-xs font-medium">
                 <Link href="/settings" className="flex items-center gap-2">
                   <Settings className="size-4 text-slate-500" />
@@ -192,6 +223,9 @@ export function Topbar({ userEmail, userName }: TopbarProps) {
           </DropdownMenu>
         </div>
       </header>
+
+      {/* Left-slide navigation drawer (mobile) */}
+      <MobileNavDrawer open={mobileOpen} onOpenChange={setMobileOpen} />
 
       {/* Global Command Palette */}
       <CommandPalette open={cmdOpen} onOpenChange={setCmdOpen} />

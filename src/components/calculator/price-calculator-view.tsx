@@ -221,13 +221,13 @@ export function PriceCalculatorView() {
 
                     <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-12">
                       <div className="lg:col-span-5">
-                        <Label className="text-xs text-muted-foreground">Product (optional)</Label>
+                        <Label className="text-xs text-muted-foreground">Product</Label>
                         <Select
                           value={row.productId ?? ""}
                           onValueChange={(id) => pickProduct(row.key, id)}
                         >
                           <SelectTrigger className="mt-1">
-                            <SelectValue placeholder="Custom rate" />
+                            <SelectValue placeholder="Select product" />
                           </SelectTrigger>
                           <SelectContent>
                             {Object.entries(grouped).map(([category, items]) => (
@@ -302,39 +302,32 @@ export function PriceCalculatorView() {
                         />
                       </div>
 
+                      {/* Read-only: the product master owns rate and GST. */}
                       <div className={isSqft ? "lg:col-span-2" : "lg:col-span-4"}>
                         <Label className="text-xs text-muted-foreground">
                           Rate {isSqft ? "/ sq.ft." : "/ piece"}
                         </Label>
-                        <Input
-                          className="mt-1"
-                          type="number"
-                          step="0.01"
-                          min="0"
-                          inputMode="decimal"
-                          placeholder="0.00"
-                          value={row.rate}
-                          onChange={(e) => update(row.key, { rate: e.target.value })}
-                        />
+                        <div
+                          title="Set in Products & Rates"
+                          className="mt-1 flex h-9 items-center rounded-lg border border-dashed border-border bg-muted/50 px-3 text-sm font-medium tabular-nums"
+                        >
+                          {formatCurrency(result.rate)}
+                        </div>
                         {result.discount > 0 ? (
                           <p className="mt-1 text-xs font-medium text-[var(--success)]">
-                            {result.slabThreshold}+ sq.ft. → {formatCurrency(result.rate)}
+                            {result.slabThreshold}+ sq.ft. slab applied
                           </p>
                         ) : null}
                       </div>
 
                       <div className={isSqft ? "lg:col-span-2" : "lg:col-span-4"}>
                         <Label className="text-xs text-muted-foreground">GST %</Label>
-                        <Input
-                          className="mt-1"
-                          type="number"
-                          step="0.01"
-                          min="0"
-                          max="100"
-                          inputMode="decimal"
-                          value={row.gstPercent}
-                          onChange={(e) => update(row.key, { gstPercent: e.target.value })}
-                        />
+                        <div
+                          title="Set in Products & Rates"
+                          className="mt-1 flex h-9 items-center rounded-lg border border-dashed border-border bg-muted/50 px-3 text-sm font-medium tabular-nums"
+                        >
+                          {formatNumber(Number(row.gstPercent || 0))}%
+                        </div>
                       </div>
                     </div>
 

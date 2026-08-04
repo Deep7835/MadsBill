@@ -18,18 +18,9 @@ import {
   Wallet,
   Ruler,
 } from "lucide-react";
-import {
-  ResponsiveContainer,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip,
-  CartesianGrid,
-} from "recharts";
-
 import { PageHeader } from "@/components/shared/page-header";
 import { StatCard } from "@/components/dashboard/stat-card";
+import { ActivityHeatmap } from "@/components/dashboard/activity-heatmap";
 import { DateFilter } from "@/components/dashboard/date-filter";
 import { CardGridSkeleton } from "@/components/shared/table-skeleton";
 import { EmptyState } from "@/components/shared/empty-state";
@@ -56,16 +47,6 @@ const QUICK_ACTIONS = [
   { href: "/customers", label: "Add Customer", icon: Users },
   { href: "/products", label: "Rate Slabs & Products", icon: Package },
   { href: "/quotations?status=invoice", label: "View Invoices", icon: Receipt },
-];
-
-const MOCK_REVENUE_CHART = [
-  { month: "Jan", revenue: 45000, orders: 18 },
-  { month: "Feb", revenue: 52000, orders: 22 },
-  { month: "Mar", revenue: 48000, orders: 20 },
-  { month: "Apr", revenue: 61000, orders: 28 },
-  { month: "May", revenue: 55000, orders: 25 },
-  { month: "Jun", revenue: 72000, orders: 34 },
-  { month: "Jul", revenue: 84000, orders: 40 },
 ];
 
 export function DashboardView() {
@@ -182,9 +163,9 @@ export function DashboardView() {
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
-                    Revenue &amp; Sales Trends
+                    Billing Activity
                   </h3>
-                  <p className="text-xs text-slate-500">Monthly billing performance over recent periods</p>
+                  <p className="text-xs text-slate-500">Invoiced revenue per day over the last year</p>
                 </div>
                 <div className="flex items-center gap-2 text-xs font-semibold text-slate-500">
                   <span className="inline-flex items-center gap-1.5 rounded-[5px] bg-indigo-50 px-2.5 py-1 text-[11px] font-bold text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
@@ -193,56 +174,8 @@ export function DashboardView() {
                 </div>
               </div>
 
-              <div className="mt-6 h-64 w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={MOCK_REVENUE_CHART} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                    <defs>
-                      <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#4F46E5" stopOpacity={0.95} />
-                        <stop offset="100%" stopColor="#6366F1" stopOpacity={0.7} />
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" opacity={0.6} />
-                    <XAxis
-                      dataKey="month"
-                      tick={{ fontSize: 11, fill: "#64748B", fontWeight: 500 }}
-                      axisLine={false}
-                      tickLine={false}
-                    />
-                    <YAxis
-                      tick={{ fontSize: 11, fill: "#64748B", fontWeight: 500 }}
-                      axisLine={false}
-                      tickLine={false}
-                      tickFormatter={(val) => `₹${val >= 1000 ? `${(val / 1000).toFixed(0)}k` : val}`}
-                    />
-                    <Tooltip
-                      cursor={{ fill: "rgba(79, 70, 229, 0.06)", radius: 5 }}
-                      content={({ active, payload }) => {
-                        if (active && payload && payload.length) {
-                          const data = payload[0].payload;
-                          return (
-                            <div className="rounded-[5px] border border-slate-700 bg-slate-900 p-3 text-white shadow-xl">
-                              <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">{data.month}</p>
-                              <p className="mt-1 text-base font-extrabold text-white">
-                                {formatCurrency(data.revenue)}
-                              </p>
-                              <p className="mt-0.5 text-xs text-indigo-300 font-medium">
-                                {data.orders} orders processed
-                              </p>
-                            </div>
-                          );
-                        }
-                        return null;
-                      }}
-                    />
-                    <Bar
-                      dataKey="revenue"
-                      fill="url(#barGradient)"
-                      radius={[6, 6, 0, 0]}
-                      barSize={38}
-                    />
-                  </BarChart>
-                </ResponsiveContainer>
+              <div className="mt-6">
+                <ActivityHeatmap activity={data?.activity ?? []} />
               </div>
             </div>
 

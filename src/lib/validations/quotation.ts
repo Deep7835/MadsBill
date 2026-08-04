@@ -14,6 +14,17 @@ export const quotationItemSchema = z
     gst_percent: numericField("GST %", { max: 100 }),
   })
   .superRefine((item, ctx) => {
+    // Rates are owned by the product master. A line with no product has no
+    // price source — except legacy rows saved before that rule existed, which
+    // already carry a rate and must stay editable.
+    if (!item.product_id && item.rate <= 0) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["product_id"],
+        message: "Select a product — pricing comes from Products & Rates",
+      });
+    }
+
     if (item.rate_type !== "sqft") return;
     if (!item.width || item.width <= 0) {
       ctx.addIssue({ code: "custom", path: ["width"], message: "Width is required" });

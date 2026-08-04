@@ -390,6 +390,15 @@ export interface DashboardData {
   deliveredCount: number;
   pendingOrdersCount: number;
   recent: QuotationWithCustomer[];
+  /** Invoiced revenue per calendar day, for the activity heatmap. */
+  activity: ActivityDay[];
+}
+
+export interface ActivityDay {
+  /** YYYY-MM-DD, as stored by Postgres. */
+  date: string;
+  total: number;
+  count: number;
 }
 
 export async function fetchDashboard(): Promise<DashboardData> {
@@ -419,6 +428,15 @@ export async function fetchDashboard(): Promise<DashboardData> {
   >[];
 
   const invoices = rows.filter((r) => r.status === "invoice");
+
+  const byDate = new Map<string, ActivityDay>();
+  for (const invoice of invoices) {
+    if (!invoice.date) continue;
+    const day = byDate.get(invoice.date) ?? { date: invoice.date, total: 0, count: 0 };
+    day.total += Number(invoice.grand_total ?? 0);
+    day.count += 1;
+    byDate.set(invoice.date, day);
+  }
   const todaySales = invoices
     .filter((r) => r.date === todayStr)
     .reduce((sum, r) => sum + Number(r.grand_total ?? 0), 0);
@@ -440,5 +458,6 @@ export async function fetchDashboard(): Promise<DashboardData> {
     deliveredCount: invoices.filter((r) => r.payment_status === "paid").length,
     pendingOrdersCount: invoices.filter((r) => r.payment_status !== "paid").length,
     recent: (recentRes.data ?? []) as unknown as QuotationWithCustomer[],
+    activity: [...byDate.values()],
   };
 }

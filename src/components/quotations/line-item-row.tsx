@@ -131,6 +131,7 @@ export function LineItemRow({
                 ))}
               </SelectContent>
             </Select>
+            {fieldError(itemErrors?.product_id?.message)}
           </div>
 
           {/* Description */}
@@ -197,40 +198,32 @@ export function LineItemRow({
             {fieldError(itemErrors?.qty?.message)}
           </div>
 
+          {/* Rate and GST are read-only: both are owned by Products & Rates. */}
           <div className={cn(isSqft ? "lg:col-span-2" : "lg:col-span-3")}>
             <Label className="text-xs text-muted-foreground">
               Rate {isSqft ? "/ sq.ft." : "/ piece"}
             </Label>
-            <Input
-              className="mt-1"
-              type="number"
-              step="0.01"
-              min="0"
-              inputMode="decimal"
-              aria-invalid={!!itemErrors?.rate}
-              {...register(`items.${index}.rate` as const)}
-            />
-            {fieldError(itemErrors?.rate?.message)}
+            <div
+              title="Set in Products & Rates"
+              className="mt-1 flex h-9 items-center rounded-lg border border-dashed border-border bg-muted/50 px-3 text-sm font-medium tabular-nums"
+            >
+              {formatCurrency(rate)}
+            </div>
             {discount > 0 ? (
               <p className="mt-1 text-xs font-medium text-[var(--success)]">
-                {slabThreshold}+ sq.ft. → {formatCurrency(rate)}
+                {slabThreshold}+ sq.ft. slab applied
               </p>
             ) : null}
           </div>
 
           <div className={cn(isSqft ? "lg:col-span-2" : "lg:col-span-3")}>
             <Label className="text-xs text-muted-foreground">GST %</Label>
-            <Input
-              className="mt-1"
-              type="number"
-              step="0.01"
-              min="0"
-              max="100"
-              inputMode="decimal"
-              aria-invalid={!!itemErrors?.gst_percent}
-              {...register(`items.${index}.gst_percent` as const)}
-            />
-            {fieldError(itemErrors?.gst_percent?.message)}
+            <div
+              title="Set in Products & Rates"
+              className="mt-1 flex h-9 items-center rounded-lg border border-dashed border-border bg-muted/50 px-3 text-sm font-medium tabular-nums"
+            >
+              {formatNumber(Number(value?.gst_percent ?? 0))}%
+            </div>
           </div>
 
           <div className={cn("flex flex-col justify-end", isSqft ? "lg:col-span-2" : "lg:col-span-3")}>
@@ -240,6 +233,17 @@ export function LineItemRow({
             </div>
           </div>
         </div>
+
+        <p className="mt-3 text-xs text-muted-foreground">
+          {product ? (
+            <>
+              Priced from <span className="font-medium text-foreground">{product.name}</span> — edit the
+              rate in Products &amp; Rates.
+            </>
+          ) : (
+            <>Select a product to price this line. Rates are managed in Products &amp; Rates.</>
+          )}
+        </p>
       </div>
     </div>
   );

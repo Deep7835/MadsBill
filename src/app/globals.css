@@ -198,6 +198,55 @@
   }
 }
 
+/* Left-anchored nav drawer. Radix waits on animationend before unmounting, so
+   the exit states must be keyframes rather than transitions. */
+@keyframes nav-drawer-in {
+  from {
+    transform: translateX(-100%);
+  }
+}
+
+@keyframes nav-drawer-out {
+  to {
+    transform: translateX(-100%);
+  }
+}
+
+@keyframes nav-scrim-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes nav-scrim-out {
+  to {
+    opacity: 0;
+  }
+}
+
+.nav-drawer[data-state="open"] {
+  animation: nav-drawer-in 260ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.nav-drawer[data-state="closed"] {
+  animation: nav-drawer-out 200ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.nav-scrim[data-state="open"] {
+  animation: nav-scrim-in 260ms ease-out;
+}
+
+.nav-scrim[data-state="closed"] {
+  animation: nav-scrim-out 200ms ease-in;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nav-drawer[data-state],
+  .nav-scrim[data-state] {
+    animation-duration: 1ms;
+  }
+}
+
 @media print {
   .no-print {
     display: none !important;
