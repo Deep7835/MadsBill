@@ -19,6 +19,7 @@ export function DocumentPreview({
   quotation: QuotationFull;
   settings: Settings | null;
 }) {
+  const hsn = settings?.default_hsn?.trim() || "—";
   const isInvoice = quotation.status === "invoice";
   const customer = quotation.customer;
 
@@ -102,6 +103,7 @@ export function DocumentPreview({
               </span>
             </div>
             <dl className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1.5 text-xs">
+              <Field label="HSN/SAC">{hsn}</Field>
               {item.rate_type === "sqft" ? (
                 <>
                   <Field label="Size">
@@ -124,6 +126,7 @@ export function DocumentPreview({
             <TableRow className="bg-muted/60">
               <TableHead className="w-10">#</TableHead>
               <TableHead>Description</TableHead>
+              <TableHead className="text-center">HSN/SAC</TableHead>
               <TableHead className="hidden text-center sm:table-cell">Size</TableHead>
               <TableHead className="hidden text-right sm:table-cell">Area</TableHead>
               <TableHead className="text-right">Qty</TableHead>
@@ -137,6 +140,7 @@ export function DocumentPreview({
               <TableRow key={item.id}>
                 <TableCell className="text-muted-foreground">{index + 1}</TableCell>
                 <TableCell className="font-medium">{item.description}</TableCell>
+                <TableCell className="text-center text-muted-foreground">{hsn}</TableCell>
                 <TableCell className="hidden whitespace-nowrap text-center text-muted-foreground sm:table-cell">
                   {item.rate_type === "sqft"
                     ? `${formatNumber(Number(item.width ?? 0))} × ${formatNumber(Number(item.height ?? 0))} ft`
