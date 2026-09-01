@@ -14,6 +14,12 @@ export const productSchema = z
     unit: z.string().trim().min(1, "Unit is required").max(20),
     default_rate: numericField("rate", { max: 9_999_999 }),
     gst_percent: numericField("GST %", { max: 100 }),
+    hsn_code: z
+      .string()
+      .trim()
+      .max(10)
+      .optional()
+      .transform((v) => (v ? v : null)),
     is_active: z.boolean(),
     // Volume pricing — only meaningful for per-sq.ft. products.
     slab1_min_area: optionalNumericField("Slab 1 area", { max: 1_000_000 }),

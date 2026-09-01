@@ -202,6 +202,16 @@ export function ProductsView() {
                     ),
                 },
                 {
+                  key: "hsn",
+                  header: "HSN/SAC",
+                  hideBelow: "md",
+                  cell: (product) => (
+                    <span className="font-mono text-xs text-muted-foreground">
+                      {product.hsn_code || "—"}
+                    </span>
+                  ),
+                },
+                {
                   key: "gst",
                   header: "GST",
                   align: "right",

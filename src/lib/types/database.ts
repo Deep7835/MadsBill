@@ -41,6 +41,8 @@ export interface Product {
   rate_type: RateType;
   default_rate: number;
   gst_percent: number;
+  /** Product-specific HSN/SAC code. NULL uses settings default_hsn. */
+  hsn_code: string | null;
   is_active: boolean;
   /** Volume pricing, per single piece area. NULL threshold disables the slab. */
   slab1_min_area: number | null;

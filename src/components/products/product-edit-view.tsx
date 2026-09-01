@@ -71,6 +71,7 @@ export function ProductEditView({ productId }: ProductEditViewProps) {
       unit: "sq.ft.",
       default_rate: 0,
       gst_percent: 18,
+      hsn_code: "",
       is_active: true,
       slab1_min_area: 500,
       slab1_discount: 2,
@@ -88,6 +89,7 @@ export function ProductEditView({ productId }: ProductEditViewProps) {
       unit: product.unit,
       default_rate: Number(product.default_rate),
       gst_percent: Number(product.gst_percent),
+      hsn_code: product.hsn_code ?? "",
       is_active: product.is_active,
       slab1_min_area: product.slab1_min_area ?? "",
       slab1_discount: Number(product.slab1_discount ?? 0),
@@ -339,6 +341,21 @@ export function ProductEditView({ productId }: ProductEditViewProps) {
                       inputMode="decimal"
                       aria-invalid={!!errors.gst_percent}
                       {...register("gst_percent")}
+                    />
+                  </FormField>
+
+                  <FormField
+                    label="HSN / SAC Code"
+                    htmlFor="hsn_code"
+                    error={errors.hsn_code?.message}
+                    hint="Overrides company default HSN"
+                    className="sm:col-span-2"
+                  >
+                    <Input
+                      id="hsn_code"
+                      inputMode="numeric"
+                      placeholder="e.g. 998912"
+                      {...register("hsn_code")}
                     />
                   </FormField>
                 </div>
