@@ -50,7 +50,14 @@ export async function uploadBrandingAsset(asset: BrandingAsset, file: File): Pro
     contentType: file.type,
     upsert: false,
   });
-  if (error) throw new Error(error.message);
+  if (error) {
+    if (error.message.toLowerCase().includes("bucket not found")) {
+      throw new Error(
+        "Storage bucket 'branding' not found in Supabase. Please run the bucket migration SQL or create a public bucket named 'branding' in your Supabase Storage dashboard."
+      );
+    }
+    throw new Error(error.message);
+  }
 
   const { data } = supabase.storage.from(BRANDING_BUCKET).getPublicUrl(path);
   return data.publicUrl;
