@@ -497,7 +497,17 @@ export async function fetchJobSheetEntries(): Promise<JobSheetEntry[]> {
     .order("date", { ascending: false })
     .order("created_at", { ascending: false });
 
-  if (error) throw new Error(error.message);
+  if (error) {
+    if (
+      error.message?.includes("job_sheet_entries") ||
+      error.message?.includes("schema cache") ||
+      error.code === "PGRST205" ||
+      error.code === "42P01"
+    ) {
+      throw new Error("Table 'public.job_sheet_entries' is missing in Supabase. Please run the SQL migration script.");
+    }
+    throw new Error(error.message);
+  }
   return (data ?? []) as JobSheetEntry[];
 }
 

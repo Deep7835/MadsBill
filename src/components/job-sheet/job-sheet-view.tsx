@@ -35,6 +35,40 @@ import { formatCurrency, formatDate } from "@/lib/format";
 import type { JobSheetEntry, JobSheetStatus } from "@/lib/types/database";
 import { JobEntryDialog } from "./job-entry-dialog";
 
+const MIGRATION_SQL = `-- Migration for Daily Job Sheet entries
+CREATE TABLE IF NOT EXISTS public.job_sheet_entries (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  job_number TEXT NOT NULL,
+  date DATE NOT NULL DEFAULT CURRENT_DATE,
+  customer_name TEXT NOT NULL,
+  customer_id UUID REFERENCES public.customers(id) ON DELETE SET NULL,
+  mobile TEXT,
+  product_name TEXT NOT NULL,
+  product_id UUID REFERENCES public.products(id) ON DELETE SET NULL,
+  size TEXT,
+  qty NUMERIC NOT NULL DEFAULT 1,
+  total_sale NUMERIC NOT NULL DEFAULT 0,
+  advance_paid NUMERIC NOT NULL DEFAULT 0,
+  status TEXT NOT NULL DEFAULT 'In Production',
+  customer_type TEXT DEFAULT 'New',
+  primary_staff TEXT,
+  payment_mode TEXT DEFAULT 'UPI',
+  delivery_date DATE,
+  actual_delivery_date DATE,
+  direct_cost NUMERIC NOT NULL DEFAULT 0,
+  created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+ALTER TABLE public.job_sheet_entries ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Authenticated users can select job_sheet_entries" ON public.job_sheet_entries FOR SELECT TO authenticated USING (true);
+CREATE POLICY "Authenticated users can insert job_sheet_entries" ON public.job_sheet_entries FOR INSERT TO authenticated WITH CHECK (true);
+CREATE POLICY "Authenticated users can update job_sheet_entries" ON public.job_sheet_entries FOR UPDATE TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY "Authenticated users can delete job_sheet_entries" ON public.job_sheet_entries FOR DELETE TO authenticated USING (true);
+`;
+
 export function JobSheetView() {
   const fetcher = useCallback(() => fetchJobSheetEntries(), []);
   const { data: entries, loading, error, refresh } = useAsyncData(fetcher, []);
@@ -344,9 +378,33 @@ export function JobSheetView() {
           <Skeleton className="h-64 w-full rounded-xl" />
         </div>
       ) : error ? (
-        <Card>
-          <CardContent className="py-12 text-center text-sm text-destructive">
-            {error}
+        <Card className="border-amber-500/30 bg-amber-500/5">
+          <CardContent className="py-8 px-6 text-center space-y-4">
+            <div className="flex flex-col items-center gap-2">
+              <div className="h-10 w-10 rounded-full bg-amber-500/15 flex items-center justify-center text-amber-600 dark:text-amber-400">
+                <HugeiconsIcon icon={Task01Icon} className="h-5 w-5" />
+              </div>
+              <h3 className="text-base font-semibold text-foreground">Database Table Setup Needed</h3>
+              <p className="text-xs text-muted-foreground max-w-md">
+                The <code className="bg-muted px-1.5 py-0.5 rounded font-mono text-foreground font-semibold">public.job_sheet_entries</code> table has not been created in your Supabase database yet.
+              </p>
+            </div>
+
+            <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+              <Button
+                variant="default"
+                size="sm"
+                onClick={() => {
+                  navigator.clipboard.writeText(MIGRATION_SQL);
+                  toast.success("SQL Migration Code copied to clipboard!");
+                }}
+              >
+                Copy SQL Migration Code
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => refresh()}>
+                Retry Loading
+              </Button>
+            </div>
           </CardContent>
         </Card>
       ) : filtered.length === 0 ? (
