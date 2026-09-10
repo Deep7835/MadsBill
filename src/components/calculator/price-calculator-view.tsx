@@ -99,7 +99,7 @@ export function PriceCalculatorView() {
     qty: row.qty,
     rate: row.rate,
     gst_percent: row.gstPercent,
-    slabs: row.productId ? (productById.get(row.productId) ?? null) : null,
+    slabs: row.productId && row.productId !== "custom" ? (productById.get(row.productId) ?? null) : null,
   });
 
   const totals = useMemo(
@@ -113,6 +113,20 @@ export function PriceCalculatorView() {
   }
 
   function pickProduct(key: string, productId: string) {
+    if (productId === "custom") {
+      setRows((current) =>
+        current.map((row) =>
+          row.key === key
+            ? {
+                ...row,
+                productId: "custom",
+                description: row.description || "",
+              }
+            : row,
+        ),
+      );
+      return;
+    }
     const product = productById.get(productId);
     if (!product) return;
     setRows((current) =>
@@ -137,10 +151,12 @@ export function PriceCalculatorView() {
     const items: DraftItem[] = rows
       .filter((row) => calcLine(toCalcLine(row)).amount > 0)
       .map((row) => ({
-        product_id: row.productId,
+        product_id: row.productId === "custom" ? null : row.productId,
         description:
           row.description.trim() ||
-          (row.productId ? (productById.get(row.productId)?.name ?? "Item") : "Item"),
+          (row.productId && row.productId !== "custom"
+            ? (productById.get(row.productId)?.name ?? "Custom Item")
+            : "Custom Item"),
         rate_type: row.rateType,
         width: row.rateType === "sqft" ? row.width : "",
         height: row.rateType === "sqft" ? row.height : "",
@@ -230,6 +246,12 @@ export function PriceCalculatorView() {
                             <SelectValue placeholder="Select product" />
                           </SelectTrigger>
                           <SelectContent>
+                            <SelectGroup>
+                              <SelectItem value="custom" className="font-medium text-primary">
+                                ✨ Custom Item (Write Any Name)
+                              </SelectItem>
+                            </SelectGroup>
+                            <Separator className="my-1" />
                             {Object.entries(grouped).map(([category, items]) => (
                               <SelectGroup key={category}>
                                 <SelectLabel>{category}</SelectLabel>

@@ -184,6 +184,12 @@ export function QuotationBuilder({
 
   /** Picking a product pre-fills description, rate type, rate and GST. */
   function handleProductChange(index: number, productId: string) {
+    if (productId === "custom") {
+      setValue(`items.${index}.product_id`, null, { shouldDirty: true });
+      const current = watch(`items.${index}.description`);
+      if (!current) setValue(`items.${index}.description`, "Custom Item", { shouldDirty: true });
+      return;
+    }
     const product = activeProducts.find((p) => p.id === productId);
     if (!product) return;
     setValue(`items.${index}.product_id`, product.id, { shouldDirty: true });

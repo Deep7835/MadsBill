@@ -16,6 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
 import { UnitConverter } from "@/components/calculator/unit-converter";
 import { calcLine } from "@/lib/calc";
 import { formatCurrency, formatNumber } from "@/lib/format";
@@ -112,13 +113,19 @@ export function LineItemRow({
           <div className="lg:col-span-4">
             <Label className="text-xs text-muted-foreground">Product</Label>
             <Select
-              value={value?.product_id ?? ""}
+              value={value?.product_id ?? (value?.description ? "custom" : "")}
               onValueChange={(productId) => onProductChange(index, productId)}
             >
               <SelectTrigger className="mt-1">
                 <SelectValue placeholder="Select product" />
               </SelectTrigger>
               <SelectContent>
+                <SelectGroup>
+                  <SelectItem value="custom" className="font-medium text-primary">
+                    ✨ Custom Item (Write Any Name)
+                  </SelectItem>
+                </SelectGroup>
+                <Separator className="my-1" />
                 {Object.entries(grouped).map(([category, items]) => (
                   <SelectGroup key={category}>
                     <SelectLabel>{category}</SelectLabel>
