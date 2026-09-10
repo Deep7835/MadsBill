@@ -187,22 +187,64 @@ export function DocumentPreview({
           ) : null}
         </div>
 
-        <dl className="w-full max-w-xs space-y-1.5 text-sm sm:ml-auto">
-          <div className="flex justify-between">
-            <dt className="text-muted-foreground">Subtotal</dt>
-            <dd className="tabular-nums">{formatCurrency(quotation.subtotal)}</dd>
-          </div>
-          <div className="flex justify-between">
-            <dt className="text-muted-foreground">GST</dt>
-            <dd className="tabular-nums">{formatCurrency(quotation.gst_amount)}</dd>
-          </div>
-          <div className="flex items-baseline justify-between rounded-lg bg-primary px-3 py-2 text-primary-foreground">
-            <dt className="font-medium">Grand total</dt>
-            <dd className="text-lg font-semibold tabular-nums">
-              {formatCurrency(quotation.grand_total)}
-            </dd>
-          </div>
-        </dl>
+        {(() => {
+          const totalPaid = quotation.payments?.length
+            ? quotation.payments.reduce((sum, p) => sum + Number(p.amount ?? 0), 0)
+            : quotation.payment_status === "paid"
+              ? Number(quotation.grand_total)
+              : 0;
+          const balanceDue = Math.max(0, Number(quotation.grand_total) - totalPaid);
+          const showPaymentDetails = isInvoice && (totalPaid > 0 || quotation.payment_status !== "unpaid");
+
+          return (
+            <dl className="w-full max-w-xs space-y-1.5 text-sm sm:ml-auto">
+              <div className="flex justify-between">
+                <dt className="text-muted-foreground">Subtotal</dt>
+                <dd className="tabular-nums">{formatCurrency(quotation.subtotal)}</dd>
+              </div>
+              <div className="flex justify-between">
+                <dt className="text-muted-foreground">GST</dt>
+                <dd className="tabular-nums">{formatCurrency(quotation.gst_amount)}</dd>
+              </div>
+              <div className="flex items-baseline justify-between border-t border-border pt-1 font-medium">
+                <dt className="text-muted-foreground">Grand total</dt>
+                <dd className="text-base font-semibold tabular-nums">
+                  {formatCurrency(quotation.grand_total)}
+                </dd>
+              </div>
+
+              {showPaymentDetails ? (
+                <>
+                  <div className="flex justify-between text-xs text-muted-foreground pt-1">
+                    <dt>Amount Paid</dt>
+                    <dd className="tabular-nums font-semibold text-emerald-600 dark:text-emerald-400">
+                      {formatCurrency(totalPaid)}
+                    </dd>
+                  </div>
+                  <div
+                    className={`flex items-baseline justify-between rounded-lg px-3 py-2 ${
+                      balanceDue === 0
+                        ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20"
+                        : "bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20"
+                    }`}
+                  >
+                    <dt className="font-semibold text-xs uppercase tracking-wide">Balance Due</dt>
+                    <dd className="text-lg font-bold tabular-nums">
+                      {formatCurrency(balanceDue)}
+                    </dd>
+                  </div>
+                </>
+              ) : (
+                <div className="flex items-baseline justify-between rounded-lg bg-primary px-3 py-2 text-primary-foreground">
+                  <dt className="font-medium">Grand total</dt>
+                  <dd className="text-lg font-semibold tabular-nums">
+                    {formatCurrency(quotation.grand_total)}
+                  </dd>
+                </div>
+              )}
+            </dl>
+          );
+        })()}
       </div>
 
       {quotation.notes || settings?.bank_details || settings?.terms ? (

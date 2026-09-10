@@ -340,6 +340,14 @@ function drawTotalsBlock(
   const leftWidth = CONTENT_WIDTH - totalsWidth;
   const totalsX = margin + leftWidth;
 
+  const totalPaid = quotation.payments?.length
+    ? quotation.payments.reduce((sum, p) => sum + Number(p.amount ?? 0), 0)
+    : quotation.payment_status === "paid"
+      ? Number(quotation.grand_total)
+      : 0;
+  const balanceDue = Math.max(0, Number(quotation.grand_total) - totalPaid);
+  const showPaymentDetails = totalPaid > 0 || quotation.payment_status !== "unpaid";
+
   const rows: [string, string, boolean][] = [
     ["Taxable Value", `${CURRENCY} ${formatAmount(gst.taxable)}`, false],
     ...(gst.intraState
@@ -348,10 +356,16 @@ function drawTotalsBlock(
           ["SGST", `${CURRENCY} ${formatAmount(gst.sgst)}`, false],
         ] as [string, string, boolean][])
       : ([["IGST", `${CURRENCY} ${formatAmount(gst.igst)}`, false]] as [string, string, boolean][])),
-    ["Grand Total", `${CURRENCY} ${formatAmount(quotation.grand_total)}`, true],
+    ["Grand Total", `${CURRENCY} ${formatAmount(quotation.grand_total)}`, !showPaymentDetails],
+    ...(showPaymentDetails
+      ? ([
+          ["Amount Paid", `${CURRENCY} ${formatAmount(totalPaid)}`, false],
+          ["Balance Due", `${CURRENCY} ${formatAmount(balanceDue)}`, true],
+        ] as [string, string, boolean][])
+      : []),
   ];
 
-  const rowHeight = 7;
+  const rowHeight = 6.5;
   const panelHeight = rows.length * rowHeight + 4;
 
   /* Left cell — bank, UPI QR and terms. */

@@ -3,7 +3,7 @@ import type { PaymentStatus, QuotationStatus } from "@/lib/types/database";
 
 const PAYMENT_LABEL: Record<PaymentStatus, string> = {
   unpaid: "Unpaid",
-  partial: "Partial",
+  partial: "Partially Paid",
   paid: "Paid",
 };
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { CreditCardIcon } from "@hugeicons/core-free-icons";
@@ -33,6 +33,8 @@ interface RecordPaymentDialogProps {
   onOpenChange: (open: boolean) => void;
   customer: Customer;
   quotations?: QuotationWithCustomer[];
+  presetQuotationId?: string;
+  presetAmount?: number;
   onPaymentSaved: () => void;
 }
 
@@ -41,20 +43,34 @@ export function RecordPaymentDialog({
   onOpenChange,
   customer,
   quotations = [],
+  presetQuotationId,
+  presetAmount,
   onPaymentSaved,
 }: RecordPaymentDialogProps) {
   const [submitting, setSubmitting] = useState(false);
   const [paymentMode, setPaymentMode] = useState("UPI");
-  const [selectedQuoteId, setSelectedQuoteId] = useState<string>("none");
+  const [selectedQuoteId, setSelectedQuoteId] = useState<string>(presetQuotationId || "none");
 
   const { register, handleSubmit, reset } = useForm({
     defaultValues: {
-      amount: "",
+      amount: presetAmount ? presetAmount.toString() : "",
       payment_date: new Date().toISOString().split("T")[0],
       reference_no: "",
       notes: "",
     },
   });
+
+  useEffect(() => {
+    if (open) {
+      setSelectedQuoteId(presetQuotationId || "none");
+      reset({
+        amount: presetAmount ? presetAmount.toString() : "",
+        payment_date: new Date().toISOString().split("T")[0],
+        reference_no: "",
+        notes: "",
+      });
+    }
+  }, [open, presetQuotationId, presetAmount, reset]);
 
   async function onSubmit(values: { amount: string; payment_date: string; reference_no: string; notes: string }) {
     const amt = parseFloat(values.amount);

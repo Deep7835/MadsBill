@@ -327,6 +327,30 @@ export async function recordPayment(payload: {
   return payment;
 }
 
+export async function deletePayment(id: string): Promise<void> {
+  const supabase = createClient();
+  const { data: targetPayment } = await supabase.from("payments").select("quotation_id").eq("id", id).maybeSingle();
+  const { error } = await supabase.from("payments").delete().eq("id", id);
+  if (error) throw new Error(error.message);
+
+  if (targetPayment?.quotation_id) {
+    const { data: quote } = await supabase.from("quotations").select("grand_total").eq("id", targetPayment.quotation_id).maybeSingle();
+    const { data: allPayments } = await supabase.from("payments").select("amount").eq("quotation_id", targetPayment.quotation_id);
+    if (quote) {
+      const totalPaid = ((allPayments as { amount: number }[]) ?? []).reduce(
+        (s: number, p) => s + Number(p.amount),
+        0
+      );
+      const grandTotal = Number(quote.grand_total);
+      let status: "unpaid" | "partial" | "paid" = "unpaid";
+      if (totalPaid >= grandTotal) status = "paid";
+      else if (totalPaid > 0) status = "partial";
+
+      await supabase.from("quotations").update({ payment_status: status }).eq("id", targetPayment.quotation_id);
+    }
+  }
+}
+
 /* ----------------------------------------------------------- communication logs */
 
 export async function logCommunication(payload: {
