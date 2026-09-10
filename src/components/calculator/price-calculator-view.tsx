@@ -199,12 +199,26 @@ export function PriceCalculatorView() {
               const isSqft = row.rateType === "sqft";
 
               return (
-                <Card key={row.key}>
-                  <CardContent className="space-y-3 p-4">
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="flex size-6 items-center justify-center rounded-md bg-muted text-xs font-semibold text-muted-foreground">
-                        {index + 1}
-                      </span>
+                <Card
+                  key={row.key}
+                  className="border-border/70 shadow-xs transition-all duration-200 hover:shadow-md border-l-4 border-l-primary"
+                >
+                  <CardContent className="space-y-4 p-4 sm:p-5">
+                    {/* Header bar: Line #, Custom Badge, Rate Type, and Delete */}
+                    <div className="flex items-center justify-between gap-2 border-b border-border/50 pb-3">
+                      <div className="flex items-center gap-2">
+                        <span className="flex size-7 items-center justify-center rounded-lg bg-primary/10 text-xs font-bold text-primary">
+                          #{index + 1}
+                        </span>
+                        {row.productId === "custom" ? (
+                          <Badge
+                            variant="secondary"
+                            className="bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20 text-[11px] font-medium"
+                          >
+                            ✨ Custom Item
+                          </Badge>
+                        ) : null}
+                      </div>
                       <div className="flex items-center gap-2">
                         <Select
                           value={row.rateType}
@@ -212,7 +226,7 @@ export function PriceCalculatorView() {
                             update(row.key, { rateType: value as RateType, productId: null })
                           }
                         >
-                          <SelectTrigger className="h-8 w-36">
+                          <SelectTrigger className="h-8 w-36 text-xs">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
@@ -223,31 +237,31 @@ export function PriceCalculatorView() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="text-muted-foreground hover:text-destructive"
+                          className="h-8 w-8 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
                           onClick={() =>
                             setRows((current) => current.filter((r) => r.key !== row.key))
                           }
                           disabled={rows.length === 1}
                           aria-label={`Remove line ${index + 1}`}
                         >
-                          <HugeiconsIcon icon={Delete02Icon} />
+                          <HugeiconsIcon icon={Delete02Icon} className="size-4" />
                         </Button>
                       </div>
                     </div>
 
-                    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-12">
+                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-12">
                       <div className="lg:col-span-5">
-                        <Label className="text-xs text-muted-foreground">Product</Label>
+                        <Label className="text-xs font-medium text-muted-foreground">Product</Label>
                         <Select
                           value={row.productId ?? ""}
                           onValueChange={(id) => pickProduct(row.key, id)}
                         >
-                          <SelectTrigger className="mt-1">
-                            <SelectValue placeholder="Select product" />
+                          <SelectTrigger className="mt-1.5">
+                            <SelectValue placeholder="Select catalog product or custom..." />
                           </SelectTrigger>
                           <SelectContent>
                             <SelectGroup>
-                              <SelectItem value="custom" className="font-medium text-primary">
+                              <SelectItem value="custom" className="font-semibold text-primary">
                                 ✨ Custom Item (Write Any Name)
                               </SelectItem>
                             </SelectGroup>
@@ -267,10 +281,16 @@ export function PriceCalculatorView() {
                       </div>
 
                       <div className="lg:col-span-7">
-                        <Label className="text-xs text-muted-foreground">Description</Label>
+                        <Label className="text-xs font-medium text-muted-foreground">
+                          Description {row.productId === "custom" ? "(Custom Item Name)" : ""}
+                        </Label>
                         <Input
-                          className="mt-1"
-                          placeholder="Shop board – front side"
+                          className="mt-1.5"
+                          placeholder={
+                            row.productId === "custom"
+                              ? "Type custom item name (e.g. Acrylic 3D Cutout Board)..."
+                              : "Shop board – front side"
+                          }
                           value={row.description}
                           onChange={(e) => update(row.key, { description: e.target.value })}
                         />
@@ -279,42 +299,44 @@ export function PriceCalculatorView() {
                       {isSqft ? (
                         <>
                           <div className="lg:col-span-2">
-                            <Label className="text-xs text-muted-foreground">Width (ft)</Label>
+                            <Label className="text-xs font-medium text-muted-foreground">Width (ft)</Label>
                             <Input
-                              className="mt-1"
+                              className="mt-1.5"
                               type="number"
                               step="0.01"
                               min="0"
                               inputMode="decimal"
+                              placeholder="0"
                               value={row.width}
                               onChange={(e) => update(row.key, { width: e.target.value })}
                             />
                           </div>
                           <div className="lg:col-span-2">
-                            <Label className="text-xs text-muted-foreground">Height (ft)</Label>
+                            <Label className="text-xs font-medium text-muted-foreground">Height (ft)</Label>
                             <Input
-                              className="mt-1"
+                              className="mt-1.5"
                               type="number"
                               step="0.01"
                               min="0"
                               inputMode="decimal"
+                              placeholder="0"
                               value={row.height}
                               onChange={(e) => update(row.key, { height: e.target.value })}
                             />
                           </div>
                           <div className="lg:col-span-2">
-                            <Label className="text-xs text-muted-foreground">Area</Label>
-                            <div className="mt-1 flex h-9 items-center rounded-lg border border-dashed border-border bg-muted/50 px-3 text-sm font-medium tabular-nums">
-                              {formatNumber(result.area ?? 0)}
+                            <Label className="text-xs font-medium text-muted-foreground">Total Area</Label>
+                            <div className="mt-1.5 flex h-9 items-center rounded-lg border border-dashed border-border bg-muted/40 px-3 text-sm font-semibold tabular-nums text-foreground">
+                              {formatNumber(result.area ?? 0)} <span className="ml-1 text-xs text-muted-foreground font-normal">sq.ft.</span>
                             </div>
                           </div>
                         </>
                       ) : null}
 
                       <div className={isSqft ? "lg:col-span-2" : "lg:col-span-4"}>
-                        <Label className="text-xs text-muted-foreground">Qty</Label>
+                        <Label className="text-xs font-medium text-muted-foreground">Qty</Label>
                         <Input
-                          className="mt-1"
+                          className="mt-1.5"
                           type="number"
                           step="0.01"
                           min="0"
@@ -326,11 +348,11 @@ export function PriceCalculatorView() {
 
                       {/* Editable Rate Column */}
                       <div className={isSqft ? "lg:col-span-2" : "lg:col-span-4"}>
-                        <Label className="text-xs text-muted-foreground">
-                          Rate {isSqft ? "/ sq.ft." : "/ piece"}
+                        <Label className="text-xs font-medium text-muted-foreground">
+                          Rate {isSqft ? "(₹ / sq.ft.)" : "(₹ / piece)"}
                         </Label>
                         <Input
-                          className="mt-1 font-medium tabular-nums"
+                          className="mt-1.5 font-medium tabular-nums"
                           type="number"
                           step="0.01"
                           min="0"
@@ -340,33 +362,33 @@ export function PriceCalculatorView() {
                           onChange={(e) => update(row.key, { rate: e.target.value })}
                         />
                         {result.discount > 0 ? (
-                          <p className="mt-1 text-xs font-medium text-[var(--success)]">
-                            {result.slabThreshold}+ sq.ft. slab applied (−{formatCurrency(result.discount)}/sq.ft.)
+                          <p className="mt-1 text-xs font-medium text-emerald-600 dark:text-emerald-400">
+                            {result.slabThreshold}+ sq.ft. slab (−{formatCurrency(result.discount)}/sq.ft.)
                           </p>
                         ) : null}
                       </div>
 
                       {/* GST % Dropdown */}
                       <div className={isSqft ? "lg:col-span-2" : "lg:col-span-4"}>
-                        <Label className="text-xs text-muted-foreground">GST %</Label>
+                        <Label className="text-xs font-medium text-muted-foreground">GST Rate</Label>
                         <Select
                           value={String(Number(row.gstPercent || 0))}
                           onValueChange={(val) => update(row.key, { gstPercent: val })}
                         >
-                          <SelectTrigger className="mt-1">
+                          <SelectTrigger className="mt-1.5">
                             <SelectValue placeholder="Select GST %" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="0">0%</SelectItem>
-                            <SelectItem value="5">5%</SelectItem>
-                            <SelectItem value="12">12%</SelectItem>
-                            <SelectItem value="18">18%</SelectItem>
-                            <SelectItem value="28">28%</SelectItem>
+                            <SelectItem value="0">0% GST</SelectItem>
+                            <SelectItem value="5">5% GST</SelectItem>
+                            <SelectItem value="12">12% GST</SelectItem>
+                            <SelectItem value="18">18% GST</SelectItem>
+                            <SelectItem value="28">28% GST</SelectItem>
                             {!["0", "5", "12", "18", "28"].includes(
                               String(Number(row.gstPercent || 0)),
                             ) ? (
                               <SelectItem value={String(Number(row.gstPercent || 0))}>
-                                {Number(row.gstPercent)}%
+                                {Number(row.gstPercent)}% GST
                               </SelectItem>
                             ) : null}
                           </SelectContent>
@@ -374,25 +396,28 @@ export function PriceCalculatorView() {
                       </div>
                     </div>
 
-                    <Separator />
-
-                    <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
+                    {/* Summary Strip */}
+                    <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border/50 bg-muted/30 p-3 text-sm">
                       <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
                         {isSqft && result.area ? (
-                          <Badge variant="secondary">{formatNumber(result.area)} sq.ft. / piece</Badge>
-                        ) : null}
-                        {result.discount > 0 ? (
-                          <Badge variant="success">
-                            Volume rate −{formatCurrency(result.discount)}/sq.ft.
+                          <Badge variant="secondary" className="font-mono text-[11px]">
+                            {formatNumber(result.area)} sq.ft. / pcs
                           </Badge>
                         ) : null}
-                        <span>+ GST {formatCurrency(result.gstAmount)}</span>
+                        {result.discount > 0 ? (
+                          <Badge variant="success" className="font-mono text-[11px]">
+                            Slab discount −{formatCurrency(result.discount)}
+                          </Badge>
+                        ) : null}
+                        <span className="font-medium text-muted-foreground">
+                          + GST ({row.gstPercent}%): {formatCurrency(result.gstAmount)}
+                        </span>
                       </div>
                       <div className="text-right">
-                        <p className="text-xs text-muted-foreground">Line total incl. GST</p>
-                        <p className="text-lg font-semibold tabular-nums text-primary">
+                        <span className="text-xs text-muted-foreground mr-2">Total (incl. GST):</span>
+                        <span className="text-base font-bold tabular-nums text-primary">
                           {formatCurrency(result.total)}
-                        </p>
+                        </span>
                       </div>
                     </div>
                   </CardContent>

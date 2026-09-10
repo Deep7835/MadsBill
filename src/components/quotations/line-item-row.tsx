@@ -5,6 +5,7 @@ import { Delete02Icon } from "@hugeicons/core-free-icons";
 import type { UseFormRegister, FieldErrors, UseFormSetValue } from "react-hook-form";
 
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -77,14 +78,24 @@ export function LineItemRow({
     }
   }
 
+  const isCustom = !value?.product_id;
+
   return (
-    <div className="rounded-xl border border-border bg-card p-3 sm:p-4">
+    <div className="rounded-xl border border-border/70 bg-card p-4 shadow-xs border-l-4 border-l-primary">
       {/* Index and remove sit on their own row so the fields get full width. */}
-      <div className="mb-3 flex items-center justify-between gap-2">
+      <div className="mb-3 flex items-center justify-between gap-2 border-b border-border/50 pb-2.5">
         <div className="flex items-center gap-2">
-          <span className="flex size-6 shrink-0 items-center justify-center rounded-md bg-muted text-xs font-semibold text-muted-foreground">
-            {index + 1}
+          <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-xs font-bold text-primary">
+            #{index + 1}
           </span>
+          {isCustom ? (
+            <Badge
+              variant="secondary"
+              className="bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20 text-[11px] font-medium"
+            >
+              ✨ Custom Item
+            </Badge>
+          ) : null}
           {isSqft ? (
             <UnitConverter
               onApply={handleApplyConvertedUnit}
@@ -98,12 +109,12 @@ export function LineItemRow({
           type="button"
           variant="ghost"
           size="icon"
-          className="-mr-1 shrink-0 text-muted-foreground hover:text-destructive"
+          className="h-8 w-8 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
           onClick={() => onRemove(index)}
           disabled={!removable}
           aria-label={`Remove line ${index + 1}`}
         >
-          <HugeiconsIcon icon={Delete02Icon} />
+          <HugeiconsIcon icon={Delete02Icon} className="size-4" />
         </Button>
       </div>
 
