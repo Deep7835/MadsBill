@@ -168,3 +168,32 @@ export type QuotationFull = Quotation & {
   items: QuotationItem[];
   payments?: Payment[];
 };
+
+export type JobSheetStatus = "In Production" | "Ready" | "Completed" | "Pending" | "Cancelled";
+export type JobCustomerType = "New" | "Repeat";
+
+export interface JobSheetEntry {
+  id: string;
+  job_number: string;
+  date: string;
+  customer_name: string;
+  customer_id: string | null;
+  mobile: string | null;
+  product_name: string;
+  product_id: string | null;
+  size: string | null;
+  qty: number;
+  total_sale: number;
+  advance_paid: number;
+  status: JobSheetStatus;
+  customer_type: JobCustomerType | string | null;
+  primary_staff: string | null;
+  payment_mode: string | null;
+  delivery_date: string | null;
+  actual_delivery_date: string | null;
+  direct_cost: number;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
