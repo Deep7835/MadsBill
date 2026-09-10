@@ -198,32 +198,58 @@ export function LineItemRow({
             {fieldError(itemErrors?.qty?.message)}
           </div>
 
-          {/* Rate and GST are read-only: both are owned by Products & Rates. */}
+          {/* Editable Rate Column */}
           <div className={cn(isSqft ? "lg:col-span-2" : "lg:col-span-3")}>
             <Label className="text-xs text-muted-foreground">
               Rate {isSqft ? "/ sq.ft." : "/ piece"}
             </Label>
-            <div
-              title="Set in Products & Rates"
-              className="mt-1 flex h-9 items-center rounded-lg border border-dashed border-border bg-muted/50 px-3 text-sm font-medium tabular-nums"
-            >
-              {formatCurrency(rate)}
-            </div>
+            <Input
+              className="mt-1 font-medium tabular-nums"
+              type="number"
+              step="0.01"
+              min="0"
+              inputMode="decimal"
+              placeholder="0.00"
+              aria-invalid={!!itemErrors?.rate}
+              {...register(`items.${index}.rate` as const, { valueAsNumber: true })}
+            />
             {discount > 0 ? (
               <p className="mt-1 text-xs font-medium text-[var(--success)]">
-                {slabThreshold}+ sq.ft. slab applied
+                {slabThreshold}+ sq.ft. slab applied (−{formatCurrency(discount)}/sq.ft.)
               </p>
             ) : null}
           </div>
 
+          {/* GST % Dropdown */}
           <div className={cn(isSqft ? "lg:col-span-2" : "lg:col-span-3")}>
             <Label className="text-xs text-muted-foreground">GST %</Label>
-            <div
-              title="Set in Products & Rates"
-              className="mt-1 flex h-9 items-center rounded-lg border border-dashed border-border bg-muted/50 px-3 text-sm font-medium tabular-nums"
+            <Select
+              value={String(Number(value?.gst_percent ?? 18))}
+              onValueChange={(val) => {
+                if (setValue) {
+                  setValue(`items.${index}.gst_percent`, Number(val), {
+                    shouldValidate: true,
+                    shouldDirty: true,
+                  });
+                }
+              }}
             >
-              {formatNumber(Number(value?.gst_percent ?? 0))}%
-            </div>
+              <SelectTrigger className="mt-1">
+                <SelectValue placeholder="GST %" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="0">0%</SelectItem>
+                <SelectItem value="5">5%</SelectItem>
+                <SelectItem value="12">12%</SelectItem>
+                <SelectItem value="18">18%</SelectItem>
+                <SelectItem value="28">28%</SelectItem>
+                {!["0", "5", "12", "18", "28"].includes(String(Number(value?.gst_percent ?? 18))) ? (
+                  <SelectItem value={String(Number(value?.gst_percent ?? 18))}>
+                    {Number(value?.gst_percent)}%
+                  </SelectItem>
+                ) : null}
+              </SelectContent>
+            </Select>
           </div>
 
           <div className={cn("flex flex-col justify-end", isSqft ? "lg:col-span-2" : "lg:col-span-3")}>

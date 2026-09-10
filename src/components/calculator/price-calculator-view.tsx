@@ -302,32 +302,53 @@ export function PriceCalculatorView() {
                         />
                       </div>
 
-                      {/* Read-only: the product master owns rate and GST. */}
+                      {/* Editable Rate Column */}
                       <div className={isSqft ? "lg:col-span-2" : "lg:col-span-4"}>
                         <Label className="text-xs text-muted-foreground">
                           Rate {isSqft ? "/ sq.ft." : "/ piece"}
                         </Label>
-                        <div
-                          title="Set in Products & Rates"
-                          className="mt-1 flex h-9 items-center rounded-lg border border-dashed border-border bg-muted/50 px-3 text-sm font-medium tabular-nums"
-                        >
-                          {formatCurrency(result.rate)}
-                        </div>
+                        <Input
+                          className="mt-1 font-medium tabular-nums"
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          inputMode="decimal"
+                          placeholder="0.00"
+                          value={row.rate}
+                          onChange={(e) => update(row.key, { rate: e.target.value })}
+                        />
                         {result.discount > 0 ? (
                           <p className="mt-1 text-xs font-medium text-[var(--success)]">
-                            {result.slabThreshold}+ sq.ft. slab applied
+                            {result.slabThreshold}+ sq.ft. slab applied (−{formatCurrency(result.discount)}/sq.ft.)
                           </p>
                         ) : null}
                       </div>
 
+                      {/* GST % Dropdown */}
                       <div className={isSqft ? "lg:col-span-2" : "lg:col-span-4"}>
                         <Label className="text-xs text-muted-foreground">GST %</Label>
-                        <div
-                          title="Set in Products & Rates"
-                          className="mt-1 flex h-9 items-center rounded-lg border border-dashed border-border bg-muted/50 px-3 text-sm font-medium tabular-nums"
+                        <Select
+                          value={String(Number(row.gstPercent || 0))}
+                          onValueChange={(val) => update(row.key, { gstPercent: val })}
                         >
-                          {formatNumber(Number(row.gstPercent || 0))}%
-                        </div>
+                          <SelectTrigger className="mt-1">
+                            <SelectValue placeholder="Select GST %" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="0">0%</SelectItem>
+                            <SelectItem value="5">5%</SelectItem>
+                            <SelectItem value="12">12%</SelectItem>
+                            <SelectItem value="18">18%</SelectItem>
+                            <SelectItem value="28">28%</SelectItem>
+                            {!["0", "5", "12", "18", "28"].includes(
+                              String(Number(row.gstPercent || 0)),
+                            ) ? (
+                              <SelectItem value={String(Number(row.gstPercent || 0))}>
+                                {Number(row.gstPercent)}%
+                              </SelectItem>
+                            ) : null}
+                          </SelectContent>
+                        </Select>
                       </div>
                     </div>
 
