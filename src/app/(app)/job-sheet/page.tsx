@@ -1,10 +1,6 @@
-import { JobSheetView } from "@/components/job-sheet/job-sheet-view";
+import { redirect } from "next/navigation";
 
-export const metadata = {
-  title: "Daily Job Sheet | MadsBill",
-  description: "Record daily print production, sales, advance payments, direct costs, and gross profit.",
-};
-
-export default function JobSheetPage() {
-  return <JobSheetView />;
+/** The job sheet moved to /jobs; keep old bookmarks working. */
+export default function JobSheetRedirect() {
+  redirect("/jobs");
 }

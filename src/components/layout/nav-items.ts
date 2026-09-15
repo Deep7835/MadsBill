@@ -1,7 +1,6 @@
 import {
   DashboardSquare01Icon,
   Calculator01Icon,
-  Task01Icon,
   Invoice01Icon,
   UserGroupIcon,
   PackageIcon,
@@ -21,10 +20,9 @@ export interface NavItem {
 
 export const MAIN_NAV_ITEMS: NavItem[] = [
   { href: "/dashboard", label: "Dashboard", icon: DashboardSquare01Icon },
-  { href: "/job-sheet", label: "Daily Job Sheet", icon: Task01Icon },
+  { href: "/jobs", label: "Daily Job Sheet", icon: Task01Icon },
   { href: "/calculator", label: "Price Calculator", icon: Calculator01Icon },
   { href: "/quotations", label: "Quotations & Invoices", icon: Invoice01Icon },
-  { href: "/jobs", label: "Daily Job Sheet", icon: Task01Icon },
   { href: "/customers", label: "Customers Ledger", icon: UserGroupIcon },
   { href: "/products", label: "Products & Rates", icon: PackageIcon },
 ];

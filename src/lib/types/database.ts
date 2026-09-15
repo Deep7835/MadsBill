@@ -9,7 +9,7 @@ export type UserRole = "admin" | "staff";
 export type CommChannel = "sms" | "whatsapp";
 export type CommStatus = "queued" | "sent" | "failed";
 /** Stored as plain text in job_sheet_entries; these are the values the app writes. */
-export type JobStatus = "Pending" | "In Production" | "Completed" | "Delivered";
+export type JobStatus = "Pending" | "In Production" | "Ready" | "Completed" | "Delivered" | "Cancelled";
 export type JobCustomerType = "New" | "Repeat";
 export type JobPaymentMode = "UPI" | "Cash" | "Card" | "Bank Transfer" | "Credit";
 
@@ -198,32 +198,4 @@ export type QuotationFull = Quotation & {
   items: QuotationItem[];
   payments?: Payment[];
 };
-
-export type JobSheetStatus = "In Production" | "Ready" | "Completed" | "Pending" | "Cancelled";
-export type JobCustomerType = "New" | "Repeat";
-
-export interface JobSheetEntry {
-  id: string;
-  job_number: string;
-  date: string;
-  customer_name: string;
-  customer_id: string | null;
-  mobile: string | null;
-  product_name: string;
-  product_id: string | null;
-  size: string | null;
-  qty: number;
-  total_sale: number;
-  advance_paid: number;
-  status: JobSheetStatus;
-  customer_type: JobCustomerType | string | null;
-  primary_staff: string | null;
-  payment_mode: string | null;
-  delivery_date: string | null;
-  actual_delivery_date: string | null;
-  direct_cost: number;
-  created_by: string | null;
-  created_at: string;
-  updated_at: string;
-}
 

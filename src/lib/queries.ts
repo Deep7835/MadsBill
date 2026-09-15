@@ -6,7 +6,6 @@ import type {
   CommunicationLog,
   Customer,
   JobEntry,
-  JobSheetEntry,
   Payment,
   Product,
   Profile,
@@ -589,79 +588,5 @@ export async function fetchDashboard(): Promise<DashboardData> {
     recent: (recentRes.data ?? []) as unknown as QuotationWithCustomer[],
     activity: [...byDate.values()],
   };
-}
-
-/* ------------------------------------------------------------- daily job sheet */
-
-export async function fetchJobSheetEntries(): Promise<JobSheetEntry[]> {
-  const supabase = createClient();
-  const { data, error } = await supabase
-    .from("job_sheet_entries")
-    .select("*")
-    .order("date", { ascending: false })
-    .order("created_at", { ascending: false });
-
-  if (error) {
-    if (
-      error.message?.includes("job_sheet_entries") ||
-      error.message?.includes("schema cache") ||
-      error.code === "PGRST205" ||
-      error.code === "42P01"
-    ) {
-      throw new Error("Table 'public.job_sheet_entries' is missing in Supabase. Please run the SQL migration script.");
-    }
-    throw new Error(error.message);
-  }
-  return (data ?? []) as JobSheetEntry[];
-}
-
-export async function getNextJobNumber(): Promise<string> {
-  const supabase = createClient();
-  const { data } = await supabase
-    .from("job_sheet_entries")
-    .select("job_number")
-    .order("created_at", { ascending: false })
-    .limit(1);
-
-  if (!data || data.length === 0 || !data[0]?.job_number) {
-    return "JOB-0010";
-  }
-
-  const lastNumStr = data[0].job_number.replace(/^JOB-/, "");
-  const lastNum = parseInt(lastNumStr, 10);
-  if (isNaN(lastNum)) return "JOB-0010";
-  const nextNum = lastNum + 1;
-  return `JOB-${nextNum.toString().padStart(4, "0")}`;
-}
-
-export async function createJobSheetEntry(payload: Partial<JobSheetEntry>): Promise<JobSheetEntry> {
-  const supabase = createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-
-  return unwrap(
-    await supabase
-      .from("job_sheet_entries")
-      .insert({ ...payload, created_by: user?.id ?? null })
-      .select()
-      .single()
-  ) as JobSheetEntry;
-}
-
-export async function updateJobSheetEntry(id: string, payload: Partial<JobSheetEntry>): Promise<JobSheetEntry> {
-  const supabase = createClient();
-  return unwrap(
-    await supabase
-      .from("job_sheet_entries")
-      .update({ ...payload, updated_at: new Date().toISOString() })
-      .eq("id", id)
-      .select()
-      .single()
-  ) as JobSheetEntry;
-}
-
-export async function deleteJobSheetEntry(id: string): Promise<void> {
-  const supabase = createClient();
-  const { error } = await supabase.from("job_sheet_entries").delete().eq("id", id);
-  if (error) throw new Error(error.message);
 }
 

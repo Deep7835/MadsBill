@@ -14,7 +14,7 @@ const optionalDate = z
   .optional()
   .transform((v) => (v ? v : null));
 
-export const JOB_STATUSES = ["Pending", "In Production", "Completed", "Delivered"] as const;
+export const JOB_STATUSES = ["Pending", "In Production", "Ready", "Completed", "Delivered", "Cancelled"] as const;
 export const JOB_CUSTOMER_TYPES = ["New", "Repeat"] as const;
 export const JOB_PAYMENT_MODES = ["UPI", "Cash", "Card", "Bank Transfer", "Credit"] as const;
 
