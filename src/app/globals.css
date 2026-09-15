@@ -1,37 +1,5 @@
 @import "tailwindcss";
 
-@font-face {
-  font-family: 'SF Pro Rounded';
-  src: url('https://cdn.jsdelivr.net/npm/@fontpkg/sf-pro-rounded@21.0.0/SF-Pro-Rounded-Regular.otf') format('opentype');
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'SF Pro Rounded';
-  src: url('https://cdn.jsdelivr.net/npm/@fontpkg/sf-pro-rounded@21.0.0/SF-Pro-Rounded-Medium.otf') format('opentype');
-  font-weight: 500;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'SF Pro Rounded';
-  src: url('https://cdn.jsdelivr.net/npm/@fontpkg/sf-pro-rounded@21.0.0/SF-Pro-Rounded-Semibold.otf') format('opentype');
-  font-weight: 600;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'SF Pro Rounded';
-  src: url('https://cdn.jsdelivr.net/npm/@fontpkg/sf-pro-rounded@21.0.0/SF-Pro-Rounded-Bold.otf') format('opentype');
-  font-weight: 700;
-  font-style: normal;
-  font-display: swap;
-}
-
 @custom-variant dark (&:is(.dark *));
 
 :root {
@@ -146,7 +114,7 @@
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-border: var(--sidebar-border);
 
-  --font-sans: var(--font-sf-pro-rounded), "SF Pro Rounded", ui-rounded, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-sans: var(--font-uncut-sans), "Uncut Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 
   --radius: 5px;
@@ -174,16 +142,11 @@
 
   /* Soft colour wash in the corners, like a frosted dashboard shell. */
   .app-shell {
-    background-image:
-      radial-gradient(60rem 32rem at 8% -10%, oklch(0.93 0.06 165 / 0.55), transparent 60%),
-      radial-gradient(52rem 30rem at 105% 4%, oklch(0.92 0.05 265 / 0.45), transparent 62%);
-    background-attachment: fixed;
+    background-color: #F4F5F7;
   }
 
   .dark .app-shell {
-    background-image:
-      radial-gradient(60rem 32rem at 8% -10%, oklch(0.45 0.06 175 / 0.25), transparent 60%),
-      radial-gradient(52rem 30rem at 105% 4%, oklch(0.42 0.06 275 / 0.22), transparent 62%);
+    background-color: #0B1220;
   }
 
   /* Measurements are typed, not stepped — drop the spinners */

@@ -211,8 +211,9 @@ export function QuotationBuilder({
           product_id: item.product_id ?? null,
           description: item.description,
           rate_type: item.rate_type,
-          width: item.rate_type === "sqft" ? (item.width ?? null) : null,
-          height: item.rate_type === "sqft" ? (item.height ?? null) : null,
+          // Size is recorded on every line; it only drives the price for sqft.
+          width: item.width ?? null,
+          height: item.height ?? null,
           area,
           qty: item.qty,
           // base_rate is what was typed; rate is what the slab actually charges.

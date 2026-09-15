@@ -10,7 +10,6 @@
     "build:check": "NEXT_DIST_DIR=.next-check next build"
   },
   "dependencies": {
-    "@fontpkg/sf-pro-rounded": "^21.0.0",
     "@hookform/resolvers": "^5.7.1",
     "@hugeicons/core-free-icons": "^4.2.3",
     "@hugeicons/react": "^1.1.9",

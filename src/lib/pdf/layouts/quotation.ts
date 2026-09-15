@@ -3,7 +3,8 @@ import autoTable from "jspdf-autotable";
 
 import { amountInWords, formatAmount, formatDate, formatNumber } from "@/lib/format";
 import { box, line, text, textBlock } from "@/lib/pdf/draw";
-import { itemDetailLine } from "@/lib/pdf/items";
+import { buildGstBreakdown } from "@/lib/pdf/gst";
+import { itemCell } from "@/lib/pdf/items";
 import {
   BODY_BOTTOM,
   COLORS,
@@ -60,9 +61,10 @@ export function drawQuotation(
     settings?.gst_number ? `GSTIN: ${settings.gst_number}` : null,
   ].filter((l): l is string => Boolean(l));
 
-  textBlock(doc, addressLines.join("\n"), textX, y + 11, {
+  const addressBottom = textBlock(doc, addressLines.join("\n"), textX, y + 11, {
     size: FONT.tiny,
     color: COLORS.muted,
+    maxWidth: CONTENT_WIDTH - (textX - margin) - 50,
     lineHeight: 3.6,
   });
 
@@ -73,7 +75,9 @@ export function drawQuotation(
     align: "right",
   });
 
-  y += 28;
+  // Header grows with the address block so a long one (email + GSTIN) never
+  // slides under the navy meta bar.
+  y = Math.max(y + 28, addressBottom + 3);
 
   /* --------------------------------------------------------- meta-bar grid */
   const half = CONTENT_WIDTH / 2;
@@ -147,8 +151,10 @@ export function drawQuotation(
     theme: "plain",
     head: [["Description", "Dimensions", "Qty", "Rate", "Amount"]],
     body: quotation.items.map((item) => [
-      itemDetailLine(item),
-      item.width && item.height ? `${item.width} × ${item.height} ft` : "—",
+      itemCell(item),
+      item.width && item.height
+        ? `${formatNumber(Number(item.width))} × ${formatNumber(Number(item.height))} ft`
+        : "—",
       formatNumber(item.qty),
       `${CURRENCY} ${formatNumber(item.rate)}`,
       `${CURRENCY} ${formatAmount(item.amount)}`,
@@ -185,9 +191,22 @@ export function drawQuotation(
   const totalsWidth = 70;
   const totalsX = CONTENT_RIGHT - totalsWidth;
 
+  // Same CGST/SGST vs IGST split the tax invoice prints, so the customer sees
+  // the exact tax lines before the invoice is raised.
+  const gst = buildGstBreakdown(quotation.items, settings, quotation.customer);
+  // A single slab prints its rate ("CGST (9%)"); mixed slabs just name the tax.
+  const rate = gst.slabs.length === 1 ? gst.slabs[0].rate : null;
+  const pct = (value: number) => ` (${formatNumber(value, value % 1 ? 1 : 0)}%)`;
+  const taxRows: [string, string, boolean][] = gst.intraState
+    ? [
+        [`CGST${rate === null ? "" : pct(rate / 2)}:`, `${CURRENCY} ${formatAmount(gst.cgst)}`, false],
+        [`SGST${rate === null ? "" : pct(rate / 2)}:`, `${CURRENCY} ${formatAmount(gst.sgst)}`, false],
+      ]
+    : [[`IGST${rate === null ? "" : pct(rate)}:`, `${CURRENCY} ${formatAmount(gst.igst)}`, false]];
+
   const totalsRows: [string, string, boolean][] = [
-    ["Subtotal:", `${CURRENCY} ${formatAmount(quotation.subtotal)}`, false],
-    [`GST (${formatNumber(quotation.items[0]?.gst_percent ?? 18)}%):`, `${CURRENCY} ${formatAmount(quotation.gst_amount)}`, false],
+    ["Subtotal (Taxable):", `${CURRENCY} ${formatAmount(quotation.subtotal)}`, false],
+    ...taxRows,
     ["Total:", `${CURRENCY} ${formatAmount(quotation.grand_total)}`, true],
   ];
 

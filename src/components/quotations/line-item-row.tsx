@@ -96,14 +96,12 @@ export function LineItemRow({
               ✨ Custom Item
             </Badge>
           ) : null}
-          {isSqft ? (
-            <UnitConverter
-              onApply={handleApplyConvertedUnit}
-              triggerLabel="Convert CM / Inches"
-              variant="outline"
-              size="sm"
-            />
-          ) : null}
+          <UnitConverter
+            onApply={handleApplyConvertedUnit}
+            triggerLabel="Convert CM / Inches"
+            variant="outline"
+            size="sm"
+          />
         </div>
         <Button
           type="button"
@@ -164,46 +162,48 @@ export function LineItemRow({
             {fieldError(itemErrors?.description?.message)}
           </div>
 
-          {/* Measurements */}
+          {/* Size is on every line: it prices sqft lines and is a plain note on piece lines. */}
+          <div className="lg:col-span-2">
+            <Label className="text-xs text-muted-foreground">
+              Width (ft){isSqft ? "" : " · optional"}
+            </Label>
+            <Input
+              className="mt-1"
+              type="number"
+              step="0.01"
+              min="0"
+              inputMode="decimal"
+              aria-invalid={!!itemErrors?.width}
+              {...register(`items.${index}.width` as const)}
+            />
+            {fieldError(itemErrors?.width?.message)}
+          </div>
+          <div className="lg:col-span-2">
+            <Label className="text-xs text-muted-foreground">
+              Height (ft){isSqft ? "" : " · optional"}
+            </Label>
+            <Input
+              className="mt-1"
+              type="number"
+              step="0.01"
+              min="0"
+              inputMode="decimal"
+              aria-invalid={!!itemErrors?.height}
+              {...register(`items.${index}.height` as const)}
+            />
+            {fieldError(itemErrors?.height?.message)}
+          </div>
           {isSqft ? (
-            <>
-              <div className="lg:col-span-2">
-                <Label className="text-xs text-muted-foreground">Width (ft)</Label>
-                <Input
-                  className="mt-1"
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  inputMode="decimal"
-                  aria-invalid={!!itemErrors?.width}
-                  {...register(`items.${index}.width` as const)}
-                />
-                {fieldError(itemErrors?.width?.message)}
+            <div className="lg:col-span-2">
+              <Label className="text-xs text-muted-foreground">Area (sq.ft.)</Label>
+              <div className="mt-1 flex h-9 items-center rounded-lg border border-dashed border-border bg-muted/50 px-3 text-sm font-medium tabular-nums">
+                {formatNumber(area ?? 0)}
               </div>
-              <div className="lg:col-span-2">
-                <Label className="text-xs text-muted-foreground">Height (ft)</Label>
-                <Input
-                  className="mt-1"
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  inputMode="decimal"
-                  aria-invalid={!!itemErrors?.height}
-                  {...register(`items.${index}.height` as const)}
-                />
-                {fieldError(itemErrors?.height?.message)}
-              </div>
-              <div className="lg:col-span-2">
-                <Label className="text-xs text-muted-foreground">Area (sq.ft.)</Label>
-                <div className="mt-1 flex h-9 items-center rounded-lg border border-dashed border-border bg-muted/50 px-3 text-sm font-medium tabular-nums">
-                  {formatNumber(area ?? 0)}
-                </div>
-              </div>
-            </>
+            </div>
           ) : null}
 
-          <div className={cn(isSqft ? "lg:col-span-2" : "lg:col-span-3")}>
-            <Label className="text-xs text-muted-foreground">Qty</Label>
+          <div className="lg:col-span-2">
+            <Label className="text-xs text-muted-foreground">{isSqft ? "Qty" : "Pcs"}</Label>
             <Input
               className="mt-1"
               type="number"
@@ -217,7 +217,7 @@ export function LineItemRow({
           </div>
 
           {/* Editable Rate Column */}
-          <div className={cn(isSqft ? "lg:col-span-2" : "lg:col-span-3")}>
+          <div className="lg:col-span-2">
             <Label className="text-xs text-muted-foreground">
               Rate {isSqft ? "/ sq.ft." : "/ piece"}
             </Label>
@@ -239,7 +239,7 @@ export function LineItemRow({
           </div>
 
           {/* GST % Dropdown */}
-          <div className={cn(isSqft ? "lg:col-span-2" : "lg:col-span-3")}>
+          <div className="lg:col-span-2">
             <Label className="text-xs text-muted-foreground">GST %</Label>
             <Select
               value={String(Number(value?.gst_percent ?? 18))}
@@ -270,7 +270,7 @@ export function LineItemRow({
             </Select>
           </div>
 
-          <div className={cn("flex flex-col justify-end", isSqft ? "lg:col-span-2" : "lg:col-span-3")}>
+          <div className={cn("flex flex-col justify-end", isSqft ? "lg:col-span-2" : "lg:col-span-4")}>
             <Label className="text-xs text-muted-foreground">Amount</Label>
             <div className="mt-1 flex h-9 items-center justify-end rounded-lg bg-primary/5 px-3 text-sm font-semibold tabular-nums text-primary">
               {formatCurrency(amount)}

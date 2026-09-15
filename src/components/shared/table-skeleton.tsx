@@ -23,7 +23,7 @@ export function CardGridSkeleton({ count = 4 }: { count?: number }) {
   return (
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4" aria-busy="true" aria-label="Loading">
       {Array.from({ length: count }).map((_, i) => (
-        <div key={i} className="rounded-xl border border-border bg-card p-5">
+        <div key={i} className="rounded-[14px] border border-border bg-card p-5">
           <Skeleton className="h-3 w-24" />
           <Skeleton className="mt-4 h-7 w-32" />
           <Skeleton className="mt-3 h-3 w-20" />

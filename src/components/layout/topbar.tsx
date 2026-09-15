@@ -82,13 +82,13 @@ export function Topbar({ userEmail, userName }: TopbarProps) {
 
   return (
     <>
-      <header className="flex items-center gap-2 py-3 sm:gap-3 sm:py-4">
+      <header className="no-print flex items-center gap-2 py-3 sm:gap-2.5">
         {/* Mobile menu trigger */}
         <Button
           variant="outline"
           size="icon"
           onClick={() => setMobileOpen(true)}
-          className="size-10 shrink-0 rounded-[5px] lg:hidden"
+          className="size-10 shrink-0 rounded-[10px] lg:hidden"
           aria-label="Open navigation menu"
         >
           <Menu className="size-5 text-slate-700 dark:text-slate-200" />
@@ -104,7 +104,7 @@ export function Topbar({ userEmail, userName }: TopbarProps) {
           type="button"
           onClick={() => setCmdOpen(true)}
           aria-label="Search"
-          className="flex size-10 shrink-0 items-center justify-center rounded-[5px] border border-slate-200 bg-white text-slate-500 shadow-xs transition-colors hover:bg-slate-50 sm:hidden dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
+          className="flex size-10 shrink-0 items-center justify-center rounded-[10px] border border-slate-200 bg-white text-slate-500 transition-colors hover:bg-slate-50 sm:hidden dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
         >
           <Search className="size-4" />
         </button>
@@ -113,25 +113,25 @@ export function Topbar({ userEmail, userName }: TopbarProps) {
           <button
             type="button"
             onClick={() => setCmdOpen(true)}
-            className="flex h-11 w-full items-center justify-between rounded-[5px] border border-slate-200 bg-white px-3.5 text-xs text-slate-400 shadow-xs transition-all hover:border-indigo-300 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-indigo-800"
+            className="flex h-10 w-full items-center justify-between overflow-hidden rounded-[10px] border border-slate-200 bg-white px-3.5 text-sm text-slate-400 transition-colors hover:border-slate-300 dark:border-slate-700 dark:bg-slate-900 dark:hover:border-slate-600"
           >
-            <div className="flex items-center gap-2.5">
-              <Search className="size-4 text-slate-400" />
-              <span className="truncate font-medium text-slate-400">Search commands, pages, invoices...</span>
+            <div className="flex min-w-0 items-center gap-2.5">
+              <Search className="size-4 shrink-0 text-slate-400" />
+              <span className="truncate text-slate-400">Search commands, pages, invoices...</span>
             </div>
-            <kbd className="hidden items-center gap-0.5 rounded-[5px] bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-500 md:inline-flex dark:bg-slate-800 dark:text-slate-400">
+            <kbd className="hidden items-center gap-0.5 rounded-[6px] border border-slate-200 px-1.5 py-0.5 text-[10px] font-medium text-slate-500 md:inline-flex dark:border-slate-700 dark:text-slate-400">
               <Command className="size-3" /> K
             </kbd>
           </button>
         </div>
 
         {/* Header Right Actions */}
-        <div className="ml-auto flex shrink-0 items-center gap-2 sm:gap-3">
+        <div className="ml-auto flex shrink-0 items-center gap-2 sm:gap-2.5">
           {/* Quick Action Button — icon only on phones */}
           <Button
             asChild
             size="icon"
-            className="size-10 rounded-[5px] bg-indigo-600 text-white shadow-xs hover:bg-indigo-700 sm:hidden"
+            className="size-10 rounded-[10px] bg-slate-900 text-white shadow-none hover:bg-slate-800 sm:hidden dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white"
           >
             <Link href="/quotations/new" aria-label="New quotation">
               <Plus className="size-4" />
@@ -140,7 +140,7 @@ export function Topbar({ userEmail, userName }: TopbarProps) {
 
           <Button
             asChild
-            className="hidden rounded-[5px] bg-indigo-600 font-semibold text-white shadow-xs hover:bg-indigo-700 sm:inline-flex"
+            className="hidden h-10 rounded-[10px] bg-slate-900 px-4 text-sm font-medium text-white shadow-none hover:bg-slate-800 sm:inline-flex dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white"
           >
             <Link href="/quotations/new">
               <Plus className="mr-1.5 size-4" />
@@ -153,7 +153,7 @@ export function Topbar({ userEmail, userName }: TopbarProps) {
             type="button"
             onClick={toggleTheme}
             aria-label="Toggle dark mode"
-            className="hidden size-10 items-center justify-center rounded-[5px] border border-slate-200 bg-white text-slate-600 shadow-xs transition-colors hover:bg-slate-50 sm:flex dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
+            className="hidden size-10 shrink-0 items-center justify-center rounded-[10px] border border-slate-200 bg-white text-slate-600 transition-colors hover:border-slate-300 hover:bg-slate-50 sm:flex dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-slate-600 dark:hover:bg-slate-800"
           >
             {isDarkMode ? <Sun className="size-4 text-amber-400" /> : <Moon className="size-4" />}
           </button>
@@ -162,7 +162,7 @@ export function Topbar({ userEmail, userName }: TopbarProps) {
           <Link
             href="/quotations?status=invoice"
             aria-label="Unpaid invoices notifications"
-            className="relative flex size-10 shrink-0 items-center justify-center rounded-[5px] border border-slate-200 bg-white text-slate-600 shadow-xs transition-colors hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
+            className="relative flex size-10 shrink-0 items-center justify-center rounded-[10px] border border-slate-200 bg-white text-slate-600 transition-colors hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-slate-600 dark:hover:bg-slate-800"
           >
             <Bell className="size-4" />
             <span className="absolute right-2 top-2 size-2 rounded-full bg-indigo-600 ring-2 ring-white dark:ring-slate-900" />
@@ -174,18 +174,18 @@ export function Topbar({ userEmail, userName }: TopbarProps) {
               <button
                 type="button"
                 aria-label="Account menu"
-                className="flex h-10 shrink-0 items-center gap-2.5 rounded-[5px] border border-slate-200 bg-white px-2 shadow-xs transition-colors hover:border-indigo-300 sm:px-2.5 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-indigo-800"
+                className="flex h-10 shrink-0 items-center gap-2.5 rounded-[10px] border border-slate-200 bg-white px-2 transition-colors hover:border-slate-300 sm:px-2.5 dark:border-slate-700 dark:bg-slate-900 dark:hover:border-slate-600"
               >
-                <span className="flex size-7 items-center justify-center rounded-[5px] bg-indigo-100 text-xs font-bold text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
+                <span className="flex size-7 items-center justify-center rounded-full bg-indigo-100 text-xs font-semibold text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
                   {initial}
                 </span>
-                <span className="hidden max-w-28 truncate text-xs font-bold text-slate-800 lg:block dark:text-slate-200">
+                <span className="hidden max-w-28 truncate text-sm font-medium text-slate-800 lg:block dark:text-slate-200">
                   {userName}
                 </span>
                 <ChevronDown className="hidden size-3.5 text-slate-400 lg:block" />
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56 rounded-[5px] p-1.5 shadow-xl">
+            <DropdownMenuContent align="end" className="w-56 rounded-[12px] p-1.5 shadow-xl">
               <DropdownMenuLabel className="flex items-center gap-2.5 p-2 font-normal">
                 <div className="flex size-8 items-center justify-center rounded-xl bg-indigo-50 font-bold text-indigo-600 dark:bg-indigo-950 dark:text-indigo-400">
                   {initial}

@@ -104,13 +104,13 @@ export function DocumentPreview({
             </div>
             <dl className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1.5 text-xs">
               <Field label="HSN/SAC">{hsn}</Field>
+              {item.width && item.height ? (
+                <Field label="Size">
+                  {formatNumber(Number(item.width))} × {formatNumber(Number(item.height))} ft
+                </Field>
+              ) : null}
               {item.rate_type === "sqft" ? (
-                <>
-                  <Field label="Size">
-                    {formatNumber(Number(item.width ?? 0))} × {formatNumber(Number(item.height ?? 0))} ft
-                  </Field>
-                  <Field label="Area">{formatNumber(Number(item.area ?? 0))} sq.ft.</Field>
-                </>
+                <Field label="Area">{formatNumber(Number(item.area ?? 0))} sq.ft.</Field>
               ) : null}
               <Field label="Qty">{formatNumber(Number(item.qty))}</Field>
               <Field label="Rate">{formatCurrency(item.rate)}</Field>
@@ -142,8 +142,8 @@ export function DocumentPreview({
                 <TableCell className="font-medium">{item.description}</TableCell>
                 <TableCell className="text-center text-muted-foreground">{hsn}</TableCell>
                 <TableCell className="hidden whitespace-nowrap text-center text-muted-foreground sm:table-cell">
-                  {item.rate_type === "sqft"
-                    ? `${formatNumber(Number(item.width ?? 0))} × ${formatNumber(Number(item.height ?? 0))} ft`
+                  {item.width && item.height
+                    ? `${formatNumber(Number(item.width))} × ${formatNumber(Number(item.height))} ft`
                     : "—"}
                 </TableCell>
                 <TableCell className="hidden text-right tabular-nums sm:table-cell">

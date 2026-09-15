@@ -8,6 +8,10 @@ export type PaymentStatus = "unpaid" | "partial" | "paid";
 export type UserRole = "admin" | "staff";
 export type CommChannel = "sms" | "whatsapp";
 export type CommStatus = "queued" | "sent" | "failed";
+/** Stored as plain text in job_sheet_entries; these are the values the app writes. */
+export type JobStatus = "Pending" | "In Production" | "Completed" | "Delivered";
+export type JobCustomerType = "New" | "Repeat";
+export type JobPaymentMode = "UPI" | "Cash" | "Card" | "Bank Transfer" | "Credit";
 
 export interface Profile {
   id: string;
@@ -87,6 +91,32 @@ export interface QuotationItem {
   gst_percent: number;
   amount: number;
   position: number;
+  created_at: string;
+  updated_at: string;
+}
+
+/** Daily job sheet row (table `job_sheet_entries`). Balance and profit are derived in the app. */
+export interface JobEntry {
+  id: string;
+  job_number: string;
+  date: string;
+  customer_name: string;
+  customer_id: string | null;
+  mobile: string | null;
+  product_name: string;
+  product_id: string | null;
+  size: string | null;
+  qty: number;
+  total_sale: number;
+  advance_paid: number;
+  status: JobStatus;
+  customer_type: JobCustomerType | null;
+  primary_staff: string | null;
+  payment_mode: JobPaymentMode | null;
+  delivery_date: string | null;
+  actual_delivery_date: string | null;
+  direct_cost: number;
+  created_by: string | null;
   created_at: string;
   updated_at: string;
 }

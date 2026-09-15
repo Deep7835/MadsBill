@@ -1,9 +1,11 @@
 "use client";
 
 import { createClient } from "@/lib/supabase/client";
+import type { ReportInvoice } from "@/lib/reports";
 import type {
   CommunicationLog,
   Customer,
+  JobEntry,
   JobSheetEntry,
   Payment,
   Product,
@@ -400,6 +402,108 @@ export async function saveSettings(values: Record<string, unknown>): Promise<Set
       .select()
       .single(),
   ) as Settings;
+}
+
+/* ------------------------------------------------------------------ job sheet */
+
+const JOB_TABLE = "job_sheet_entries";
+
+export async function fetchJobEntries(): Promise<JobEntry[]> {
+  const supabase = createClient();
+  return unwrap(
+    await supabase
+      .from(JOB_TABLE)
+      .select("*")
+      .order("date", { ascending: false })
+      .order("created_at", { ascending: false }),
+  ) as JobEntry[];
+}
+
+/**
+ * The table has no sequence, so the next "JOB-0056" comes from the highest
+ * number already stored. Zero-padding keeps the text sort numeric.
+ */
+async function nextJobNumber(): Promise<string> {
+  const supabase = createClient();
+  const rows = unwrap(
+    await supabase.from(JOB_TABLE).select("job_number").order("job_number", { ascending: false }).limit(1),
+  ) as { job_number: string }[];
+  const last = Number(rows[0]?.job_number.match(/(\d+)$/)?.[1] ?? 0);
+  return `JOB-${String(last + 1).padStart(4, "0")}`;
+}
+
+export async function saveJobEntry(
+  values: Record<string, unknown>,
+  id?: string,
+): Promise<JobEntry> {
+  const supabase = createClient();
+  if (id) {
+    return unwrap(
+      await supabase
+        .from(JOB_TABLE)
+        .update({ ...values, updated_at: new Date().toISOString() })
+        .eq("id", id)
+        .select()
+        .single(),
+    ) as JobEntry;
+  }
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const row = { ...values, job_number: await nextJobNumber(), created_by: user?.id ?? null };
+  return unwrap(await supabase.from(JOB_TABLE).insert(row).select().single()) as JobEntry;
+}
+
+export async function deleteJobEntry(id: string): Promise<void> {
+  const supabase = createClient();
+  const { error } = await supabase.from(JOB_TABLE).delete().eq("id", id);
+  if (error) throw new Error(error.message);
+}
+
+/* ------------------------------------------------------------------- reports */
+
+export interface ReportData {
+  invoices: ReportInvoice[];
+  payments: Payment[];
+  settings: Settings | null;
+}
+
+/** Tax invoices dated inside the period, with their lines and any payments logged against them. */
+export async function fetchReportData(from: string, to: string): Promise<ReportData> {
+  const supabase = createClient();
+
+  const [invoicesRes, settings] = await Promise.all([
+    supabase
+      .from("quotations")
+      .select("*, customer:customers(*)")
+      .eq("status", "invoice")
+      .gte("date", from)
+      .lte("date", to)
+      .order("date", { ascending: true }),
+    fetchSettings(),
+  ]);
+  const invoices = unwrap(invoicesRes) as unknown as (Quotation & { customer: Customer | null })[];
+  const ids = invoices.map((inv) => inv.id);
+  if (!ids.length) return { invoices: [], payments: [], settings };
+
+  const [itemsRes, paymentsRes] = await Promise.all([
+    supabase.from("quotation_items").select("*").in("quotation_id", ids).order("position"),
+    supabase.from("payments").select("*").in("quotation_id", ids),
+  ]);
+  const items = unwrap(itemsRes) as QuotationItem[];
+  const payments = unwrap(paymentsRes) as Payment[];
+
+  const itemsByInvoice = new Map<string, QuotationItem[]>();
+  for (const item of items) {
+    (itemsByInvoice.get(item.quotation_id) ?? itemsByInvoice.set(item.quotation_id, []).get(item.quotation_id)!).push(item);
+  }
+
+  return {
+    invoices: invoices.map((inv) => ({ ...inv, items: itemsByInvoice.get(inv.id) ?? [] })),
+    payments,
+    settings,
+  };
 }
 
 /* ------------------------------------------------------------------ dashboard */

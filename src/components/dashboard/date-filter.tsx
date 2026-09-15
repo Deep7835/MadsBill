@@ -106,17 +106,17 @@ export function DateFilter({ onChange }: DateFilterProps) {
         <button
           type="button"
           className={cn(
-            "inline-flex h-9 items-center gap-2 rounded-[5px] border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700 shadow-xs transition-colors hover:border-indigo-300 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-indigo-800",
+            "inline-flex h-10 items-center gap-2 rounded-[10px] border border-slate-200 bg-white px-3.5 text-sm font-medium text-slate-700 transition-colors hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-slate-600 dark:hover:bg-slate-800",
           )}
         >
-          <CalendarIcon className="size-3.5 text-slate-400" />
+          <CalendarIcon className="size-4 text-slate-400" />
           <span>{formatRangeLabel(range, preset)}</span>
-          <ChevronDown className="size-3 text-slate-400" />
+          <ChevronDown className="size-3.5 text-slate-400" />
         </button>
       </PopoverTrigger>
       <PopoverContent
         align="end"
-        className="w-auto p-0 rounded-[5px] shadow-xl border-slate-200 dark:border-slate-700"
+        className="w-auto rounded-[12px] border-slate-200 p-0 shadow-xl dark:border-slate-700"
       >
         <div className="flex">
           {/* Presets List */}
