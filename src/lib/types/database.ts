@@ -69,6 +69,9 @@ export interface Quotation {
   subtotal: number;
   gst_amount: number;
   grand_total: number;
+  /** GST bill number (MK-001…), set once when the invoice is issued as a GST bill. */
+  bill_number: string | null;
+  bill_date: string | null;
   created_by: string | null;
   created_at: string;
   updated_at: string;

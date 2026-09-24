@@ -269,6 +269,34 @@ export async function convertToInvoice(id: string): Promise<Quotation> {
   ) as Quotation;
 }
 
+/* ------------------------------------------------------------------ gst bills */
+
+export type GstBillRow = Quotation & {
+  customer: Pick<Customer, "id" | "business_name" | "gst_number" | "state"> | null;
+};
+
+const GST_BILL_SELECT = "*, customer:customers(id, business_name, gst_number, state)";
+
+/** Every invoice, billed or not — the GST Bills page splits them into issued and pending. */
+export async function fetchGstBillInvoices(): Promise<GstBillRow[]> {
+  const supabase = createClient();
+  return unwrap(
+    await supabase
+      .from("quotations")
+      .select(GST_BILL_SELECT)
+      .eq("status", "invoice")
+      .order("created_at", { ascending: false }),
+  ) as unknown as GstBillRow[];
+}
+
+/** Assigns the next MK-001 number in the database, so two users can never get the same one. */
+export async function generateGstBill(id: string): Promise<Quotation> {
+  const supabase = createClient();
+  return unwrap(
+    await supabase.rpc("generate_gst_bill", { p_quotation_id: id }).single(),
+  ) as Quotation;
+}
+
 export async function updatePaymentStatus(
   id: string,
   payment_status: "unpaid" | "partial" | "paid",

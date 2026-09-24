@@ -11,6 +11,22 @@ import { buildUpiUrl } from "@/components/shared/qr-code";
 export interface BuildPdfOptions {
   quotation: QuotationFull;
   settings: Settings | null;
+  /** Print the invoice under its GST bill number and date instead of its document number. */
+  gstBill?: boolean;
+}
+
+/**
+ * A GST bill is the invoice layout carrying the bill's own number and date,
+ * so swapping them in here keeps every layout, footer and file name in step.
+ */
+function asGstBill(quotation: QuotationFull): QuotationFull {
+  if (!quotation.bill_number) throw new Error("Generate the GST bill first.");
+  return {
+    ...quotation,
+    status: "invoice",
+    quote_number: quotation.bill_number,
+    date: quotation.bill_date ?? quotation.date,
+  };
 }
 
 export interface LoadedImage {
@@ -103,9 +119,11 @@ function paintChrome(doc: jsPDF, quotation: QuotationFull, company: string) {
  * layouts, matching the printed templates each is modelled on.
  */
 export async function buildQuotationPdf({
-  quotation,
+  quotation: source,
   settings,
+  gstBill,
 }: BuildPdfOptions): Promise<jsPDF> {
+  const quotation = gstBill ? asGstBill(source) : source;
   const { jsPDF: JsPDF } = await import("jspdf");
   const doc = new JsPDF({ unit: "mm", format: "a4", orientation: "portrait" });
 
@@ -129,15 +147,16 @@ export async function buildQuotationPdf({
   return doc;
 }
 
-export function pdfFileName(quotation: QuotationFull): string {
-  const prefix = quotation.status === "invoice" ? "Invoice" : "Quotation";
+export function pdfFileName(quotation: QuotationFull, gstBill = false): string {
+  const prefix = gstBill ? "GST-Bill" : quotation.status === "invoice" ? "Invoice" : "Quotation";
+  const number = gstBill ? quotation.bill_number : quotation.quote_number;
   const customer = (quotation.customer?.business_name ?? "Customer").replace(/[^\w\s-]/g, "").trim();
-  return `${prefix}-${quotation.quote_number}-${customer}.pdf`.replace(/\s+/g, "-");
+  return `${prefix}-${number}-${customer}.pdf`.replace(/\s+/g, "-");
 }
 
 export async function downloadQuotationPdf(options: BuildPdfOptions): Promise<void> {
   const doc = await buildQuotationPdf(options);
-  doc.save(pdfFileName(options.quotation));
+  doc.save(pdfFileName(options.quotation, options.gstBill));
 }
 
 /** Opens the browser print dialog with the generated document. */

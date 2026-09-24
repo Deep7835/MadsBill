@@ -22,6 +22,7 @@ import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { DocumentPreview } from "@/components/quotations/document-preview";
 import { WhatsappShareDialog } from "@/components/quotations/whatsapp-share-dialog";
 import { RecordPaymentDialog } from "@/components/customers/record-payment-dialog";
+import { GstBillCard } from "@/components/gst-bills/gst-bill-card";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -294,6 +295,10 @@ export function QuotationDetailView({ quotationId }: { quotationId: string }) {
           </div>
         </CardContent>
       </Card>
+
+      {isInvoice ? (
+        <GstBillCard quotation={data} settings={settings ?? null} onGenerated={refresh} />
+      ) : null}
 
       <DocumentPreview quotation={data} settings={settings ?? null} />
 
