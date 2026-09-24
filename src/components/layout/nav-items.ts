@@ -30,7 +30,7 @@ export const MAIN_NAV_ITEMS: NavItem[] = [
 ];
 
 export const MANAGEMENT_NAV_ITEMS: NavItem[] = [
-  { href: "/inventory", label: "Inventory", icon: BoxesIcon, badge: "Soon" },
+  { href: "/inventory", label: "Inventory", icon: BoxesIcon },
   { href: "/expenses", label: "Expenses", icon: ReceiptTextIcon, badge: "Soon" },
   { href: "/reports", label: "Reports & GST", icon: Analytics01Icon },
   { href: "/settings", label: "Company Settings", icon: Settings01Icon },

@@ -17,6 +17,8 @@ alter table public.settings
 comment on column public.quotations.bill_number is 'GST bill number (MK-001...), set once by generate_gst_bill()';
 comment on column public.settings.gst_bill_counter is 'Last GST bill number issued';
 
+-- Written without SELECT ... INTO: the Supabase SQL editor mistakes that
+-- for a table being created and injects ALTER TABLE lines into the body.
 create or replace function public.generate_gst_bill(p_quotation_id uuid)
 returns public.quotations
 language plpgsql
@@ -26,8 +28,12 @@ declare
   doc public.quotations;
   n   integer;
 begin
-  select * into doc from public.quotations where id = p_quotation_id for update;
-  if not found then
+  insert into public.settings (id) values (1) on conflict (id) do nothing;
+  -- Locking the settings row makes bill generation one-at-a-time.
+  perform 1 from public.settings where id = 1 for update;
+
+  doc := (select q from public.quotations q where q.id = p_quotation_id);
+  if doc.id is null then
     raise exception 'Document not found';
   end if;
   if doc.status <> 'invoice' then
@@ -38,19 +44,15 @@ begin
     return doc;
   end if;
 
-  insert into public.settings (id) values (1) on conflict (id) do nothing;
-  update public.settings
-     set gst_bill_counter = gst_bill_counter + 1
-   where id = 1
-  returning gst_bill_counter into n;
+  update public.settings set gst_bill_counter = gst_bill_counter + 1 where id = 1;
+  n := (select s.gst_bill_counter from public.settings s where s.id = 1);
 
   update public.quotations
      set bill_number = 'MK-' || lpad(n::text, greatest(3, length(n::text)), '0'),
          bill_date   = (now() at time zone 'Asia/Kolkata')::date
-   where id = p_quotation_id
-  returning * into doc;
+   where id = p_quotation_id;
 
-  return doc;
+  return (select q from public.quotations q where q.id = p_quotation_id);
 end;
 $$;
 

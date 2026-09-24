@@ -15,6 +15,8 @@ import type {
   QuotationWithCustomer,
   RateSlabHistory,
   Settings,
+  StockItem,
+  StockMovement,
 } from "@/lib/types/database";
 
 /** Every Supabase call in the app funnels through here so errors are uniform. */
@@ -429,6 +431,61 @@ export async function saveSettings(values: Record<string, unknown>): Promise<Set
       .select()
       .single(),
   ) as Settings;
+}
+
+/* ------------------------------------------------------------------ inventory */
+
+/** Every product with its stock on hand (from the `product_stock` view). */
+export async function fetchInventory(): Promise<StockItem[]> {
+  const supabase = createClient();
+  const [products, stock] = await Promise.all([
+    fetchProducts(),
+    supabase.from("product_stock").select("product_id, on_hand"),
+  ]);
+  const onHand = new Map(
+    (unwrap(stock) as { product_id: string; on_hand: number }[]).map((s) => [
+      s.product_id,
+      Number(s.on_hand),
+    ]),
+  );
+  return products.map((p) => ({ ...p, on_hand: onHand.get(p.id) ?? 0 }));
+}
+
+export async function fetchStockMovements(productId: string): Promise<StockMovement[]> {
+  const supabase = createClient();
+  return unwrap(
+    await supabase
+      .from("stock_movements")
+      .select("*")
+      .eq("product_id", productId)
+      .order("date", { ascending: false })
+      .order("created_at", { ascending: false })
+      .limit(200),
+  ) as StockMovement[];
+}
+
+export async function createStockMovement(
+  movement: Pick<StockMovement, "product_id" | "kind" | "qty" | "unit_cost" | "date" | "supplier" | "note">,
+): Promise<void> {
+  const supabase = createClient();
+  unwrap(await supabase.from("stock_movements").insert(movement).select("id").single());
+  // A purchase at a known rate is the freshest cost, so it becomes the item's cost price.
+  if (movement.kind === "purchase" && movement.unit_cost) {
+    await updateStockSettings(movement.product_id, { cost_price: movement.unit_cost });
+  }
+}
+
+export async function deleteStockMovement(id: string): Promise<void> {
+  const supabase = createClient();
+  unwrap(await supabase.from("stock_movements").delete().eq("id", id).select("id"));
+}
+
+export async function updateStockSettings(
+  productId: string,
+  values: Partial<Pick<Product, "cost_price" | "reorder_level" | "track_stock">>,
+): Promise<void> {
+  const supabase = createClient();
+  unwrap(await supabase.from("products").update(values).eq("id", productId).select("id").single());
 }
 
 /* ------------------------------------------------------------------ job sheet */

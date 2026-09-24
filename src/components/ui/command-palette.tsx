@@ -58,7 +58,7 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
     { label: "GST Bills", category: "Navigation", icon: Receipt, path: "/gst-bills" },
     { label: "Customers Ledger", category: "Navigation", icon: Users, path: "/customers" },
     { label: "Products & Rates", category: "Navigation", icon: Package, path: "/products" },
-    { label: "Inventory (Soon)", category: "Navigation", icon: Boxes, path: "/inventory" },
+    { label: "Inventory", category: "Navigation", icon: Boxes, path: "/inventory" },
     { label: "Expenses (Soon)", category: "Navigation", icon: Receipt, path: "/expenses" },
     { label: "Reports & GST", category: "Navigation", icon: BarChart3, path: "/reports" },
     { label: "Company Settings", category: "Navigation", icon: Settings, path: "/settings" },

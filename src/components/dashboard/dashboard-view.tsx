@@ -25,6 +25,7 @@ import {
 import { StatCard } from "@/components/dashboard/stat-card";
 import { RevenueChart } from "@/components/dashboard/revenue-chart";
 import { DateFilter } from "@/components/dashboard/date-filter";
+import { LowStockPanel } from "@/components/dashboard/low-stock-panel";
 import { CardGridSkeleton } from "@/components/shared/table-skeleton";
 import { EmptyState } from "@/components/shared/empty-state";
 import { DocStatusBadge, PaymentStatusBadge } from "@/components/shared/status-badge";
@@ -164,6 +165,8 @@ export function DashboardView() {
         </Card>
       ) : (
         <div className="space-y-5">
+          <LowStockPanel />
+
           {/* KPI strip — one frame, cells separated by hairlines */}
           <div
             className={cn(
