@@ -60,11 +60,12 @@ export function Topbar({ userEmail, userName }: TopbarProps) {
   const toggleTheme = () => {
     const next = !isDarkMode;
     setIsDarkMode(next);
-    if (next) {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
+    const freeze = document.createElement("style");
+    freeze.textContent = "*,*::before,*::after{transition:none !important}";
+    document.head.appendChild(freeze);
+    document.documentElement.classList.toggle("dark", next);
+    void document.body.offsetHeight;
+    requestAnimationFrame(() => freeze.remove());
   };
 
   async function handleSignOut() {
@@ -82,20 +83,19 @@ export function Topbar({ userEmail, userName }: TopbarProps) {
 
   return (
     <>
-      <header className="no-print flex items-center gap-2 py-3 sm:gap-2.5">
+      <header className="no-print sticky top-0 z-30 flex h-16 shrink-0 items-center gap-2 border-b border-border bg-card px-4 sm:gap-3 sm:px-6 lg:px-8">
         {/* Mobile menu trigger */}
-        <Button
-          variant="outline"
-          size="icon"
+        <button
+          type="button"
           onClick={() => setMobileOpen(true)}
-          className="size-10 shrink-0 rounded-[10px] lg:hidden"
+          className="flex size-9 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors duration-150 hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40 -ml-1.5 lg:hidden"
           aria-label="Open navigation menu"
         >
-          <Menu className="size-5 text-slate-700 dark:text-slate-200" />
-        </Button>
+          <Menu className="size-5" strokeWidth={1.75} />
+        </button>
 
         {/* Current section — the sidebar is hidden below lg, so this is the only cue */}
-        <span className="min-w-0 flex-1 truncate text-sm font-bold text-slate-800 lg:hidden dark:text-slate-200">
+        <span className="min-w-0 flex-1 truncate text-[15px] font-semibold text-foreground lg:hidden">
           {sectionLabel}
         </span>
 
@@ -104,7 +104,7 @@ export function Topbar({ userEmail, userName }: TopbarProps) {
           type="button"
           onClick={() => setCmdOpen(true)}
           aria-label="Search"
-          className="flex size-10 shrink-0 items-center justify-center rounded-[10px] border border-slate-200 bg-white text-slate-500 transition-colors hover:bg-slate-50 sm:hidden dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
+          className="flex size-9 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors duration-150 hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40 sm:hidden"
         >
           <Search className="size-4" />
         </button>
@@ -113,37 +113,30 @@ export function Topbar({ userEmail, userName }: TopbarProps) {
           <button
             type="button"
             onClick={() => setCmdOpen(true)}
-            className="flex h-10 w-full items-center justify-between overflow-hidden rounded-[10px] border border-slate-200 bg-white px-3.5 text-sm text-slate-400 transition-colors hover:border-slate-300 dark:border-slate-700 dark:bg-slate-900 dark:hover:border-slate-600"
+            className="flex h-9 w-full items-center justify-between overflow-hidden rounded-lg border border-border bg-muted/60 px-3 text-sm text-muted-foreground transition-colors duration-150 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
           >
-            <div className="flex min-w-0 items-center gap-2.5">
-              <Search className="size-4 shrink-0 text-slate-400" />
-              <span className="truncate text-slate-400">Search commands, pages, invoices...</span>
+            <div className="flex min-w-0 items-center gap-2">
+              <Search className="size-4 shrink-0" />
+              <span className="truncate">Search commands, pages, invoices…</span>
             </div>
-            <kbd className="hidden items-center gap-0.5 rounded-[6px] border border-slate-200 px-1.5 py-0.5 text-[10px] font-medium text-slate-500 md:inline-flex dark:border-slate-700 dark:text-slate-400">
+            <kbd className="hidden items-center gap-0.5 rounded-sm border border-border bg-card px-1.5 py-0.5 font-sans text-[11px] font-medium text-muted-foreground md:inline-flex">
               <Command className="size-3" /> K
             </kbd>
           </button>
         </div>
 
         {/* Header Right Actions */}
-        <div className="ml-auto flex shrink-0 items-center gap-2 sm:gap-2.5">
+        <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-2">
           {/* Quick Action Button — icon only on phones */}
-          <Button
-            asChild
-            size="icon"
-            className="size-10 rounded-[10px] bg-slate-900 text-white shadow-none hover:bg-slate-800 sm:hidden dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white"
-          >
+          <Button asChild size="icon" className="sm:hidden">
             <Link href="/quotations/new" aria-label="New quotation">
               <Plus className="size-4" />
             </Link>
           </Button>
 
-          <Button
-            asChild
-            className="hidden h-10 rounded-[10px] bg-slate-900 px-4 text-sm font-medium text-white shadow-none hover:bg-slate-800 sm:inline-flex dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white"
-          >
+          <Button asChild className="hidden pl-3 sm:inline-flex">
             <Link href="/quotations/new">
-              <Plus className="mr-1.5 size-4" />
+              <Plus />
               New Quotation
             </Link>
           </Button>
@@ -153,60 +146,60 @@ export function Topbar({ userEmail, userName }: TopbarProps) {
             type="button"
             onClick={toggleTheme}
             aria-label="Toggle dark mode"
-            className="hidden size-10 shrink-0 items-center justify-center rounded-[10px] border border-slate-200 bg-white text-slate-600 transition-colors hover:border-slate-300 hover:bg-slate-50 sm:flex dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-slate-600 dark:hover:bg-slate-800"
+            className="flex size-9 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors duration-150 hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40 hidden sm:flex"
           >
-            {isDarkMode ? <Sun className="size-4 text-amber-400" /> : <Moon className="size-4" />}
+            {isDarkMode ? <Sun className="size-[18px]" strokeWidth={1.75} /> : <Moon className="size-[18px]" strokeWidth={1.75} />}
           </button>
 
           {/* Notifications button */}
           <Link
             href="/quotations?status=invoice"
             aria-label="Unpaid invoices notifications"
-            className="relative flex size-10 shrink-0 items-center justify-center rounded-[10px] border border-slate-200 bg-white text-slate-600 transition-colors hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-slate-600 dark:hover:bg-slate-800"
+            className="flex size-9 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors duration-150 hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40 relative"
           >
-            <Bell className="size-4" />
-            <span className="absolute right-2 top-2 size-2 rounded-full bg-indigo-600 ring-2 ring-white dark:ring-slate-900" />
+            <Bell className="size-[18px]" strokeWidth={1.75} />
+            <span className="absolute right-2 top-2 size-2 rounded-full bg-primary ring-2 ring-card" />
           </Link>
+
+          <span aria-hidden="true" className="mx-1 hidden h-5 w-px bg-border sm:block" />
 
           {/* User Account Dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button
                 type="button"
-                aria-label="Account menu"
-                className="flex h-10 shrink-0 items-center gap-2.5 rounded-[10px] border border-slate-200 bg-white px-2 transition-colors hover:border-slate-300 sm:px-2.5 dark:border-slate-700 dark:bg-slate-900 dark:hover:border-slate-600"
+                aria-label={`Account menu for ${userName}`}
+                title={userEmail}
+                className="flex h-9 shrink-0 items-center gap-1 rounded-full p-0.5 pr-1.5 transition-colors duration-150 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40 data-[state=open]:bg-muted"
               >
-                <span className="flex size-7 items-center justify-center rounded-full bg-indigo-100 text-xs font-semibold text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
+                <span className="flex size-8 items-center justify-center rounded-full bg-accent text-[13px] font-semibold text-accent-foreground">
                   {initial}
                 </span>
-                <span className="hidden max-w-28 truncate text-sm font-medium text-slate-800 lg:block dark:text-slate-200">
-                  {userName}
-                </span>
-                <ChevronDown className="hidden size-3.5 text-slate-400 lg:block" />
+                <ChevronDown className="size-3.5 text-muted-foreground" />
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56 rounded-[12px] p-1.5 shadow-xl">
+            <DropdownMenuContent align="end" className="w-60">
               <DropdownMenuLabel className="flex items-center gap-2.5 p-2 font-normal">
-                <div className="flex size-8 items-center justify-center rounded-xl bg-indigo-50 font-bold text-indigo-600 dark:bg-indigo-950 dark:text-indigo-400">
+                <div className="flex size-8 items-center justify-center rounded-full bg-accent text-sm font-semibold text-accent-foreground">
                   {initial}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <span className="block truncate text-xs font-bold text-slate-900 dark:text-slate-100">{userName}</span>
-                  <span className="block truncate text-[11px] text-slate-400">{userEmail}</span>
+                  <span className="block truncate text-sm font-medium text-foreground">{userName}</span>
+                  <span className="block truncate text-xs text-muted-foreground">{userEmail}</span>
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onSelect={toggleTheme} className="rounded-xl text-xs font-medium sm:hidden">
+              <DropdownMenuItem onSelect={toggleTheme} className="sm:hidden">
                 {isDarkMode ? (
-                  <Sun className="mr-2 size-4 text-amber-400" />
+                  <Sun />
                 ) : (
-                  <Moon className="mr-2 size-4 text-slate-500" />
+                  <Moon />
                 )}
                 {isDarkMode ? "Light mode" : "Dark mode"}
               </DropdownMenuItem>
-              <DropdownMenuItem asChild className="rounded-xl text-xs font-medium">
-                <Link href="/settings" className="flex items-center gap-2">
-                  <Settings className="size-4 text-slate-500" />
+              <DropdownMenuItem asChild>
+                <Link href="/settings">
+                  <Settings />
                   Company Settings
                 </Link>
               </DropdownMenuItem>
@@ -214,9 +207,9 @@ export function Topbar({ userEmail, userName }: TopbarProps) {
               <DropdownMenuItem
                 disabled={signingOut}
                 onSelect={handleSignOut}
-                className="rounded-xl text-xs font-semibold text-rose-600 focus:bg-rose-50 focus:text-rose-600 dark:text-rose-400 dark:focus:bg-rose-950"
+                destructive
               >
-                <LogOut className="mr-2 size-4" />
+                <LogOut />
                 {signingOut ? "Signing out…" : "Sign Out"}
               </DropdownMenuItem>
             </DropdownMenuContent>

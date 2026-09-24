@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { format, subDays } from "date-fns";
 import { TrendingDown, TrendingUp } from "lucide-react";
 
+import { SegmentedControl } from "@/components/shared/segmented-control";
 import { formatCurrency } from "@/lib/format";
 import type { ActivityDay } from "@/lib/queries";
 import { cn } from "@/lib/utils";
@@ -14,6 +15,14 @@ const RANGES = [
 ] as const;
 
 type Days = (typeof RANGES)[number]["days"];
+
+/** Axis labels: ₹12K, ₹1.5L — short enough for a 48px gutter. */
+const compact = new Intl.NumberFormat("en-IN", {
+  style: "currency",
+  currency: "INR",
+  notation: "compact",
+  maximumFractionDigits: 1,
+});
 
 interface Bar {
   key: string;
@@ -68,25 +77,26 @@ export function RevenueChart({ activity }: { activity: ActivityDay[] }) {
   const change = previous > 0 ? ((current - previous) / previous) * 100 : null;
   const up = (change ?? 0) >= 0;
 
+  const axis = [max, max / 2, 0];
+  const gap = days === 7 ? "gap-3 sm:gap-5" : "gap-1 sm:gap-1.5";
+
   return (
     <div>
-      <div className="flex flex-wrap items-end justify-between gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <p className="text-[26px] font-semibold leading-none tracking-tight text-slate-900 dark:text-slate-50">
+          <p className="text-[22px] font-semibold leading-7 tracking-tight tabular-nums text-foreground">
             {formatCurrency(current)}
           </p>
-          <p className="mt-2 flex items-center gap-2 text-[11px] font-medium uppercase tracking-[0.08em] text-slate-500 dark:text-slate-400">
-            Last {days} days vs previous {days} days
+          <p className="mt-0.5 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+            Last {days} days vs the {days} before
             {change !== null ? (
               <span
                 className={cn(
-                  "inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[10px] font-semibold normal-case tracking-normal",
-                  up
-                    ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/80 dark:text-emerald-300"
-                    : "bg-rose-50 text-rose-700 dark:bg-rose-950/80 dark:text-rose-300",
+                  "inline-flex items-center gap-1 text-xs font-medium tabular-nums",
+                  up ? "text-[var(--success)]" : "text-destructive",
                 )}
               >
-                {up ? <TrendingUp className="size-2.5" /> : <TrendingDown className="size-2.5" />}
+                {up ? <TrendingUp className="size-3.5" /> : <TrendingDown className="size-3.5" />}
                 {up ? "+" : ""}
                 {change.toFixed(1)}%
               </span>
@@ -94,60 +104,74 @@ export function RevenueChart({ activity }: { activity: ActivityDay[] }) {
           </p>
         </div>
 
-        {/* Range toggle */}
-        <div
-          role="group"
+        <SegmentedControl
+          value={String(days)}
+          onChange={(v) => setDays(Number(v) as Days)}
           aria-label="Chart range"
-          className="inline-flex rounded-[10px] border border-slate-200 p-0.5 dark:border-slate-700"
-        >
-          {RANGES.map((range) => (
-            <button
-              key={range.days}
-              type="button"
-              aria-pressed={days === range.days}
-              onClick={() => setDays(range.days)}
-              className={cn(
-                "rounded-[8px] px-3 py-1.5 text-xs font-medium transition-colors",
-                days === range.days
-                  ? "bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900"
-                  : "text-slate-600 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-800",
-              )}
-            >
-              {range.label}
-            </button>
-          ))}
-        </div>
+          segments={RANGES.map((r) => ({ value: String(r.days), label: r.label }))}
+        />
       </div>
 
-      {/* Bars */}
-      <div className="mt-6">
-        <div className={cn("flex h-44 items-end", days === 7 ? "gap-3 sm:gap-5" : "gap-1 sm:gap-1.5")}>
-          {bars.map((bar) => (
-            <div
-              key={bar.key}
-              title={
-                bar.count
-                  ? `${bar.title} · ${formatCurrency(bar.total)} · ${bar.count} invoice${bar.count === 1 ? "" : "s"}`
-                  : `${bar.title} · no invoices`
-              }
-              className="relative h-full min-w-0 flex-1 overflow-hidden rounded-md bg-slate-100 dark:bg-slate-800"
-            >
-              <div
-                className="absolute inset-x-0 bottom-0 rounded-md bg-indigo-500 transition-[height] duration-300 dark:bg-indigo-400"
-                style={{ height: `${(bar.total / max) * 100}%` }}
-              />
-            </div>
-          ))}
-        </div>
-        <div className={cn("mt-2.5 flex", days === 7 ? "gap-3 sm:gap-5" : "gap-1 sm:gap-1.5")}>
-          {bars.map((bar, i) => (
-            <span
-              key={bar.key}
-              className="min-w-0 flex-1 truncate text-center text-[11px] text-slate-500 dark:text-slate-400"
-            >
-              {days === 7 || i % 5 === 0 || i === bars.length - 1 ? bar.label : ""}
+      {/* Bars on light gridlines, with the scale on the left. */}
+      <div className="mt-5 flex gap-2">
+        <div className="flex h-36 w-11 shrink-0 flex-col justify-between text-right text-[11px] tabular-nums text-muted-foreground" aria-hidden="true">
+          {axis.map((v, i) => (
+            <span key={i} className="-translate-y-1/2 first:translate-y-0 last:translate-y-0">
+              {v === 0 ? "0" : compact.format(v)}
             </span>
           ))}
+        </div>
+
+        <div className="min-w-0 flex-1">
+          <div className="relative h-36">
+            <div className="absolute inset-0 flex flex-col justify-between" aria-hidden="true">
+              {axis.map((_, i) => (
+                <div key={i} className={cn("border-t", i === axis.length - 1 ? "border-border" : "border-dashed border-border/70")} />
+              ))}
+            </div>
+
+            <div className={cn("relative flex h-full items-end", gap)}>
+              {bars.map((bar) => {
+                const pct = (bar.total / max) * 100;
+                return (
+                  <div
+                    key={bar.key}
+                    role="img"
+                    aria-label={
+                      bar.count
+                        ? `${bar.title}: ${formatCurrency(bar.total)}, ${bar.count} invoice${bar.count === 1 ? "" : "s"}`
+                        : `${bar.title}: no invoices`
+                    }
+                    className="group relative flex h-full min-w-0 flex-1 items-end justify-center"
+                  >
+                    <div
+                      className={cn(
+                        "w-full max-w-8 rounded-t-[3px] transition-[height,background-color] duration-300 ease-out",
+                        bar.total > 0 ? "bg-primary/85 group-hover:bg-primary" : "h-0.5 bg-border",
+                      )}
+                      style={bar.total > 0 ? { height: `${Math.max(pct, 1.5)}%` } : undefined}
+                    />
+                    {bar.total > 0 ? (
+                      <span
+                        className="pointer-events-none absolute left-1/2 z-10 -translate-x-1/2 whitespace-nowrap rounded-md bg-foreground px-2 py-1 text-[11px] font-medium tabular-nums text-background opacity-0 shadow-[var(--shadow-popover)] transition-opacity duration-150 group-hover:opacity-100"
+                        style={{ bottom: `calc(${Math.max(pct, 1.5)}% + 6px)` }}
+                      >
+                        {formatCurrency(bar.total)}
+                      </span>
+                    ) : null}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className={cn("mt-1.5 flex", gap)} aria-hidden="true">
+            {bars.map((bar, i) => (
+              <span key={bar.key} className="min-w-0 flex-1 truncate text-center text-[11px] text-muted-foreground">
+                {days === 7 || i % 5 === 0 || i === bars.length - 1 ? bar.label : ""}
+              </span>
+            ))}
+          </div>
         </div>
       </div>
     </div>

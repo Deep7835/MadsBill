@@ -101,7 +101,7 @@ export function DataTable<T extends Record<string, any>>({
       {/* Top Filter & Search Toolbar */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="relative min-w-0 flex-1 sm:max-w-xs">
-          <Search className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
+          <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <input
             type="text"
             value={query}
@@ -110,29 +110,30 @@ export function DataTable<T extends Record<string, any>>({
               setCurrentPage(1);
             }}
             placeholder={searchPlaceholder}
-            className="h-10 w-full rounded-xl border border-slate-200 bg-white pl-10 pr-4 text-xs font-medium text-slate-900 shadow-sm placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
+            aria-label={searchPlaceholder}
+            className="h-9 w-full rounded-lg border border-input bg-card pl-9 pr-3 text-sm text-foreground shadow-[var(--shadow-raised)] transition-[border-color,box-shadow] duration-150 placeholder:text-muted-foreground focus:border-primary/60 focus:outline-none focus:ring-[3px] focus:ring-ring/15"
           />
         </div>
 
         {/* Bulk Action Bar if items selected */}
         {selectedIds.size > 0 ? (
-          <div className="flex items-center gap-2 rounded-xl bg-indigo-50 px-3 py-1.5 text-xs font-bold text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
+          <div className="flex h-9 items-center gap-2 rounded-lg bg-accent px-3 text-[13px] font-medium text-accent-foreground">
             <span>{selectedIds.size} selected</span>
             <button
               onClick={() => setSelectedIds(new Set())}
-              className="ml-2 underline hover:text-indigo-900 dark:hover:text-indigo-100"
+              className="ml-1 underline underline-offset-2 hover:no-underline"
             >
               Clear
             </button>
           </div>
         ) : (
           <div className="flex items-center gap-2">
-            <button className="flex h-10 items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700 shadow-sm hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300">
-              <Filter className="size-3.5" />
+            <button type="button" className="flex h-9 items-center gap-2 rounded-lg border border-border bg-card px-3 text-[13px] font-medium text-foreground shadow-[var(--shadow-raised)] transition-colors duration-150 hover:bg-muted [&_svg]:text-muted-foreground">
+              <Filter className="size-4" />
               Filter
             </button>
-            <button className="flex h-10 items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700 shadow-sm hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300">
-              <Download className="size-3.5" />
+            <button type="button" className="flex h-9 items-center gap-2 rounded-lg border border-border bg-card px-3 text-[13px] font-medium text-foreground shadow-[var(--shadow-raised)] transition-colors duration-150 hover:bg-muted [&_svg]:text-muted-foreground">
+              <Download className="size-4" />
               Export
             </button>
           </div>
@@ -140,28 +141,34 @@ export function DataTable<T extends Record<string, any>>({
       </div>
 
       {/* Main Table Container */}
-      <div className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+      <div className="overflow-hidden rounded-xl border border-border bg-card shadow-[var(--shadow-panel)]">
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead className="sticky top-0 bg-slate-50/80 text-[11px] font-bold uppercase tracking-wider text-slate-500 backdrop-blur-sm dark:bg-slate-800/50 dark:text-slate-400">
+          <table className="w-full text-left text-sm">
+            <thead className="border-b border-border bg-muted/60 text-xs font-medium text-muted-foreground">
               <tr>
-                <th className="w-10 px-4 py-3.5">
+                <th className="h-10 w-12 px-4">
                   <input
+                    aria-label="Select all rows on this page"
                     type="checkbox"
                     checked={paginatedData.length > 0 && selectedIds.size === paginatedData.length}
                     onChange={toggleSelectAll}
-                    className="size-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 dark:border-slate-700"
+                    className="size-4 rounded border-input accent-primary"
                   />
                 </th>
                 {columns.map((col) => (
-                  <th key={col.key} className={cn("px-4 py-3.5", col.className)}>
+                  <th key={col.key} className={cn("h-10 px-4 font-medium", col.className, "font-medium text-muted-foreground")}>
                     {col.sortable ? (
                       <button
+                        type="button"
                         onClick={() => handleSort(col.key)}
-                        className="inline-flex items-center gap-1 hover:text-slate-900 dark:hover:text-slate-100"
+                        className="-mx-1 inline-flex items-center gap-1 rounded px-1 transition-colors duration-150 hover:text-foreground"
                       >
                         {col.header}
-                        <ArrowUpDown className="size-3" />
+                        {sortKey === col.key ? (
+                          sortOrder === "asc" ? <ChevronUp className="size-3.5" /> : <ChevronDown className="size-3.5" />
+                        ) : (
+                          <ChevronsUpDown className="size-3.5 opacity-50" />
+                        )}
                       </button>
                     ) : (
                       col.header
@@ -170,19 +177,19 @@ export function DataTable<T extends Record<string, any>>({
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+            <tbody className="divide-y divide-border">
               {isLoading ? (
                 Array.from({ length: 5 }).map((_, idx) => (
                   <tr key={idx} className="animate-pulse">
-                    <td className="px-4 py-4"><div className="size-4 rounded bg-slate-200 dark:bg-slate-800" /></td>
+                    <td className="h-[52px] px-4"><div className="size-4 rounded bg-muted" /></td>
                     {columns.map((c, i) => (
-                      <td key={i} className="px-4 py-4"><div className="h-4 w-24 rounded bg-slate-200 dark:bg-slate-800" /></td>
+                      <td key={i} className="h-[52px] px-4"><div className="h-3.5 w-24 rounded bg-muted" /></td>
                     ))}
                   </tr>
                 ))
               ) : paginatedData.length === 0 ? (
                 <tr>
-                  <td colSpan={columns.length + 1} className="py-12 text-center text-slate-400">
+                  <td colSpan={columns.length + 1} className="px-6 py-14 text-center text-sm text-muted-foreground">
                     {emptyMessage}
                   </td>
                 </tr>
@@ -195,21 +202,22 @@ export function DataTable<T extends Record<string, any>>({
                       key={rowId}
                       onClick={() => onRowClick && onRowClick(row)}
                       className={cn(
-                        "group transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-800/40",
+                        "group transition-colors duration-150 hover:bg-muted/50",
                         onRowClick && "cursor-pointer",
-                        isSelected && "bg-indigo-50/50 dark:bg-indigo-950/20"
+                        isSelected && "bg-accent/50"
                       )}
                     >
-                      <td className="px-4 py-3.5" onClick={(e) => e.stopPropagation()}>
+                      <td className="h-[52px] px-4" onClick={(e) => e.stopPropagation()}>
                         <input
+                          aria-label="Select row"
                           type="checkbox"
                           checked={isSelected}
                           onChange={(e) => toggleSelectRow(rowId, e as any)}
-                          className="size-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 dark:border-slate-700"
+                          className="size-4 rounded border-input accent-primary"
                         />
                       </td>
                       {columns.map((col) => (
-                        <td key={col.key} className={cn("px-4 py-3.5 font-medium text-slate-700 dark:text-slate-300", col.className)}>
+                        <td key={col.key} className={cn("h-[52px] px-4 text-foreground", col.className)}>
                           {col.render ? col.render(row) : row[col.key]}
                         </td>
                       ))}
@@ -222,27 +230,31 @@ export function DataTable<T extends Record<string, any>>({
         </div>
 
         {/* Footer Pagination Controls */}
-        <div className="flex items-center justify-between border-t border-slate-100 bg-slate-50/50 px-4 py-3 text-xs text-slate-500 dark:border-slate-800 dark:bg-slate-900/50">
+        <div className="flex items-center justify-between gap-3 border-t border-border px-4 py-3 text-[13px] text-muted-foreground">
           <div>
-            Showing <span className="font-bold text-slate-700 dark:text-slate-200">{paginatedData.length > 0 ? (currentPage - 1) * pageSize + 1 : 0}</span> to{" "}
-            <span className="font-bold text-slate-700 dark:text-slate-200">{Math.min(currentPage * pageSize, sortedData.length)}</span> of{" "}
-            <span className="font-bold text-slate-700 dark:text-slate-200">{sortedData.length}</span> results
+            Showing <span className="font-medium text-foreground">{paginatedData.length > 0 ? (currentPage - 1) * pageSize + 1 : 0}</span> to{" "}
+            <span className="font-medium text-foreground">{Math.min(currentPage * pageSize, sortedData.length)}</span> of{" "}
+            <span className="font-medium text-foreground">{sortedData.length}</span> results
           </div>
           <div className="flex items-center gap-2">
             <button
+              type="button"
+              aria-label="Previous page"
               onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
               disabled={currentPage === 1}
-              className="flex size-8 items-center justify-center rounded-lg border border-slate-200 bg-white shadow-sm disabled:opacity-40 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:hover:bg-slate-800"
+              className="flex size-8 items-center justify-center rounded-lg border border-border bg-card text-muted-foreground transition-colors duration-150 hover:bg-muted hover:text-foreground disabled:pointer-events-none disabled:opacity-40"
             >
               <ChevronLeft className="size-4" />
             </button>
-            <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
+            <span className="tabular-nums text-foreground">
               Page {currentPage} of {totalPages}
             </span>
             <button
+              type="button"
+              aria-label="Next page"
               onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
               disabled={currentPage === totalPages}
-              className="flex size-8 items-center justify-center rounded-lg border border-slate-200 bg-white shadow-sm disabled:opacity-40 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:hover:bg-slate-800"
+              className="flex size-8 items-center justify-center rounded-lg border border-border bg-card text-muted-foreground transition-colors duration-150 hover:bg-muted hover:text-foreground disabled:pointer-events-none disabled:opacity-40"
             >
               <ChevronRight className="size-4" />
             </button>

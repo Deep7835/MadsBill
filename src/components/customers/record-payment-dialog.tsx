@@ -108,7 +108,7 @@ export function RecordPaymentDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-primary">
+          <DialogTitle className="flex items-center gap-2 [&_svg]:text-muted-foreground">
             <HugeiconsIcon icon={CreditCardIcon} className="h-5 w-5" />
             Record Payment
           </DialogTitle>

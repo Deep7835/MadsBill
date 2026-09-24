@@ -49,11 +49,10 @@ import { JOB_CUSTOMER_TYPES, JOB_PAYMENT_MODES, JOB_STATUSES } from "@/lib/valid
 import type { JobEntry, JobStatus } from "@/lib/types/database";
 import { cn } from "@/lib/utils";
 
-const PANEL =
-  "rounded-[14px] border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900";
+const PANEL = "rounded-xl border border-border bg-card shadow-[var(--shadow-panel)]";
 
 const PILL_BUTTON =
-  "inline-flex h-10 items-center gap-2 rounded-[10px] border border-slate-200 bg-white px-3.5 text-sm font-medium text-slate-700 transition-colors hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-slate-600 dark:hover:bg-slate-800";
+  "inline-flex h-9 items-center gap-2 rounded-lg border border-border bg-card px-3.5 text-sm font-medium text-foreground shadow-[var(--shadow-raised)] transition-[background-color,scale] duration-150 ease-out hover:bg-muted active:not-disabled:scale-[0.96] disabled:pointer-events-none disabled:opacity-50 [&_svg]:size-4 [&_svg]:text-muted-foreground";
 
 const STATUS_TONE: Record<string, string> = {
   Pending: "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300",
@@ -130,19 +129,19 @@ function Kpi({ label, value, hint, tone = "default" }: KpiProps) {
     >
       <p
         className={cn(
-          "text-xs font-medium",
-          highlight ? "text-amber-800 dark:text-amber-300" : "text-slate-600 dark:text-slate-300",
+          "text-[13px] font-medium",
+          highlight ? "text-amber-800 dark:text-amber-300" : "text-muted-foreground",
         )}
       >
         {label}
       </p>
       <p
         className={cn(
-          "mt-2 text-2xl font-semibold tracking-tight",
-          tone === "indigo" && "text-indigo-600 dark:text-indigo-400",
+          "mt-2 text-2xl font-semibold tracking-tight tabular-nums",
+          tone === "indigo" && "text-primary",
           tone === "emerald" && "text-emerald-600 dark:text-emerald-400",
           tone === "amber" && "text-amber-700 dark:text-amber-300",
-          tone === "default" && "text-slate-900 dark:text-slate-50",
+          tone === "default" && "text-foreground",
         )}
       >
         {value}
@@ -150,7 +149,7 @@ function Kpi({ label, value, hint, tone = "default" }: KpiProps) {
       <p
         className={cn(
           "mt-1.5 text-xs",
-          highlight ? "text-amber-700/80 dark:text-amber-400/80" : "text-slate-500 dark:text-slate-400",
+          highlight ? "text-amber-700/80 dark:text-amber-400/80" : "text-muted-foreground",
         )}
       >
         {hint}
@@ -251,10 +250,10 @@ export function JobSheetView() {
       {/* Page header */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-[22px] font-semibold tracking-tight text-slate-900 dark:text-slate-50">
+          <h1 className="text-[22px] font-semibold tracking-tight text-foreground">
             Daily Job Sheet
           </h1>
-          <p className="mt-0.5 text-sm text-slate-500 dark:text-slate-400">
+          <p className="mt-0.5 text-sm text-muted-foreground">
             Record daily work, track production status, advance payments, direct costs and gross profit.
           </p>
         </div>
@@ -272,7 +271,7 @@ export function JobSheetView() {
             <Download className="size-4 text-slate-400" />
             Export CSV
           </button>
-          <Button onClick={openNew} className="h-10 rounded-[10px] px-4 text-sm font-medium shadow-none">
+          <Button onClick={openNew}>
             <Plus className="size-4" />
             New Job Entry
           </Button>
@@ -282,7 +281,7 @@ export function JobSheetView() {
       {/* KPIs — reflect the filtered rows, so "Pending Only" narrows the totals too */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
         <Kpi label="Total Jobs" value={String(rows.length)} hint="Recorded orders" />
-        <Kpi label="Total Sales" value={formatCurrency(totals.sale)} hint="Revenue generated" tone="indigo" />
+        <Kpi label="Total Sales" value={formatCurrency(totals.sale)} hint="Revenue generated" />
         <Kpi label="Advance Paid" value={formatCurrency(totals.advance)} hint="Cash/UPI collected" tone="emerald" />
         <Kpi label="Pending Balance" value={formatCurrency(totals.balance)} hint="Outstanding due" tone="amber" />
         <Kpi
@@ -296,17 +295,17 @@ export function JobSheetView() {
       {/* Filters */}
       <div className={cn(PANEL, "no-print flex flex-col gap-3 p-4 lg:flex-row lg:items-center")}>
         <div className="relative min-w-0 flex-1">
-          <Search className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
+          <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search Job ID, Customer, Mobile, Product…"
-            className="h-10 rounded-[10px] pl-10"
+            className="pl-9"
           />
         </div>
         <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
           <Select value={status} onValueChange={setStatus}>
-            <SelectTrigger className="h-10 w-full rounded-[10px] sm:w-40">
+            <SelectTrigger className="w-full sm:w-40">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -319,7 +318,7 @@ export function JobSheetView() {
             </SelectContent>
           </Select>
           <Select value={customerType} onValueChange={setCustomerType}>
-            <SelectTrigger className="h-10 w-full rounded-[10px] sm:w-36">
+            <SelectTrigger className="w-full sm:w-36">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -332,7 +331,7 @@ export function JobSheetView() {
             </SelectContent>
           </Select>
           <Select value={paymentMode} onValueChange={setPaymentMode}>
-            <SelectTrigger className="h-10 w-full rounded-[10px] sm:w-36">
+            <SelectTrigger className="w-full sm:w-36">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -376,7 +375,7 @@ export function JobSheetView() {
             }
             action={
               data?.length ? null : (
-                <Button onClick={openNew} size="sm" className="rounded-[10px]">
+                <Button onClick={openNew} size="sm" className="rounded-lg">
                   New Job Entry
                 </Button>
               )
@@ -409,13 +408,13 @@ export function JobSheetView() {
                   <TableRow key={job.id} className="even:bg-transparent">
                     {/* Job */}
                     <TableCell className="whitespace-nowrap">
-                      <p className="font-mono text-xs font-semibold text-indigo-600 dark:text-indigo-400">{job.job_number}</p>
+                      <p className="font-mono text-xs font-semibold text-primary">{job.job_number}</p>
                       <p className="mt-0.5 text-xs text-slate-500">{formatDate(job.date)}</p>
                     </TableCell>
 
                     {/* Customer */}
                     <TableCell>
-                      <p className="max-w-[10rem] truncate font-medium text-slate-900 dark:text-slate-100">{job.customer_name}</p>
+                      <p className="max-w-[10rem] truncate font-medium text-foreground">{job.customer_name}</p>
                       <p className="mt-0.5 flex items-center gap-1.5 text-xs text-slate-500">
                         <span
                           className={cn(
@@ -433,7 +432,7 @@ export function JobSheetView() {
 
                     {/* Product */}
                     <TableCell>
-                      <p className="line-clamp-2 max-w-[12rem] text-slate-800 dark:text-slate-200">{job.product_name}</p>
+                      <p className="line-clamp-2 max-w-[12rem] text-foreground">{job.product_name}</p>
                       <p className="mt-0.5 text-xs text-slate-500">
                         {job.size ? `${job.size} · ` : ""}
                         {formatNumber(job.qty, 0)} pcs
@@ -442,7 +441,7 @@ export function JobSheetView() {
 
                     {/* Sale */}
                     <TableCell className={money}>
-                      <p className="font-semibold text-slate-900 dark:text-slate-100">{formatCurrency(job.total_sale)}</p>
+                      <p className="font-semibold text-foreground">{formatCurrency(job.total_sale)}</p>
                       <p className="mt-0.5 text-xs text-emerald-600 dark:text-emerald-400">
                         {formatCurrency(job.advance_paid)} paid
                       </p>
@@ -451,11 +450,11 @@ export function JobSheetView() {
                     {/* Balance */}
                     <TableCell className={money}>
                       {due ? (
-                        <span className="inline-flex rounded-[8px] bg-amber-50 px-2 py-1 font-semibold text-amber-800 dark:bg-amber-950/40 dark:text-amber-300">
+                        <span className="inline-flex rounded-lg bg-amber-50 px-2 py-1 font-semibold text-amber-800 dark:bg-amber-950/40 dark:text-amber-300">
                           {formatCurrency(balance)}
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1 rounded-[8px] bg-emerald-50 px-2 py-1 text-xs font-medium text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
+                        <span className="inline-flex items-center gap-1 rounded-lg bg-emerald-50 px-2 py-1 text-xs font-medium text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
                           Settled
                         </span>
                       )}
@@ -467,7 +466,7 @@ export function JobSheetView() {
                         <SelectTrigger
                           aria-label={`Status for ${job.job_number}`}
                           className={cn(
-                            "h-8 w-[8rem] rounded-[8px] border-transparent text-xs font-medium",
+                            "h-8 w-[8rem] rounded-lg border-transparent text-xs font-medium",
                             STATUS_TONE[job.status] ?? STATUS_TONE.Pending,
                           )}
                         >
@@ -485,7 +484,7 @@ export function JobSheetView() {
 
                     {/* Staff · Payment */}
                     <TableCell>
-                      <p className="max-w-[7rem] truncate text-slate-800 dark:text-slate-200" title={job.primary_staff ?? undefined}>
+                      <p className="max-w-[7rem] truncate text-foreground" title={job.primary_staff ?? undefined}>
                         {job.primary_staff || "Unassigned"}
                       </p>
                       <p className="mt-0.5 text-xs text-slate-500">{job.payment_mode ?? "—"}</p>
@@ -493,7 +492,7 @@ export function JobSheetView() {
 
                     {/* Delivery */}
                     <TableCell>
-                      <p className="whitespace-nowrap text-slate-800 dark:text-slate-200">
+                      <p className="whitespace-nowrap text-foreground">
                         {job.delivery_date ? formatDate(job.delivery_date) : "—"}
                       </p>
                       <p className="mt-0.5 text-xs text-slate-500">
@@ -514,13 +513,13 @@ export function JobSheetView() {
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="size-8 rounded-[8px] text-slate-500 hover:text-slate-900"
+                            className="size-8 rounded-lg text-slate-500 hover:text-slate-900"
                             aria-label={`Actions for ${job.job_number}`}
                           >
                             <MoreHorizontal className="size-4" />
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="rounded-[10px]">
+                        <DropdownMenuContent align="end" className="rounded-lg">
                           <DropdownMenuItem onSelect={() => openEdit(job)}>
                             <Pencil className="mr-2 size-4 text-slate-500" />
                             Edit
@@ -537,12 +536,12 @@ export function JobSheetView() {
               })}
 
               {/* Totals for whatever is currently on the sheet */}
-              <TableRow className="bg-slate-50 hover:bg-slate-50 dark:bg-slate-800/60 dark:hover:bg-slate-800/60 [&>td]:!py-3.5">
-                <TableCell colSpan={3} className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+              <TableRow className="bg-slate-50 hover:bg-muted dark:hover:bg-slate-800/60 [&>td]:!py-3.5">
+                <TableCell colSpan={3} className="text-sm font-semibold text-foreground">
                   Totals — {rows.length} {rows.length === 1 ? "job" : "jobs"}, {formatNumber(totals.qty, 0)} pcs
                 </TableCell>
                 <TableCell className={money}>
-                  <p className="font-semibold text-slate-900 dark:text-slate-100">{formatCurrency(totals.sale)}</p>
+                  <p className="font-semibold text-foreground">{formatCurrency(totals.sale)}</p>
                   <p className="mt-0.5 text-xs text-emerald-600 dark:text-emerald-400">{formatCurrency(totals.advance)} paid</p>
                 </TableCell>
                 <TableCell className={cn(money, "font-semibold text-amber-800 dark:text-amber-300")}>

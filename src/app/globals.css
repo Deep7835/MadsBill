@@ -3,11 +3,8 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --radius: 5px;
-  /* Cards 5px */
-
-  /* Background #F8FAFC, Card #FFFFFF, Border #E5E7EB, Primary #4F46E5 */
-  --background: #F8FAFC;
+  /* Layers: app background -> card surface -> popover. Neutral greys, indigo for intent. */
+  --background: #F7F8FA;
   --foreground: #111827;
 
   --card: #FFFFFF;
@@ -18,56 +15,62 @@
 
   /* Primary Indigo #4F46E5 */
   --primary: #4F46E5;
+  --primary-hover: #4338CA;
   --primary-foreground: #FFFFFF;
 
-  --secondary: #F1F5F9;
-  --secondary-foreground: #1E293B;
+  --secondary: #F3F4F6;
+  --secondary-hover: #E9EAEE;
+  --secondary-foreground: #1F2937;
 
-  --muted: #F8FAFC;
+  --muted: #F3F4F6;
   --muted-foreground: #6B7280;
 
-  /* Tinted pill / hover #F1F5F9 */
+  /* Brand tint for selected states only; neutral hovers use --muted. */
   --accent: #EEF2FF;
-  --accent-foreground: #4F46E5;
+  --accent-foreground: #4338CA;
 
   --destructive: #EF4444;
   --destructive-foreground: #FFFFFF;
 
-  --success: #22C55E;
-  --warning: #F59E0B;
+  --success: #16A34A;
+  --warning: #D97706;
 
-  --border: #E5E7EB;
-  --input: #E5E7EB;
+  --border: #E7E8EC;
+  --input: #DEE0E5;
   --ring: #4F46E5;
 
   --sidebar: #FFFFFF;
   --sidebar-foreground: #111827;
   --sidebar-border: #E5E7EB;
 
-  --shadow-panel: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 10px 25px -5px rgba(0, 0, 0, 0.04);
-  --shadow-raised: 0 1px 2px 0 rgba(0, 0, 0, 0.05), 0 4px 12px -2px rgba(0, 0, 0, 0.05);
+  /* Cards lean on their border; the shadow only lifts them off the background. */
+  --shadow-panel: 0 1px 2px 0 rgb(16 24 40 / 0.04);
+  --shadow-raised: 0 1px 2px 0 rgb(16 24 40 / 0.05);
+  --shadow-popover: 0 0 0 1px rgb(16 24 40 / 0.06), 0 4px 8px -2px rgb(16 24 40 / 0.08), 0 12px 24px -6px rgb(16 24 40 / 0.1);
 }
 
 .dark {
-  --background: #0F172A;
-  --foreground: #F8FAFC;
+  --background: #0B0F19;
+  --foreground: #F3F4F6;
 
-  --card: #1E293B;
-  --card-foreground: #F8FAFC;
+  --card: #121826;
+  --card-foreground: #F3F4F6;
 
-  --popover: #1E293B;
+  --popover: #161D2D;
   --popover-foreground: #F8FAFC;
 
   --primary: #6366F1;
+  --primary-hover: #5B5EF0;
   --primary-foreground: #FFFFFF;
 
-  --secondary: #334155;
-  --secondary-foreground: #F8FAFC;
+  --secondary: #1E2536;
+  --secondary-hover: #252D40;
+  --secondary-foreground: #F3F4F6;
 
-  --muted: #1E293B;
-  --muted-foreground: #94A3B8;
+  --muted: #1A2132;
+  --muted-foreground: #9AA3B5;
 
-  --accent: #312E81;
+  --accent: #23264A;
   --accent-foreground: #C7D2FE;
 
   --destructive: #EF4444;
@@ -76,16 +79,17 @@
   --success: #22C55E;
   --warning: #F59E0B;
 
-  --border: #334155;
-  --input: #334155;
+  --border: #232B3D;
+  --input: #2A3346;
   --ring: #6366F1;
 
-  --sidebar: #1E293B;
-  --sidebar-foreground: #F8FAFC;
-  --sidebar-border: #334155;
+  --sidebar: #121826;
+  --sidebar-foreground: #F3F4F6;
+  --sidebar-border: #232B3D;
 
-  --shadow-panel: 0 1px 3px 0 rgba(0, 0, 0, 0.3), 0 10px 25px -5px rgba(0, 0, 0, 0.4);
-  --shadow-raised: 0 1px 2px 0 rgba(0, 0, 0, 0.3), 0 4px 12px -2px rgba(0, 0, 0, 0.3);
+  --shadow-panel: 0 0 0 0 transparent;
+  --shadow-raised: 0 0 0 0 transparent;
+  --shadow-popover: 0 0 0 1px oklch(1 0 0 / 0.08), 0 12px 24px -6px rgb(0 0 0 / 0.5);
 }
 
 @theme inline {
@@ -97,6 +101,8 @@
   --color-popover-foreground: var(--popover-foreground);
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
+  --color-primary-hover: var(--primary-hover);
+  --color-secondary-hover: var(--secondary-hover);
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
   --color-muted: var(--muted);
@@ -117,16 +123,19 @@
   --font-sans: var(--font-uncut-sans), "Uncut Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 
-  --radius: 5px;
-  --radius-sm: 5px;
-  --radius-md: 5px;
-  --radius-lg: 5px;
-  --radius-xl: 5px;
-  --radius-2xl: 5px;
-  --radius-3xl: 5px;
+  /* Controls 8px, cards 12px, dialogs 16px. Nested items follow outer = inner + padding. */
+  --radius: 8px;
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+  --radius-2xl: 12px;
+  --radius-3xl: 16px;
 
   --shadow-panel: var(--shadow-panel);
   --shadow-raised: var(--shadow-raised);
+  --shadow-popover: var(--shadow-popover);
 }
 
 @layer base {
@@ -140,13 +149,15 @@
     -webkit-font-smoothing: antialiased;
   }
 
-  /* Soft colour wash in the corners, like a frosted dashboard shell. */
   .app-shell {
-    background-color: #F4F5F7;
+    background-color: var(--background);
   }
 
-  .dark .app-shell {
-    background-color: #0B1220;
+  /* Tabular figures everywhere money and quantities line up in columns. */
+  .tabular-nums,
+  td,
+  th {
+    font-variant-numeric: tabular-nums;
   }
 
   /* Measurements are typed, not stepped — drop the spinners */
@@ -159,6 +170,31 @@
   input[type="number"] {
     -moz-appearance: textfield;
   }
+}
+
+/* Menus, selects and dialogs: a quick fade + slight scale from their origin.
+   Short enough to never feel like waiting. */
+@keyframes floating-in {
+  from {
+    opacity: 0;
+    scale: 0.97;
+  }
+}
+
+@keyframes floating-out {
+  to {
+    opacity: 0;
+    scale: 0.97;
+  }
+}
+
+.floating[data-state="open"] {
+  transform-origin: var(--radix-dropdown-menu-content-transform-origin, var(--radix-select-content-transform-origin, center));
+  animation: floating-in 150ms cubic-bezier(0.2, 0, 0, 1);
+}
+
+.floating[data-state="closed"] {
+  animation: floating-out 100ms ease-out;
 }
 
 /* Left-anchored nav drawer. Radix waits on animationend before unmounting, so
@@ -205,7 +241,8 @@
 
 @media (prefers-reduced-motion: reduce) {
   .nav-drawer[data-state],
-  .nav-scrim[data-state] {
+  .nav-scrim[data-state],
+  .floating[data-state] {
     animation-duration: 1ms;
   }
 }

@@ -66,10 +66,10 @@ export function QuotationsView() {
       sortable: true,
       render: (row) => (
         <div className="flex items-center gap-2.5">
-          <div className="flex size-8 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-950 dark:text-indigo-400 font-bold">
+          <div className="flex size-8 items-center justify-center rounded-lg border border-border text-muted-foreground">
             <FileText className="size-4" />
           </div>
-          <Link href={`/quotations/${row.id}`} className="font-bold text-slate-900 hover:text-indigo-600 dark:text-slate-100 dark:hover:text-indigo-400">
+          <Link href={`/quotations/${row.id}`} className="font-medium text-foreground hover:text-primary">
             {row.quote_number}
           </Link>
         </div>
@@ -80,7 +80,7 @@ export function QuotationsView() {
       header: "Customer",
       sortable: true,
       render: (row) => (
-        <span className="font-semibold text-slate-700 dark:text-slate-300">
+        <span className="text-foreground">
           {row.customer?.business_name ?? "—"}
         </span>
       ),
@@ -90,7 +90,7 @@ export function QuotationsView() {
       header: "Date",
       sortable: true,
       render: (row) => (
-        <span className="text-xs text-slate-500">{formatDate(row.date)}</span>
+        <span className="text-xs text-muted-foreground">{formatDate(row.date)}</span>
       ),
     },
     {
@@ -107,7 +107,7 @@ export function QuotationsView() {
       key: "grand_total",
       header: "Amount",
       sortable: true,
-      className: "text-right font-bold text-slate-900 dark:text-slate-100",
+      className: "text-right font-medium tabular-nums text-foreground",
       render: (row) => formatCurrency(row.grand_total),
     },
     {
@@ -118,19 +118,19 @@ export function QuotationsView() {
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" className="size-8 rounded-lg" aria-label="Document actions">
-              <MoreHorizontal className="size-4 text-slate-500" />
+              <MoreHorizontal className="size-4 text-muted-foreground" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="rounded-xl">
+          <DropdownMenuContent align="end">
             <DropdownMenuItem asChild>
               <Link href={`/quotations/${row.id}`}>
-                <ExternalLink className="mr-2 size-4 text-slate-500" />
+                <ExternalLink className="size-4" />
                 Open Details
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
               <Link href={`/quotations/${row.id}/edit`}>
-                <Edit className="mr-2 size-4 text-slate-500" />
+                <Edit className="size-4" />
                 Edit
               </Link>
             </DropdownMenuItem>
@@ -150,9 +150,9 @@ export function QuotationsView() {
         title="Quotations &amp; Invoices"
         description="View, manage, and filter all generated client documents."
       >
-        <Button asChild className="rounded-xl bg-indigo-600 font-semibold text-white shadow-md shadow-indigo-600/20 hover:bg-indigo-700">
+        <Button asChild>
           <Link href="/quotations/new">
-            <Plus className="mr-1.5 size-4" />
+            <Plus />
             New Quotation
           </Link>
         </Button>

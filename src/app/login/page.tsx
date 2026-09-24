@@ -89,7 +89,7 @@ export default function LoginPage() {
           href="https://wa.me/919876543210"
           target="_blank"
           rel="noopener noreferrer"
-          className="rounded-[5px] bg-indigo-600 px-4 py-2.5 text-xs font-semibold text-white shadow-xs transition-colors hover:bg-indigo-700"
+          className="rounded-lg bg-indigo-600 px-4 py-2.5 text-xs font-semibold text-white shadow-xs transition-colors hover:bg-indigo-700"
         >
           Need access?
         </a>
@@ -97,13 +97,13 @@ export default function LoginPage() {
 
       <div className="relative z-10 flex flex-1 items-center justify-center py-10">
         <div className="w-full max-w-sm">
-          <Suspense fallback={<Skeleton className="h-[420px] w-full rounded-[5px]" />}>
+          <Suspense fallback={<Skeleton className="h-[420px] w-full rounded-lg" />}>
             <LoginForm />
           </Suspense>
         </div>
       </div>
 
-      <footer className="relative z-10 text-center text-[11px] font-medium text-slate-400 dark:text-slate-500">
+      <footer className="relative z-10 text-center text-[11px] font-medium text-muted-foreground">
         © {new Date().getFullYear()} Madskraft Flex &amp; Advertising &nbsp;|&nbsp; Quotation &amp; Billing
       </footer>
     </main>

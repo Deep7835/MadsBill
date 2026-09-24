@@ -15,7 +15,10 @@ interface SegmentedControlProps<T extends string> {
   "aria-label"?: string;
 }
 
-/** Pill tab group: solid accent on the active segment, tinted on the rest. */
+/**
+ * Tab group on a neutral track; the selected tab lifts onto a card surface.
+ * Track radius 10px with 4px padding keeps the 6px tabs concentric.
+ */
 export function SegmentedControl<T extends string>({
   value,
   onChange,
@@ -27,7 +30,10 @@ export function SegmentedControl<T extends string>({
     <div
       role="tablist"
       aria-label={ariaLabel}
-      className={cn("flex w-full gap-2 overflow-x-auto sm:w-auto", className)}
+      className={cn(
+        "inline-flex max-w-full gap-1 overflow-x-auto rounded-[10px] bg-muted p-1",
+        className,
+      )}
     >
       {segments.map((segment) => {
         const active = segment.value === value;
@@ -39,11 +45,11 @@ export function SegmentedControl<T extends string>({
             aria-selected={active}
             onClick={() => onChange(segment.value)}
             className={cn(
-              "shrink-0 rounded-xl px-4 py-2 text-sm font-semibold transition-colors",
-              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+              "h-8 shrink-0 rounded-sm px-3 text-[13px] font-medium transition-[background-color,color,box-shadow] duration-150",
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40",
               active
-                ? "bg-primary text-primary-foreground shadow-[var(--shadow-raised)]"
-                : "bg-accent/60 text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+                ? "bg-card text-foreground shadow-[0_1px_2px_rgb(16_24_40/0.08),0_0_0_1px_rgb(16_24_40/0.04)] dark:bg-secondary-hover"
+                : "text-muted-foreground hover:text-foreground",
             )}
           >
             {segment.label}

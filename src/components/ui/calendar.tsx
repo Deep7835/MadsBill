@@ -76,17 +76,17 @@ export function Calendar({
         <button
           type="button"
           onClick={handlePrev}
-          className="flex size-7 items-center justify-center rounded-[5px] text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
+          className="flex size-7 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
         >
           <ChevronLeft className="size-4" />
         </button>
-        <span className="text-sm font-bold text-slate-900 dark:text-slate-100">
+        <span className="text-sm font-bold text-foreground">
           {format(currentMonth, "MMMM yyyy")}
         </span>
         <button
           type="button"
           onClick={handleNext}
-          className="flex size-7 items-center justify-center rounded-[5px] text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
+          className="flex size-7 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
         >
           <ChevronRight className="size-4" />
         </button>
@@ -97,7 +97,7 @@ export function Calendar({
         {WEEKDAYS.map((wd) => (
           <div
             key={wd}
-            className="flex h-8 items-center justify-center text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500"
+            className="flex h-8 items-center justify-center text-[11px] font-bold uppercase tracking-wider text-muted-foreground"
           >
             {wd}
           </div>
@@ -122,9 +122,9 @@ export function Calendar({
                 "relative flex h-8 items-center justify-center text-xs font-medium transition-colors",
                 !inMonth && "text-slate-300 dark:text-slate-700",
                 inMonth && !isSelected && !isEdge && "text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800",
-                isToday && !isSelected && !isEdge && "font-bold text-indigo-600 dark:text-indigo-400",
+                isToday && !isSelected && !isEdge && "font-bold text-primary",
                 (isSelected || isEdge) &&
-                  "rounded-[5px] bg-indigo-600 font-bold text-white dark:bg-indigo-500",
+                  "rounded-lg bg-indigo-600 font-bold text-white dark:bg-indigo-500",
                 inRange && !isEdge && "bg-indigo-50 dark:bg-indigo-950/40",
               )}
             >

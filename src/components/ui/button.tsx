@@ -7,25 +7,27 @@ import { Loading03Icon } from "@hugeicons/core-free-icons";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl text-sm font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 [&_svg]:size-4 [&_svg]:shrink-0",
+  [
+    "inline-flex select-none items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-medium",
+    "transition-[background-color,border-color,color,box-shadow,scale] duration-150 ease-out active:not-disabled:scale-[0.96]",
+    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+    "disabled:pointer-events-none disabled:opacity-50 [&_svg]:size-4 [&_svg]:shrink-0",
+  ].join(" "),
   {
     variants: {
       variant: {
-        default:
-          "bg-primary text-primary-foreground shadow-[var(--shadow-raised)] hover:bg-primary/90 active:scale-[0.98]",
-        destructive:
-          "bg-destructive text-destructive-foreground shadow-[var(--shadow-raised)] hover:bg-destructive/90 active:scale-[0.98]",
-        outline:
-          "border border-border bg-card text-foreground hover:border-primary/40 hover:bg-accent hover:text-accent-foreground",
-        secondary: "bg-accent text-accent-foreground hover:bg-accent/70",
-        ghost: "hover:bg-accent hover:text-accent-foreground",
-        link: "text-primary underline-offset-4 hover:underline",
+        default: "bg-primary text-primary-foreground shadow-[var(--shadow-raised)] hover:bg-primary-hover",
+        destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90",
+        outline: "border border-border bg-card text-foreground shadow-[var(--shadow-raised)] hover:bg-muted",
+        secondary: "bg-secondary text-secondary-foreground hover:bg-secondary-hover",
+        ghost: "text-foreground hover:bg-muted",
+        link: "h-auto px-0 text-primary underline-offset-4 hover:underline active:not-disabled:scale-100",
       },
       size: {
-        default: "h-10 px-4 py-2",
-        sm: "h-9 rounded-lg px-3.5 text-xs",
-        lg: "h-12 rounded-2xl px-7 text-base",
-        icon: "size-10",
+        default: "h-9 px-3.5",
+        sm: "h-8 rounded-md px-3 text-[13px]",
+        lg: "h-10 px-4",
+        icon: "size-9",
       },
     },
     defaultVariants: { variant: "default", size: "default" },

@@ -115,7 +115,7 @@ export function InventoryView() {
 
       <div
         className={cn(
-          "grid overflow-hidden rounded-[14px] border border-slate-200 bg-white sm:grid-cols-3 dark:border-slate-800 dark:bg-slate-900",
+          "grid overflow-hidden rounded-xl border border-slate-200 bg-white sm:grid-cols-3 dark:border-slate-800 dark:bg-slate-900",
           "[&>*+*]:border-t sm:[&>*+*]:border-t-0 sm:[&>*+*]:border-l [&>*]:border-slate-200 dark:[&>*]:border-slate-800",
         )}
       >

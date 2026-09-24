@@ -213,9 +213,9 @@ export function PriceCalculatorView() {
                         {row.productId === "custom" ? (
                           <Badge
                             variant="secondary"
-                            className="bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20 text-[11px] font-medium"
+                            className="bg-indigo-500/10 text-primary border-indigo-500/20 text-[11px] font-medium"
                           >
-                            ✨ Custom Item
+                            Custom
                           </Badge>
                         ) : null}
                       </div>
@@ -262,7 +262,7 @@ export function PriceCalculatorView() {
                           <SelectContent>
                             <SelectGroup>
                               <SelectItem value="custom" className="font-semibold text-primary">
-                                ✨ Custom Item (Write Any Name)
+                                Custom item — type any name
                               </SelectItem>
                             </SelectGroup>
                             <Separator className="my-1" />

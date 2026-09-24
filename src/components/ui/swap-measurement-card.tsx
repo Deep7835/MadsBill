@@ -60,9 +60,9 @@ const UnitDropdown: FC<DropdownProps> = ({ selected, onSelect, units }) => {
       <button
         type="button"
         onClick={() => setIsOpen((v) => !v)}
-        className="flex items-center gap-1.5 rounded-[5px] border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-bold text-slate-700 shadow-xs transition-all active:scale-95 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
+        className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-bold text-slate-700 shadow-xs transition-all active:scale-95 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
       >
-        <span className="flex size-5 items-center justify-center rounded-[3px] bg-indigo-50 text-[10px] font-extrabold text-indigo-600 dark:bg-indigo-950 dark:text-indigo-400">
+        <span className="flex size-5 items-center justify-center rounded-xs bg-indigo-50 text-[10px] font-extrabold text-indigo-600 dark:bg-indigo-950 dark:text-indigo-400">
           {selected.symbol}
         </span>
         <span>{selected.code}</span>
@@ -78,7 +78,7 @@ const UnitDropdown: FC<DropdownProps> = ({ selected, onSelect, units }) => {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -6, scale: 0.96 }}
             transition={{ duration: 0.15 }}
-            className="absolute right-0 z-50 mt-1.5 w-44 rounded-[5px] border border-slate-200 bg-white py-1 shadow-xl dark:border-slate-700 dark:bg-slate-900"
+            className="absolute right-0 z-50 mt-1.5 w-44 rounded-lg border border-slate-200 bg-white py-1 shadow-xl dark:border-slate-700 dark:bg-slate-900"
           >
             {units.map((unit) => (
               <button
@@ -88,18 +88,18 @@ const UnitDropdown: FC<DropdownProps> = ({ selected, onSelect, units }) => {
                   onSelect(unit);
                   setIsOpen(false);
                 }}
-                className="flex w-full items-center justify-between px-3 py-2 text-xs transition-colors hover:bg-slate-50 dark:hover:bg-slate-800"
+                className="flex w-full items-center justify-between px-3 py-2 text-xs transition-colors hover:bg-muted"
               >
                 <div className="flex items-center gap-2">
-                  <span className="flex size-5 items-center justify-center rounded-[3px] bg-indigo-50 text-[10px] font-extrabold text-indigo-600 dark:bg-indigo-950 dark:text-indigo-400">
+                  <span className="flex size-5 items-center justify-center rounded-xs bg-indigo-50 text-[10px] font-extrabold text-indigo-600 dark:bg-indigo-950 dark:text-indigo-400">
                     {unit.symbol}
                   </span>
-                  <span className="font-semibold text-slate-700 dark:text-slate-200">
+                  <span className="font-semibold text-foreground">
                     {unit.label}
                   </span>
                 </div>
                 {unit.code === selected.code && (
-                  <Check className="size-3.5 text-indigo-600 dark:text-indigo-400" />
+                  <Check className="size-3.5 text-primary" />
                 )}
               </button>
             ))}
@@ -119,7 +119,7 @@ const AnimatedNumber: FC<AnimatedNumberProps> = ({ value }) => {
   const chars = String(value || "0").split("");
 
   return (
-    <div className="flex items-center text-xl font-bold text-slate-900 dark:text-slate-100">
+    <div className="flex items-center text-xl font-bold text-foreground">
       {chars.map((char, i) => {
         const delay = (chars.length - 1 - i) * 0.03;
         return <DigitColumn key={i} digit={char} delay={delay} />;
@@ -248,10 +248,10 @@ export const SwapMeasurementCard: FC<SwapMeasurementCardProps> = ({
     >
       {/* From input */}
       <div className="flex flex-col gap-1.5">
-        <label className="text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+        <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
           From
         </label>
-        <div className="flex items-center justify-between rounded-[5px] border border-slate-200 bg-slate-50/80 p-3 dark:border-slate-700 dark:bg-slate-800/50">
+        <div className="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50/80 p-3 dark:border-slate-700 dark:bg-slate-800/50">
           <div className="relative mr-3 flex-1">
             <AnimatedNumber value={fromAmount} />
             <input
@@ -291,10 +291,10 @@ export const SwapMeasurementCard: FC<SwapMeasurementCardProps> = ({
 
       {/* To input */}
       <div className="flex flex-col gap-1.5">
-        <label className="text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+        <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
           To
         </label>
-        <div className="flex items-center justify-between rounded-[5px] border border-slate-200 bg-slate-50/80 p-3 dark:border-slate-700 dark:bg-slate-800/50">
+        <div className="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50/80 p-3 dark:border-slate-700 dark:bg-slate-800/50">
           <div className="relative mr-3 flex-1">
             <AnimatedNumber value={toAmount} />
             <input
@@ -320,7 +320,7 @@ export const SwapMeasurementCard: FC<SwapMeasurementCardProps> = ({
       <button
         type="button"
         onClick={handleCopy}
-        className="flex w-full items-center justify-center gap-2 rounded-[5px] bg-indigo-600 py-3 text-sm font-bold text-white shadow-sm transition-colors hover:bg-indigo-700 active:scale-[0.98] dark:bg-indigo-500 dark:hover:bg-indigo-600"
+        className="flex w-full items-center justify-center gap-2 rounded-lg bg-indigo-600 py-3 text-sm font-bold text-white shadow-sm transition-colors hover:bg-indigo-700 active:scale-[0.98] dark:bg-indigo-500 dark:hover:bg-indigo-600"
       >
         {copied ? (
           <>
@@ -336,7 +336,7 @@ export const SwapMeasurementCard: FC<SwapMeasurementCardProps> = ({
       </button>
 
       {/* Conversion rate */}
-      <p className="text-center text-xs font-semibold text-slate-400 dark:text-slate-500">
+      <p className="text-center text-xs font-semibold text-muted-foreground">
         1 {fromUnit.symbol} = {rate} {toUnit.symbol}
       </p>
     </motion.div>

@@ -16,27 +16,16 @@ interface StatCardProps {
   bare?: boolean;
 }
 
+/**
+ * Colour is reserved for figures that need attention. Everything else is
+ * neutral with the brand colour on the meter, so a row of stats reads calm.
+ */
 const TONE_STYLES = {
-  default: {
-    icon: "border-indigo-100 bg-indigo-50 text-indigo-600 dark:border-indigo-900 dark:bg-indigo-950/60 dark:text-indigo-400",
-    bar: "bg-indigo-500 dark:bg-indigo-400",
-  },
-  info: {
-    icon: "border-sky-100 bg-sky-50 text-sky-600 dark:border-sky-900 dark:bg-sky-950/60 dark:text-sky-400",
-    bar: "bg-sky-400 dark:bg-sky-400",
-  },
-  success: {
-    icon: "border-emerald-100 bg-emerald-50 text-emerald-600 dark:border-emerald-900 dark:bg-emerald-950/60 dark:text-emerald-400",
-    bar: "bg-emerald-500 dark:bg-emerald-400",
-  },
-  warning: {
-    icon: "border-amber-100 bg-amber-50 text-amber-600 dark:border-amber-900 dark:bg-amber-950/60 dark:text-amber-400",
-    bar: "bg-amber-400 dark:bg-amber-400",
-  },
-  danger: {
-    icon: "border-rose-100 bg-rose-50 text-rose-600 dark:border-rose-900 dark:bg-rose-950/60 dark:text-rose-400",
-    bar: "bg-rose-500 dark:bg-rose-400",
-  },
+  default: { icon: "text-muted-foreground", bar: "bg-primary" },
+  info: { icon: "text-muted-foreground", bar: "bg-primary" },
+  success: { icon: "text-muted-foreground", bar: "bg-primary" },
+  warning: { icon: "text-amber-600 dark:text-amber-400", bar: "bg-amber-500" },
+  danger: { icon: "text-rose-600 dark:text-rose-400", bar: "bg-rose-500" },
 };
 
 const BAR_COUNT = 36;
@@ -45,14 +34,11 @@ const BAR_COUNT = 36;
 function Meter({ fill, className }: { fill: number; className: string }) {
   const lit = Math.round(Math.min(1, Math.max(0, fill)) * BAR_COUNT);
   return (
-    <div className="flex h-6 items-stretch gap-[3px]" aria-hidden="true">
+    <div className="flex h-3.5 items-stretch gap-[3px]" aria-hidden="true">
       {Array.from({ length: BAR_COUNT }, (_, i) => (
         <span
           key={i}
-          className={cn(
-            "w-full min-w-[2px] rounded-full",
-            i < lit ? className : "bg-slate-200 dark:bg-slate-700",
-          )}
+          className={cn("w-full min-w-[2px] rounded-full", i < lit ? className : "bg-muted dark:bg-secondary-hover")}
         />
       ))}
     </div>
@@ -75,38 +61,32 @@ export function StatCard({
   return (
     <div
       className={cn(
-        "min-w-0 p-4 xl:p-5",
-        !bare && "rounded-[14px] border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900",
+        "min-w-0 px-4 py-3.5",
+        !bare && "rounded-xl border border-border bg-card shadow-[var(--shadow-panel)]",
       )}
     >
-      <div className="flex items-center gap-2.5 xl:gap-3">
-        <div
+      <div className="flex items-center justify-between gap-2">
+        <p className="truncate text-[13px] font-medium text-muted-foreground">{label}</p>
+        <span
           className={cn(
-            "flex size-9 shrink-0 items-center justify-center rounded-full border xl:size-10",
+            "flex size-7 shrink-0 items-center justify-center rounded-md border border-border",
             styles.icon,
           )}
         >
           {isHugeIcon ? (
-            <HugeiconsIcon icon={Icon as IconElement} className="size-[18px]" />
+            <HugeiconsIcon icon={Icon as IconElement} className="size-3.5" />
           ) : Component ? (
-            <Component className="size-[18px]" />
+            <Component className="size-3.5" />
           ) : null}
-        </div>
-        <div className="min-w-0">
-          <p className="text-[11px] font-semibold uppercase leading-tight tracking-[0.08em] text-slate-500 dark:text-slate-400">
-            {label}
-          </p>
-          <h3 className="mt-0.5 truncate text-lg font-semibold leading-tight tracking-tight text-slate-900 xl:text-xl dark:text-slate-50">
-            {value}
-          </h3>
-        </div>
+        </span>
       </div>
+      <p className="mt-1 truncate text-xl font-semibold tracking-tight tabular-nums text-foreground">
+        {value}
+      </p>
 
-      {hint ? (
-        <p className="mt-2 truncate text-xs text-slate-500 dark:text-slate-400">{hint}</p>
-      ) : null}
+      {hint ? <p className="mt-1 truncate text-xs text-muted-foreground">{hint}</p> : null}
 
-      <div className="mt-4">
+      <div className="mt-3">
         <Meter fill={fill} className={styles.bar} />
       </div>
     </div>

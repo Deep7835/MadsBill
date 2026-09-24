@@ -32,17 +32,16 @@ import {
 } from "@/lib/reports";
 import { cn } from "@/lib/utils";
 
-const PANEL =
-  "rounded-[14px] border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900";
+const PANEL = "rounded-xl border border-border bg-card shadow-[var(--shadow-panel)]";
 
 const PILL_BUTTON =
-  "inline-flex h-10 items-center gap-2 rounded-[10px] border border-slate-200 bg-white px-3.5 text-sm font-medium text-slate-700 transition-colors hover:border-slate-300 hover:bg-slate-50 disabled:pointer-events-none disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-slate-600 dark:hover:bg-slate-800";
+  "inline-flex h-9 items-center gap-2 rounded-lg border border-border bg-card px-3.5 text-sm font-medium text-foreground shadow-[var(--shadow-raised)] transition-[background-color,scale] duration-150 ease-out hover:bg-muted active:not-disabled:scale-[0.96] disabled:pointer-events-none disabled:opacity-50 [&_svg]:size-4 [&_svg]:text-muted-foreground";
 
 const HEAD_ROW =
-  "[&>th]:h-11 [&>th]:whitespace-nowrap [&>th]:bg-slate-900 [&>th]:px-3 [&>th]:normal-case [&>th]:tracking-normal [&>th]:text-white dark:[&>th]:bg-slate-950";
+  "[&>th]:h-10 [&>th]:whitespace-nowrap [&>th]:bg-muted/60 [&>th]:px-3 [&>th]:font-medium [&>th]:normal-case [&>th]:tracking-normal [&>th]:text-muted-foreground";
 const BODY = "text-[13px] [&>tr>td]:px-3 [&>tr>td]:py-2.5";
 const FOOT_ROW =
-  "border-t border-slate-200 bg-slate-50 font-semibold hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-800/60 dark:hover:bg-slate-800/60";
+  "border-t border-border bg-muted/60 font-semibold hover:bg-muted/60";
 const NUM = "whitespace-nowrap text-right tabular-nums";
 
 const ymd = (d: Date) => format(d, "yyyy-MM-dd");
@@ -90,15 +89,15 @@ const SLAB_CSV: CsvColumn<RateSlabRow>[] = [
 
 function Stat({ label, value, tone }: { label: string; value: string; tone?: "indigo" | "emerald" | "amber" }) {
   return (
-    <div className={cn(PANEL, "p-4")}>
-      <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-500 dark:text-slate-400">{label}</p>
+    <div className="min-w-0 bg-card px-5 py-4">
+      <p className="truncate text-[13px] font-medium text-muted-foreground">{label}</p>
       <p
         className={cn(
-          "mt-1.5 truncate text-xl font-semibold tracking-tight",
-          tone === "indigo" && "text-indigo-600 dark:text-indigo-400",
+          "mt-1 truncate text-xl font-semibold tracking-tight tabular-nums",
+          tone === "indigo" && "text-primary",
           tone === "emerald" && "text-emerald-600 dark:text-emerald-400",
           tone === "amber" && "text-amber-700 dark:text-amber-300",
-          !tone && "text-slate-900 dark:text-slate-50",
+          !tone && "text-foreground",
         )}
       >
         {value}
@@ -170,8 +169,8 @@ function Section({
     <div className={cn(PANEL, "overflow-hidden")}>
       <div className="flex items-center justify-between gap-3 border-b border-slate-100 px-5 py-4 dark:border-slate-800">
         <div className="min-w-0">
-          <h3 className="text-[15px] font-semibold text-slate-900 dark:text-slate-50">{title}</h3>
-          {description ? <p className="text-xs text-slate-500 dark:text-slate-400">{description}</p> : null}
+          <h3 className="text-[15px] font-semibold text-foreground">{title}</h3>
+          {description ? <p className="text-xs text-muted-foreground">{description}</p> : null}
         </div>
         {onExport ? (
           <button type="button" className={cn(PILL_BUTTON, "h-9 px-3 text-xs")} onClick={onExport}>
@@ -237,8 +236,8 @@ export function ReportsView() {
       {/* Header */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-[22px] font-semibold tracking-tight text-slate-900 dark:text-slate-50">Reports &amp; GST</h1>
-          <p className="mt-0.5 text-sm text-slate-500 dark:text-slate-400">
+          <h1 className="text-[22px] font-semibold tracking-tight text-foreground">Reports &amp; GST</h1>
+          <p className="mt-0.5 text-sm text-muted-foreground">
             Return-ready GST figures, sales register and analytics built from your tax invoices.
           </p>
         </div>
@@ -250,7 +249,7 @@ export function ReportsView() {
 
       {/* Period */}
       <div className={cn(PANEL, "flex flex-col gap-3 p-4 lg:flex-row lg:items-center lg:justify-between")}>
-        <div className="flex flex-wrap gap-2">
+        <div className="inline-flex max-w-full gap-1 overflow-x-auto rounded-[10px] bg-muted p-1">
           {PRESETS.map((p) => (
             <button
               key={p.key}
@@ -258,10 +257,10 @@ export function ReportsView() {
               aria-pressed={activePreset === p.key}
               onClick={() => applyPreset(p.key)}
               className={cn(
-                "rounded-[8px] px-3 py-1.5 text-xs font-medium transition-colors",
+                "h-8 shrink-0 rounded-sm px-3 text-[13px] font-medium transition-[background-color,color,box-shadow] duration-150",
                 activePreset === p.key
-                  ? "bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900"
-                  : "border border-slate-200 text-slate-600 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800",
+                  ? "bg-card text-foreground shadow-[0_1px_2px_rgb(16_24_40/0.08),0_0_0_1px_rgb(16_24_40/0.04)] dark:bg-secondary-hover"
+                  : "text-muted-foreground hover:text-foreground",
               )}
             >
               {p.label}
@@ -269,28 +268,30 @@ export function ReportsView() {
           ))}
         </div>
         <div className="flex items-center gap-2">
-          <Input type="date" value={from} max={to} onChange={(e) => setFrom(e.target.value)} className="h-10 w-40 rounded-[10px]" aria-label="From date" />
-          <span className="text-sm text-slate-400">to</span>
-          <Input type="date" value={to} min={from} onChange={(e) => setTo(e.target.value)} className="h-10 w-40 rounded-[10px]" aria-label="To date" />
+          <Input type="date" value={from} max={to} onChange={(e) => setFrom(e.target.value)} className="w-40" aria-label="From date" />
+          <span className="text-sm text-muted-foreground">to</span>
+          <Input type="date" value={to} min={from} onChange={(e) => setTo(e.target.value)} className="w-40" aria-label="To date" />
         </div>
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 overflow-x-auto rounded-[12px] border border-slate-200 bg-white p-1 dark:border-slate-800 dark:bg-slate-900">
+      <div role="tablist" aria-label="Report sections" className="flex gap-6 overflow-x-auto overflow-y-hidden shadow-[inset_0_-1px_0_var(--border)] [scrollbar-width:none]">
         {TABS.map(({ key, label, icon: Icon }) => (
           <button
             key={key}
             type="button"
-            aria-pressed={tab === key}
+            role="tab"
+            aria-selected={tab === key}
             onClick={() => setTab(key)}
             className={cn(
-              "inline-flex shrink-0 items-center gap-2 rounded-[9px] px-3.5 py-2 text-sm font-medium transition-colors",
+              "inline-flex h-11 shrink-0 items-center gap-2 border-b-2 text-sm font-medium transition-colors duration-150",
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40",
               tab === key
-                ? "bg-slate-100 text-slate-900 dark:bg-slate-800 dark:text-slate-50"
-                : "text-slate-600 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-800/60",
+                ? "border-primary text-foreground"
+                : "border-transparent text-muted-foreground hover:text-foreground",
             )}
           >
-            <Icon className="size-4" />
+            <Icon className="size-4" strokeWidth={1.75} />
             {label}
           </button>
         ))}
@@ -321,11 +322,11 @@ export function ReportsView() {
         <>
           {tab === "overview" ? (
             <div className="space-y-5">
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <div className="grid gap-px overflow-hidden rounded-xl border border-border bg-border shadow-[var(--shadow-panel)] sm:grid-cols-2 lg:grid-cols-4">
                 <Stat label="Invoices" value={String(t.invoices)} />
-                <Stat label="Taxable value" value={formatCurrency(t.taxable)} tone="indigo" />
+                <Stat label="Taxable value" value={formatCurrency(t.taxable)} />
                 <Stat label="Total GST" value={formatCurrency(t.tax)} />
-                <Stat label="Invoice value" value={formatCurrency(t.total)} tone="indigo" />
+                <Stat label="Invoice value" value={formatCurrency(t.total)} />
                 <Stat label="CGST" value={formatCurrency(t.cgst)} />
                 <Stat label="SGST" value={formatCurrency(t.sgst)} />
                 <Stat label="Collected" value={formatCurrency(t.collected)} tone="emerald" />
@@ -333,26 +334,26 @@ export function ReportsView() {
               </div>
               <div className="grid gap-5 lg:grid-cols-2">
                 <Section title="Top products" description="By invoiced revenue">
-                  <ul className="divide-y divide-slate-100 dark:divide-slate-800">
+                  <ul className="divide-y divide-border">
                     {report.products.slice(0, 5).map((p) => (
                       <li key={p.description} className="flex items-center justify-between gap-3 px-5 py-3 text-sm">
-                        <span className="truncate text-slate-700 dark:text-slate-200">{p.description}</span>
-                        <span className="shrink-0 font-semibold tabular-nums text-slate-900 dark:text-slate-50">{formatCurrency(p.revenue)}</span>
+                        <span className="truncate text-foreground">{p.description}</span>
+                        <span className="shrink-0 font-semibold tabular-nums text-foreground">{formatCurrency(p.revenue)}</span>
                       </li>
                     ))}
                   </ul>
                 </Section>
                 <Section title="Top customers" description="By invoiced revenue">
-                  <ul className="divide-y divide-slate-100 dark:divide-slate-800">
+                  <ul className="divide-y divide-border">
                     {report.customers.slice(0, 5).map((c) => (
                       <li key={c.id ?? c.name} className="flex items-center justify-between gap-3 px-5 py-3 text-sm">
                         <span className="min-w-0">
-                          <span className="block truncate text-slate-700 dark:text-slate-200">{c.name}</span>
+                          <span className="block truncate text-foreground">{c.name}</span>
                           {c.outstanding > 0 ? (
                             <span className="text-xs text-amber-700 dark:text-amber-300">{formatCurrency(c.outstanding)} outstanding</span>
                           ) : null}
                         </span>
-                        <span className="shrink-0 font-semibold tabular-nums text-slate-900 dark:text-slate-50">{formatCurrency(c.revenue)}</span>
+                        <span className="shrink-0 font-semibold tabular-nums text-foreground">{formatCurrency(c.revenue)}</span>
                       </li>
                     ))}
                   </ul>
@@ -461,20 +462,20 @@ export function ReportsView() {
                 <TableBody className={BODY}>
                   {report.register.map((r) => (
                     <TableRow key={r.id}>
-                      <TableCell className="whitespace-nowrap text-slate-600 dark:text-slate-300">{formatDate(r.date)}</TableCell>
+                      <TableCell className="whitespace-nowrap text-muted-foreground">{formatDate(r.date)}</TableCell>
                       <TableCell className="whitespace-nowrap">
                         <Link href={`/quotations/${r.id}`} className="font-semibold text-indigo-600 hover:underline dark:text-indigo-400">
                           {r.number}
                         </Link>
                       </TableCell>
-                      <TableCell className="max-w-[14rem] truncate font-medium text-slate-900 dark:text-slate-100">{r.customer}</TableCell>
+                      <TableCell className="max-w-[14rem] truncate font-medium text-foreground">{r.customer}</TableCell>
                       <TableCell className="whitespace-nowrap font-mono text-xs text-slate-500">{r.gstin ?? "—"}</TableCell>
-                      <TableCell className="whitespace-nowrap text-slate-600 dark:text-slate-300">{r.placeOfSupply}</TableCell>
+                      <TableCell className="whitespace-nowrap text-muted-foreground">{r.placeOfSupply}</TableCell>
                       <TableCell className={NUM}>{formatCurrency(r.taxable)}</TableCell>
                       <TableCell className={NUM}>{formatCurrency(r.cgst)}</TableCell>
                       <TableCell className={NUM}>{formatCurrency(r.sgst)}</TableCell>
                       <TableCell className={NUM}>{formatCurrency(r.igst)}</TableCell>
-                      <TableCell className={cn(NUM, "font-semibold text-slate-900 dark:text-slate-100")}>{formatCurrency(r.total)}</TableCell>
+                      <TableCell className={cn(NUM, "font-semibold text-foreground")}>{formatCurrency(r.total)}</TableCell>
                       <TableCell><PaymentStatusBadge status={r.paymentStatus} /></TableCell>
                     </TableRow>
                   ))}
@@ -519,7 +520,7 @@ export function ReportsView() {
                 <TableBody className={BODY}>
                   {report.products.map((p) => (
                     <TableRow key={p.description}>
-                      <TableCell className="max-w-[20rem] truncate font-medium text-slate-900 dark:text-slate-100">{p.description}</TableCell>
+                      <TableCell className="max-w-[20rem] truncate font-medium text-foreground">{p.description}</TableCell>
                       <TableCell className={NUM}>{p.invoices}</TableCell>
                       <TableCell className={NUM}>{formatNumber(p.qty, 0)}</TableCell>
                       <TableCell className={NUM}>{p.area > 0 ? formatNumber(p.area) : "—"}</TableCell>

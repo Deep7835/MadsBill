@@ -137,7 +137,7 @@ export function SettingsView() {
         {/* Company Info */}
         <Card className="border-border/60 shadow-sm">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-primary">
+            <CardTitle className="flex items-center gap-2 [&_svg]:text-muted-foreground">
               <HugeiconsIcon icon={Image01Icon} className="h-5 w-5" />
               Company &amp; Branding
             </CardTitle>
@@ -214,7 +214,7 @@ export function SettingsView() {
         {/* Digital Sign & Stamp Section */}
         <Card className="border-border/60 shadow-sm">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-primary">
+            <CardTitle className="flex items-center gap-2 [&_svg]:text-muted-foreground">
               <HugeiconsIcon icon={SecurityCheckIcon} className="h-5 w-5" />
               Digital Sign &amp; Stamp
             </CardTitle>
@@ -248,7 +248,7 @@ export function SettingsView() {
         {/* Payment & UPI QR Settings */}
         <Card className="border-border/60 shadow-sm">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-primary">
+            <CardTitle className="flex items-center gap-2 [&_svg]:text-muted-foreground">
               <HugeiconsIcon icon={CreditCardIcon} className="h-5 w-5" />
               UPI &amp; Payment Options
             </CardTitle>
@@ -298,7 +298,7 @@ export function SettingsView() {
         {/* Communication API Credentials */}
         <Card className="border-border/60 shadow-sm">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-primary">
+            <CardTitle className="flex items-center gap-2 [&_svg]:text-muted-foreground">
               <HugeiconsIcon icon={Comment02Icon} className="h-5 w-5" />
               SMS &amp; WhatsApp Integration
             </CardTitle>

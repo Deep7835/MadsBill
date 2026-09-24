@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import { SegmentedControl } from "@/components/shared/segmented-control";
 import { UnitConverter } from "@/components/calculator/unit-converter";
 import { calcLine } from "@/lib/calc";
 import { formatCurrency, formatNumber } from "@/lib/format";
@@ -81,65 +82,54 @@ export function LineItemRow({
   const isCustom = !value?.product_id;
 
   return (
-    <div className="rounded-xl border border-border/70 bg-card p-4 shadow-xs border-l-4 border-l-primary">
-      {/* Index and remove sit on their own row so the fields get full width. */}
-      <div className="mb-3 flex items-center justify-between gap-2 border-b border-border/50 pb-2.5">
+    <div className="group/line rounded-xl border border-border bg-card transition-[border-color,box-shadow] duration-150 focus-within:border-primary/40 focus-within:shadow-[0_0_0_3px_rgb(79_70_229/0.08)]">
+      {/* Toolbar: which line, how it is priced, and the line's own tools. */}
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border px-4 py-2.5">
         <div className="flex items-center gap-2">
-          <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-xs font-bold text-primary">
-            #{index + 1}
-          </span>
+          <span className="text-[13px] font-semibold tabular-nums text-foreground">Item {index + 1}</span>
           {isCustom ? (
-            <Badge
-              variant="secondary"
-              className="bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20 text-[11px] font-medium"
-            >
-              ✨ Custom Item
+            <Badge variant="outline" className="h-5 px-1.5 text-[11px] font-medium text-muted-foreground">
+              Custom
             </Badge>
           ) : null}
+        </div>
+        <div className="flex items-center gap-1.5">
+          <SegmentedControl
+            value={isSqft ? "sqft" : "piece"}
+            onChange={(val) =>
+              setValue?.(`items.${index}.rate_type`, val, { shouldValidate: true, shouldDirty: true })
+            }
+            aria-label={`Pricing unit for item ${index + 1}`}
+            segments={[
+              { value: "sqft", label: "Per sq.ft." },
+              { value: "piece", label: "Per piece" },
+            ]}
+          />
           <UnitConverter
             onApply={handleApplyConvertedUnit}
-            triggerLabel="Convert CM / Inches"
-            variant="outline"
+            triggerLabel="CM / in"
+            variant="ghost"
             size="sm"
           />
-        </div>
-        <div className="flex items-center gap-2">
-          <Select
-            value={isSqft ? "sqft" : "piece"}
-            onValueChange={(val) =>
-              setValue?.(`items.${index}.rate_type`, val as "sqft" | "piece", {
-                shouldValidate: true,
-                shouldDirty: true,
-              })
-            }
-          >
-            <SelectTrigger className="h-8 w-36 text-xs" aria-label="Pricing unit">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="sqft">Per sq.ft.</SelectItem>
-              <SelectItem value="piece">Per piece</SelectItem>
-            </SelectContent>
-          </Select>
           <Button
             type="button"
             variant="ghost"
             size="icon"
-            className="h-8 w-8 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+            className="size-8 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
             onClick={() => onRemove(index)}
             disabled={!removable}
-            aria-label={`Remove line ${index + 1}`}
+            aria-label={`Remove item ${index + 1}`}
           >
             <HugeiconsIcon icon={Delete02Icon} className="size-4" />
           </Button>
         </div>
       </div>
 
-      <div>
+      <div className="p-4">
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-12">
           {/* Product */}
           <div className="lg:col-span-4">
-            <Label className="text-xs text-muted-foreground">Product</Label>
+            <Label className="text-xs font-medium text-muted-foreground">Product</Label>
             <Select
               value={value?.product_id ?? (value?.description ? "custom" : "")}
               onValueChange={(productId) => onProductChange(index, productId)}
@@ -149,8 +139,8 @@ export function LineItemRow({
               </SelectTrigger>
               <SelectContent>
                 <SelectGroup>
-                  <SelectItem value="custom" className="font-medium text-primary">
-                    ✨ Custom Item (Write Any Name)
+                  <SelectItem value="custom" className="font-medium">
+                    Custom item — type any name
                   </SelectItem>
                 </SelectGroup>
                 <Separator className="my-1" />
@@ -171,7 +161,7 @@ export function LineItemRow({
 
           {/* Description */}
           <div className="lg:col-span-8">
-            <Label className="text-xs text-muted-foreground">Description</Label>
+            <Label className="text-xs font-medium text-muted-foreground">Description</Label>
             <Input
               className="mt-1"
               placeholder="Shop board – front side"
@@ -191,7 +181,7 @@ export function LineItemRow({
         >
           {/* Size is on every line: it prices sqft lines and is a plain note on piece lines. */}
           <div>
-            <Label className="text-xs text-muted-foreground">
+            <Label className="text-xs font-medium text-muted-foreground">
               Width (ft){isSqft ? "" : " · optional"}
             </Label>
             <Input
@@ -206,7 +196,7 @@ export function LineItemRow({
             {fieldError(itemErrors?.width?.message)}
           </div>
           <div>
-            <Label className="text-xs text-muted-foreground">
+            <Label className="text-xs font-medium text-muted-foreground">
               Height (ft){isSqft ? "" : " · optional"}
             </Label>
             <Input
@@ -222,15 +212,15 @@ export function LineItemRow({
           </div>
           {isSqft ? (
             <div>
-              <Label className="text-xs text-muted-foreground">Area (sq.ft.)</Label>
-              <div className="mt-1 flex h-9 items-center rounded-lg border border-dashed border-border bg-muted/50 px-3 text-sm font-medium tabular-nums">
+              <Label className="text-xs font-medium text-muted-foreground">Area (sq.ft.)</Label>
+              <div className="mt-1 flex h-9 items-center rounded-lg bg-muted px-3 text-sm tabular-nums text-muted-foreground">
                 {formatNumber(area ?? 0)}
               </div>
             </div>
           ) : null}
 
           <div>
-            <Label className="text-xs text-muted-foreground">{isSqft ? "Qty" : "Pcs"}</Label>
+            <Label className="text-xs font-medium text-muted-foreground">{isSqft ? "Qty" : "Pcs"}</Label>
             <Input
               className="mt-1"
               type="number"
@@ -245,7 +235,7 @@ export function LineItemRow({
 
           {/* Editable Rate Column */}
           <div>
-            <Label className="text-xs text-muted-foreground">
+            <Label className="text-xs font-medium text-muted-foreground">
               Rate {isSqft ? "/ sq.ft." : "/ piece"}
             </Label>
             <Input
@@ -267,7 +257,7 @@ export function LineItemRow({
 
           {/* GST % Dropdown */}
           <div>
-            <Label className="text-xs text-muted-foreground">GST %</Label>
+            <Label className="text-xs font-medium text-muted-foreground">GST %</Label>
             <Select
               value={String(Number(value?.gst_percent ?? 18))}
               onValueChange={(val) => {
@@ -298,14 +288,14 @@ export function LineItemRow({
           </div>
 
           <div className="flex flex-col justify-end">
-            <Label className="text-xs text-muted-foreground">Amount</Label>
-            <div className="mt-1 flex h-9 items-center justify-end rounded-lg bg-primary/5 px-3 text-sm font-semibold tabular-nums text-primary">
+            <Label className="block text-right text-xs font-medium text-muted-foreground">Amount</Label>
+            <div className="mt-1 flex h-9 items-center justify-end text-[15px] font-semibold tabular-nums text-foreground">
               {formatCurrency(amount)}
             </div>
           </div>
         </div>
 
-        <p className="mt-3 text-xs text-muted-foreground">
+        <p className="mt-3 border-t border-dashed border-border pt-3 text-xs text-muted-foreground">
           {product ? (
             <>
               Priced from <span className="font-medium text-foreground">{product.name}</span> — edit the

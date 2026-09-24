@@ -106,17 +106,19 @@ export function DateFilter({ onChange }: DateFilterProps) {
         <button
           type="button"
           className={cn(
-            "inline-flex h-10 items-center gap-2 rounded-[10px] border border-slate-200 bg-white px-3.5 text-sm font-medium text-slate-700 transition-colors hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-slate-600 dark:hover:bg-slate-800",
+            "inline-flex h-9 items-center gap-2 rounded-lg border border-border bg-card pl-3 pr-2.5 text-sm font-medium text-foreground shadow-[var(--shadow-raised)]",
+            "transition-[background-color,scale] duration-150 ease-out hover:bg-muted active:scale-[0.96]",
+            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40 data-[state=open]:bg-muted",
           )}
         >
-          <CalendarIcon className="size-4 text-slate-400" />
+          <CalendarIcon className="size-4 text-muted-foreground" />
           <span>{formatRangeLabel(range, preset)}</span>
-          <ChevronDown className="size-3.5 text-slate-400" />
+          <ChevronDown className="size-4 text-muted-foreground" />
         </button>
       </PopoverTrigger>
       <PopoverContent
         align="end"
-        className="w-auto rounded-[12px] border-slate-200 p-0 shadow-xl dark:border-slate-700"
+        className="w-auto p-0"
       >
         <div className="flex">
           {/* Presets List */}
@@ -130,7 +132,7 @@ export function DateFilter({ onChange }: DateFilterProps) {
                 type="button"
                 onClick={() => handlePreset(p.value)}
                 className={cn(
-                  "flex w-full items-center rounded-[5px] px-2.5 py-2 text-xs font-medium transition-colors",
+                  "flex w-full items-center rounded-lg px-2.5 py-2 text-xs font-medium transition-colors",
                   preset === p.value && p.value !== "custom"
                     ? "bg-indigo-600 text-white font-bold"
                     : "text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800",
@@ -145,11 +147,11 @@ export function DateFilter({ onChange }: DateFilterProps) {
           {preset === "custom" && (
             <div className="p-3">
               <div className="mb-2 flex items-center gap-2">
-                <span className="flex-1 rounded-[5px] bg-slate-50 px-2.5 py-1.5 text-[11px] font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                <span className="flex-1 rounded-lg bg-slate-50 px-2.5 py-1.5 text-[11px] font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
                   {pickStart ? format(pickStart, "MMM d, yyyy") : "Start date"}
                 </span>
                 <span className="text-[10px] text-slate-400">→</span>
-                <span className="flex-1 rounded-[5px] bg-slate-50 px-2.5 py-1.5 text-[11px] font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                <span className="flex-1 rounded-lg bg-slate-50 px-2.5 py-1.5 text-[11px] font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
                   {pickEnd ? format(pickEnd, "MMM d, yyyy") : "End date"}
                 </span>
               </div>

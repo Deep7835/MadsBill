@@ -100,14 +100,14 @@ export function UnitConverter({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant={variant} size={size} type="button" className="gap-1.5 font-medium shadow-2xs">
-          <HugeiconsIcon icon={CalculatorIcon} className="h-3.5 w-3.5 text-primary" />
+        <Button variant={variant} size={size} type="button" className="gap-1.5 text-muted-foreground hover:text-foreground">
+          <HugeiconsIcon icon={CalculatorIcon} className="size-3.5" />
           {triggerLabel}
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-primary">
+          <DialogTitle className="flex items-center gap-2 [&_svg]:text-muted-foreground">
             <HugeiconsIcon icon={Exchange01Icon} className="h-5 w-5" />
             Measurement Converter
           </DialogTitle>

@@ -138,6 +138,7 @@ export function GstBillsView() {
           </Button>
           <Button
             size="sm"
+            variant="outline"
             onClick={() => runPdf(row, "pdf")}
             loading={isBusy(row, "pdf")}
             disabled={!!working}
@@ -178,7 +179,7 @@ export function GstBillsView() {
       header: "",
       className: "w-px text-right",
       render: (row) => (
-        <Button size="sm" onClick={() => setGenerating(row)}>
+        <Button size="sm" variant="outline" onClick={() => setGenerating(row)}>
           <HugeiconsIcon icon={Invoice03Icon} />
           Generate GST bill
         </Button>

@@ -36,7 +36,7 @@ export function RateSlabHistoryDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-xl">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-primary">
+          <DialogTitle className="flex items-center gap-2 [&_svg]:text-muted-foreground">
             <HugeiconsIcon icon={Clock01Icon} className="h-5 w-5" />
             Rate Slab Audit Log
           </DialogTitle>

@@ -60,10 +60,10 @@ export function LoginForm() {
   }
 
   return (
-    <div className="rounded-[5px] border border-slate-200/80 bg-white p-7 shadow-[0_24px_60px_-24px_rgba(15,23,42,0.25)] sm:p-9 dark:border-slate-800 dark:bg-slate-900">
+    <div className="rounded-lg border border-slate-200/80 bg-white p-7 shadow-[0_24px_60px_-24px_rgba(15,23,42,0.25)] sm:p-9 dark:border-slate-800 dark:bg-slate-900">
       <div className="text-center">
-        <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50">Sign in</h1>
-        <p className="mt-2 text-sm leading-relaxed text-slate-500 dark:text-slate-400">
+        <h1 className="text-2xl font-bold tracking-tight text-foreground">Sign in</h1>
+        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
           Enter your details to access quotations, customers and GST bills.
         </p>
       </div>
@@ -102,7 +102,7 @@ export function LoginForm() {
           </div>
         </FormField>
 
-        <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
+        <p className="text-xs font-medium text-muted-foreground">
           Having trouble signing in? Contact your administrator.
         </p>
 

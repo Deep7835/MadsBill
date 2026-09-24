@@ -17,7 +17,7 @@ const DialogOverlay = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <DialogPrimitive.Overlay
     ref={ref}
-    className={cn("fixed inset-0 z-50 bg-black/40 backdrop-blur-[2px]", className)}
+    className={cn("fixed inset-0 z-50 bg-slate-950/45", className)}
     {...props}
   />
 ));
@@ -33,13 +33,13 @@ const DialogContent = React.forwardRef<
       ref={ref}
       className={cn(
         "fixed left-1/2 top-1/2 z-50 grid w-[calc(100%-2rem)] max-w-lg -translate-x-1/2 -translate-y-1/2 gap-4",
-        "max-h-[90vh] overflow-y-auto rounded-xl border border-border bg-background p-6 shadow-lg",
+        "max-h-[90vh] overflow-y-auto floating rounded-3xl bg-card p-6 shadow-[var(--shadow-popover)]",
         className,
       )}
       {...props}
     >
       {children}
-      <DialogPrimitive.Close className="absolute right-4 top-4 rounded-md p-1 text-muted-foreground opacity-70 transition hover:bg-muted hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring">
+      <DialogPrimitive.Close className="absolute right-4 top-4 flex size-8 items-center justify-center rounded-lg text-muted-foreground transition-colors duration-150 hover:bg-muted hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring/40">
         <HugeiconsIcon icon={Cancel01Icon} className="size-4" />
         <span className="sr-only">Close</span>
       </DialogPrimitive.Close>

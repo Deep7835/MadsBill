@@ -64,7 +64,7 @@ export function UpiQrCode({ upiId, payeeName, amount, note, size = 140, classNam
     <div className={`inline-flex flex-col items-center gap-1 rounded-lg border bg-white p-2 text-center shadow-xs dark:bg-slate-900 ${className}`}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src={dataUrl} alt="UPI Payment QR Code" width={size} height={size} className="rounded" />
-      <div className="text-[10px] font-semibold text-slate-700 dark:text-slate-300">
+      <div className="text-[10px] font-semibold text-foreground">
         Scan to Pay via UPI
       </div>
       <div className="text-[9px] text-muted-foreground font-mono">{upiId}</div>

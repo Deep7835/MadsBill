@@ -36,15 +36,15 @@ function NavSection({
   onNavigate?: () => void;
 }) {
   return (
-    <div className="space-y-1">
+    <div>
       {collapsed ? (
-        <div className="mx-auto mb-2 h-px w-8 bg-slate-200 dark:bg-slate-800" />
+        <div className="mx-auto mb-2 h-px w-6 bg-border" />
       ) : (
-        <div className="px-3 pb-2 text-[11px] font-medium uppercase tracking-[0.08em] text-slate-400 dark:text-slate-500">
+        <div className="mb-1 px-3 text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground/80">
           {title}
         </div>
       )}
-      <div className="space-y-1">
+      <div className="space-y-0.5">
         {items.map((item) => {
           const active = pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(`${item.href}`));
           return (
@@ -55,22 +55,20 @@ function NavSection({
               aria-current={active ? "page" : undefined}
               title={collapsed ? item.label : undefined}
               className={cn(
-                "group relative flex items-center rounded-[10px] text-sm font-medium transition-colors",
-                collapsed ? "justify-center px-0 py-2.5" : "gap-3 px-3 py-2.5",
+                "group flex h-10 items-center rounded-lg text-sm transition-colors duration-150",
+                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40",
+                collapsed ? "justify-center" : "gap-3 px-3",
                 active
-                  ? "bg-slate-100 text-slate-900 dark:bg-slate-800 dark:text-slate-50"
-                  : "text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-slate-200"
+                  ? "bg-muted font-medium text-foreground dark:bg-secondary"
+                  : "text-muted-foreground hover:bg-muted/60 hover:text-foreground",
               )}
             >
-              {/* Active marker sits on the panel's left edge, outside the pill. */}
-              {active ? (
-                <span className="absolute -left-3 top-1/2 h-5 w-1 -translate-y-1/2 rounded-r-full bg-indigo-500" />
-              ) : null}
               <HugeiconsIcon
                 icon={item.icon}
+                strokeWidth={active ? 2 : 1.5}
                 className={cn(
-                  "size-5 shrink-0",
-                  active ? "text-slate-900 dark:text-slate-50" : "text-slate-500 dark:text-slate-400"
+                  "size-[18px] shrink-0 transition-colors duration-150",
+                  active ? "text-primary" : "text-muted-foreground group-hover:text-foreground",
                 )}
               />
               {collapsed ? (
@@ -79,11 +77,9 @@ function NavSection({
                 <>
                   <span className="flex-1 truncate">{item.label}</span>
                   {item.badge ? (
-                    <span className="rounded-full border border-slate-200 px-2 py-0.5 text-[10px] font-medium text-slate-500 dark:border-slate-700 dark:text-slate-400">
+                    <span className="rounded-md bg-muted px-1.5 py-0.5 text-[11px] font-medium text-muted-foreground dark:bg-secondary">
                       {item.badge}
                     </span>
-                  ) : active ? (
-                    <HugeiconsIcon icon={ArrowRight01Icon} className="size-4 text-slate-400" />
                   ) : null}
                 </>
               )}
@@ -99,7 +95,7 @@ export function SidebarNav({ collapsed, onNavigate }: { collapsed?: boolean; onN
   const pathname = usePathname();
 
   return (
-    <nav className="flex flex-col gap-7 px-3 py-2">
+    <nav className="flex flex-col gap-6 px-3 py-4" aria-label="Main">
       <NavSection
         title="Main Menu"
         items={MAIN_NAV_ITEMS}
@@ -126,15 +122,15 @@ export function SidebarBrand({ collapsed, onNavigate }: { collapsed?: boolean; o
       aria-label="Madskrafting dashboard"
       className={cn(
         "flex items-center transition-opacity hover:opacity-90",
-        collapsed ? "justify-center px-2 py-4" : "min-w-0 flex-1 px-4 py-4"
+        collapsed ? "justify-center" : "min-w-0 flex-1 px-3"
       )}
     >
       {collapsed ? (
-        <span className="flex size-10 items-center justify-center rounded-[10px] bg-indigo-600 text-white dark:bg-indigo-500">
-          <HugeiconsIcon icon={PrinterIcon} className="size-5" />
+        <span className="flex size-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+          <HugeiconsIcon icon={PrinterIcon} className="size-[18px]" />
         </span>
       ) : (
-        <BrandLogo className="h-10" />
+        <BrandLogo className="h-8" />
       )}
     </Link>
   );
@@ -155,18 +151,19 @@ export function SidebarFooter({ collapsed }: { collapsed?: boolean }) {
   }
 
   return (
-    <div className="mt-auto p-3">
+    <div className="mt-auto border-t border-border p-3">
       <button
         type="button"
         onClick={handleSignOut}
         disabled={signingOut}
         title={collapsed ? "Logout account" : undefined}
         className={cn(
-          "flex w-full items-center rounded-[10px] text-sm font-medium text-rose-600 transition-colors hover:bg-rose-50 disabled:opacity-60 dark:text-rose-400 dark:hover:bg-rose-950/40",
-          collapsed ? "justify-center px-0 py-2.5" : "gap-3 px-3 py-2.5"
+          "flex h-10 w-full items-center rounded-lg text-sm text-muted-foreground transition-colors duration-150 hover:bg-rose-50 hover:text-rose-600 disabled:opacity-60 dark:hover:bg-rose-950/40 dark:hover:text-rose-400",
+          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40",
+          collapsed ? "justify-center" : "gap-3 px-3"
         )}
       >
-        <HugeiconsIcon icon={Logout01Icon} className="size-5 shrink-0" />
+        <HugeiconsIcon icon={Logout01Icon} strokeWidth={1.5} className="size-[18px] shrink-0" />
         {collapsed ? (
           <span className="sr-only">Logout account</span>
         ) : (
@@ -191,18 +188,18 @@ export function MobileNavDrawer({
   return (
     <DialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
       <DialogPrimitive.Portal>
-        <DialogPrimitive.Overlay className="nav-scrim fixed inset-0 z-50 bg-slate-950/50 backdrop-blur-[2px] lg:hidden" />
+        <DialogPrimitive.Overlay className="nav-scrim fixed inset-0 z-50 bg-slate-950/45 lg:hidden" />
         <DialogPrimitive.Content
           aria-describedby={undefined}
-          className="nav-drawer fixed inset-y-0 left-0 z-50 flex w-[86vw] max-w-[300px] flex-col overflow-hidden border-r border-slate-200 bg-white shadow-2xl lg:hidden dark:border-slate-800 dark:bg-slate-900"
+          className="nav-drawer fixed inset-y-0 left-0 z-50 flex w-[86vw] max-w-[280px] flex-col overflow-hidden border-r border-border bg-sidebar shadow-[var(--shadow-popover)] lg:hidden"
         >
           <DialogPrimitive.Title className="sr-only">Navigation</DialogPrimitive.Title>
 
-          <div className="flex items-center justify-between pr-3">
+          <div className="flex h-16 shrink-0 items-center justify-between border-b border-border pr-3">
             <SidebarBrand onNavigate={() => onOpenChange(false)} />
             <DialogPrimitive.Close
               aria-label="Close navigation"
-              className="flex size-9 shrink-0 items-center justify-center rounded-[10px] text-slate-500 transition-colors hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
+              className="flex size-9 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors duration-150 hover:bg-muted hover:text-foreground"
             >
               <HugeiconsIcon icon={Cancel01Icon} className="size-4" />
             </DialogPrimitive.Close>
@@ -236,35 +233,29 @@ export function Sidebar() {
   return (
     <aside
       className={cn(
-        "no-print hidden shrink-0 transition-[width] duration-300 ease-out lg:block",
-        collapsed ? "w-[84px]" : "w-[260px]"
+        "no-print sticky top-0 hidden h-dvh shrink-0 flex-col border-r border-border bg-sidebar transition-[width] duration-200 ease-out lg:flex",
+        collapsed ? "w-[72px]" : "w-[248px]",
       )}
     >
-      <div className="sticky top-3 flex h-[calc(100dvh-1.5rem)] flex-col overflow-hidden rounded-[16px] border border-slate-200 bg-white text-slate-900 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100">
-        <div className={cn("flex items-center", collapsed ? "flex-col" : "pr-3")}>
-          <SidebarBrand collapsed={collapsed} />
-          <button
-            type="button"
-            onClick={toggle}
-            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-            aria-expanded={!collapsed}
-            title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-            className={cn(
-              "flex size-8 shrink-0 items-center justify-center rounded-[8px] border border-slate-200 text-slate-500 transition-colors hover:bg-slate-50 hover:text-slate-900 dark:border-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100",
-              collapsed && "mb-2",
-            )}
-          >
-            <HugeiconsIcon icon={collapsed ? SidebarRight01Icon : SidebarLeft01Icon} className="size-4" />
-          </button>
-        </div>
-        <div className="mx-4 h-px bg-slate-200 dark:bg-slate-800" />
-
-        <div className="flex-1 overflow-y-auto py-3">
-          <SidebarNav collapsed={collapsed} />
-        </div>
-
-        <SidebarFooter collapsed={collapsed} />
+      <div className={cn("flex h-16 shrink-0 items-center border-b border-border", collapsed ? "justify-center" : "pr-3")}>
+        {collapsed ? null : <SidebarBrand />}
+        <button
+          type="button"
+          onClick={toggle}
+          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+          aria-expanded={!collapsed}
+          title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+          className="flex size-8 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors duration-150 hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
+        >
+          <HugeiconsIcon icon={collapsed ? SidebarRight01Icon : SidebarLeft01Icon} strokeWidth={1.5} className="size-[18px]" />
+        </button>
       </div>
+
+      <div className="flex-1 overflow-y-auto">
+        <SidebarNav collapsed={collapsed} />
+      </div>
+
+      <SidebarFooter collapsed={collapsed} />
     </aside>
   );
 }

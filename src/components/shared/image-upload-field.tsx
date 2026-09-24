@@ -95,13 +95,13 @@ export function ImageUploadField({
           void handleFile(e.dataTransfer.files?.[0]);
         }}
         className={cn(
-          "flex flex-col gap-3 rounded-[5px] border border-dashed p-3 transition-colors sm:flex-row sm:items-center",
+          "flex flex-col gap-3 rounded-lg border border-dashed p-3 transition-colors sm:flex-row sm:items-center",
           dragging ? "border-primary bg-primary/5" : "border-border/80 bg-muted/30",
         )}
       >
         <div
           className={cn(
-            "flex shrink-0 items-center justify-center overflow-hidden rounded-[5px] border border-border/70 bg-card",
+            "flex shrink-0 items-center justify-center overflow-hidden rounded-lg border border-border/70 bg-card",
             aspect === "wide" ? "h-20 w-full sm:w-40" : "size-20",
           )}
         >

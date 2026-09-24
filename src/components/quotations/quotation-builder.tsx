@@ -273,14 +273,28 @@ export function QuotationBuilder({
             ? "Changes replace the existing line items."
             : "The quotation number is generated automatically when you save."
         }
-      />
+      >
+        <Button asChild variant="ghost">
+          <Link href={isEdit ? `/quotations/${quotation.id}` : "/quotations"}>Cancel</Link>
+        </Button>
+        <Button type="submit" form="quotation-form" loading={submitting}>
+          <HugeiconsIcon icon={FloppyDiskIcon} />
+          {isEdit ? "Save changes" : "Create quotation"}
+        </Button>
+      </PageHeader>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" noValidate>
+      <form
+        id="quotation-form"
+        onSubmit={handleSubmit(onSubmit)}
+        className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_300px] lg:items-start xl:grid-cols-[minmax(0,1fr)_320px]"
+        noValidate
+      >
+        <div className="min-w-0 space-y-6">
         <Card>
-          <CardHeader>
-            <CardTitle>Details</CardTitle>
+          <CardHeader className="border-b border-border pb-4">
+            <CardTitle>Customer &amp; dates</CardTitle>
           </CardHeader>
-          <CardContent className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <CardContent className="grid gap-4 pt-5 sm:grid-cols-2 lg:grid-cols-4">
             <FormField
               label="Customer"
               error={errors.customer_id?.message}
@@ -331,55 +345,23 @@ export function QuotationBuilder({
               <Input id="valid_until" type="date" {...register("valid_until")} />
             </FormField>
 
-            <FormField label="Document type">
-              <Controller
-                control={control}
-                name="status"
-                render={({ field }) => (
-                  <Select value={field.value} onValueChange={field.onChange}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="quotation">Quotation</SelectItem>
-                      <SelectItem value="invoice">Invoice</SelectItem>
-                    </SelectContent>
-                  </Select>
-                )}
-              />
-            </FormField>
-
-            <FormField label="Payment status">
-              <Controller
-                control={control}
-                name="payment_status"
-                render={({ field }) => (
-                  <Select value={field.value} onValueChange={field.onChange}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="unpaid">Unpaid</SelectItem>
-                      <SelectItem value="partial">Partial</SelectItem>
-                      <SelectItem value="paid">Paid</SelectItem>
-                    </SelectContent>
-                  </Select>
-                )}
-              />
-            </FormField>
-
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className="flex-row items-center justify-between">
-            <CardTitle>Line items</CardTitle>
+          <CardHeader className="flex-row items-center justify-between border-b border-border py-3.5">
+            <CardTitle className="flex items-center gap-2">
+              Line items
+              <span className="rounded-md bg-muted px-1.5 py-0.5 text-xs font-medium tabular-nums text-muted-foreground">
+                {fields.length}
+              </span>
+            </CardTitle>
             <Button type="button" variant="outline" size="sm" onClick={() => append(blankItem())}>
               <HugeiconsIcon icon={Add01Icon} />
               Add item
             </Button>
           </CardHeader>
-          <CardContent className="space-y-3">
+          <CardContent className="space-y-3 pt-5">
             {loading ? (
               <>
                 <Skeleton className="h-28 w-full rounded-xl" />
@@ -402,18 +384,28 @@ export function QuotationBuilder({
               ))
             )}
 
+            {!loading ? (
+              <button
+                type="button"
+                onClick={() => append(blankItem())}
+                className="flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-dashed border-input text-sm font-medium text-muted-foreground transition-colors duration-150 hover:border-primary/50 hover:bg-accent/40 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
+              >
+                <HugeiconsIcon icon={Add01Icon} className="size-4" />
+                Add another item
+              </button>
+            ) : null}
+
             {errors.items?.message ? (
               <p className="text-xs font-medium text-destructive">{errors.items.message}</p>
             ) : null}
           </CardContent>
         </Card>
 
-        <div className="grid gap-4 lg:grid-cols-3">
-          <Card className="lg:col-span-2">
-            <CardHeader>
+          <Card>
+            <CardHeader className="border-b border-border pb-4">
               <CardTitle>Notes</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-1.5">
+            <CardContent className="space-y-1.5 pt-5">
               <Textarea
                 id="notes"
                 rows={4}
@@ -430,11 +422,63 @@ export function QuotationBuilder({
             </CardContent>
           </Card>
 
+        </div>
+
+        <aside className="space-y-4 lg:sticky lg:top-24">
           <Card>
-            <CardHeader>
+            <CardHeader className="border-b border-border pb-4">
+              <CardTitle>Document</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4 pt-5">
+              <FormField label="Document type">
+              <Controller
+                control={control}
+                name="status"
+                render={({ field }) => (
+                  <Select value={field.value} onValueChange={field.onChange}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="quotation">Quotation</SelectItem>
+                      <SelectItem value="invoice">Invoice</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+              </FormField>
+
+              <FormField label="Payment status">
+              <Controller
+                control={control}
+                name="payment_status"
+                render={({ field }) => (
+                  <Select value={field.value} onValueChange={field.onChange}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="unpaid">Unpaid</SelectItem>
+                      <SelectItem value="partial">Partial</SelectItem>
+                      <SelectItem value="paid">Paid</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+              </FormField>
+
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="border-b border-border pb-4">
               <CardTitle>Summary</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-2 text-sm">
+            <CardContent className="space-y-2.5 pt-5 text-sm">
+              <div className="flex justify-between text-muted-foreground">
+                <span>Items</span>
+                <span className="tabular-nums">{fields.length}</span>
+              </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Subtotal</span>
                 <span className="font-medium tabular-nums">{formatCurrency(totals.subtotal)}</span>
@@ -451,13 +495,14 @@ export function QuotationBuilder({
                   </span>
                 </div>
               ) : null}
-              <Separator className="my-2" />
+              <Separator className="my-3" />
               <div className="flex items-baseline justify-between">
                 <span className="font-medium">Grand total</span>
-                <span className="text-xl font-semibold tabular-nums text-primary">
+                <span className="text-2xl font-semibold tracking-tight tabular-nums text-foreground">
                   {formatCurrency(totals.grandTotal)}
                 </span>
               </div>
+
 
               <Button type="submit" className="mt-4 w-full" loading={submitting}>
                 <HugeiconsIcon icon={FloppyDiskIcon} />
@@ -465,7 +510,7 @@ export function QuotationBuilder({
               </Button>
             </CardContent>
           </Card>
-        </div>
+        </aside>
       </form>
 
       <CustomerFormDialog

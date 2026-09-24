@@ -24,7 +24,7 @@ export function LowStockPanel({ className }: { className?: string }) {
   return (
     <div
       className={cn(
-        "rounded-[14px] border border-amber-200 bg-amber-50/60 dark:border-amber-900/60 dark:bg-amber-950/20",
+        "rounded-xl border border-amber-200 bg-amber-50/60 dark:border-amber-900/60 dark:bg-amber-950/20",
         className,
       )}
     >
@@ -34,8 +34,8 @@ export function LowStockPanel({ className }: { className?: string }) {
             <AlertTriangle className="size-4" />
           </span>
           <div className="min-w-0">
-            <h3 className="text-[15px] font-semibold text-slate-900 dark:text-slate-50">Low stock</h3>
-            <p className="text-xs text-slate-600 dark:text-slate-400">
+            <h3 className="text-[15px] font-semibold text-foreground">Low stock</h3>
+            <p className="text-xs text-muted-foreground">
               {low.length} {low.length === 1 ? "material is" : "materials are"} at or below the reorder level
             </p>
           </div>
@@ -51,9 +51,9 @@ export function LowStockPanel({ className }: { className?: string }) {
         {low.slice(0, 6).map((item) => (
           <li
             key={item.id}
-            className="flex items-center justify-between gap-3 rounded-[10px] bg-white px-3 py-2 text-sm dark:bg-slate-900"
+            className="flex items-center justify-between gap-3 rounded-lg bg-white px-3 py-2 text-sm dark:bg-slate-900"
           >
-            <span className="truncate font-medium text-slate-800 dark:text-slate-200">{item.name}</span>
+            <span className="truncate font-medium text-foreground">{item.name}</span>
             <span
               className={cn(
                 "shrink-0 tabular-nums",

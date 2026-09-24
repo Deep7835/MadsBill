@@ -41,7 +41,7 @@ const ACCENT: Record<ModulePreviewProps["accent"], { tile: string; soft: string;
   indigo: {
     tile: "bg-indigo-600 text-white dark:bg-indigo-500",
     soft: "bg-indigo-50 text-indigo-600 dark:bg-indigo-950/50 dark:text-indigo-300",
-    text: "text-indigo-600 dark:text-indigo-400",
+    text: "text-primary",
   },
   amber: {
     tile: "bg-amber-500 text-white dark:bg-amber-500",
@@ -86,7 +86,7 @@ export function ModulePreview({
         <CardContent className="flex flex-col gap-5 p-5 sm:flex-row sm:items-start sm:gap-6 sm:p-6">
           <div
             className={cn(
-              "flex size-14 shrink-0 items-center justify-center rounded-[5px] shadow-[var(--shadow-raised)]",
+              "flex size-14 shrink-0 items-center justify-center rounded-lg shadow-[var(--shadow-raised)]",
               tone.tile,
             )}
           >
@@ -109,7 +109,7 @@ export function ModulePreview({
           {features.map((feature) => (
             <Card key={feature.title} className="h-full transition-shadow hover:shadow-[var(--shadow-raised)]">
               <CardContent className="flex h-full flex-col gap-3 p-4 sm:p-5">
-                <div className={cn("flex size-10 items-center justify-center rounded-[5px]", tone.soft)}>
+                <div className={cn("flex size-10 items-center justify-center rounded-lg", tone.soft)}>
                   <HugeiconsIcon icon={feature.icon} className="size-5" />
                 </div>
                 <div className="space-y-1">
@@ -139,9 +139,9 @@ export function ModulePreview({
               <Link
                 key={shortcut.href}
                 href={shortcut.href}
-                className="group flex items-center gap-3 rounded-[5px] border border-border/70 bg-muted/30 p-3 transition-colors hover:border-primary/40 hover:bg-accent"
+                className="group flex items-center gap-3 rounded-lg border border-border/70 bg-muted/30 p-3 transition-colors hover:border-primary/40 hover:bg-accent"
               >
-                <div className={cn("flex size-9 shrink-0 items-center justify-center rounded-[5px]", tone.soft)}>
+                <div className={cn("flex size-9 shrink-0 items-center justify-center rounded-lg", tone.soft)}>
                   <HugeiconsIcon icon={shortcut.icon} className="size-4.5" />
                 </div>
                 <div className="min-w-0 flex-1">

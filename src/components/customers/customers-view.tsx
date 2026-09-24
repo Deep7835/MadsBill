@@ -66,15 +66,15 @@ export function CustomersView() {
       sortable: true,
       render: (c) => (
         <div className="flex items-center gap-3">
-          <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-indigo-100 font-bold text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300 text-xs">
+          <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-accent text-xs font-semibold text-accent-foreground">
             {c.business_name.charAt(0).toUpperCase()}
           </div>
           <div>
-            <Link href={`/customers/${c.id}`} className="font-bold text-slate-900 hover:text-indigo-600 dark:text-slate-100 dark:hover:text-indigo-400">
+            <Link href={`/customers/${c.id}`} className="font-medium text-foreground hover:text-primary">
               {c.business_name}
             </Link>
             {c.contact_person && (
-              <p className="text-[11px] font-normal text-slate-400">{c.contact_person}</p>
+              <p className="text-xs text-muted-foreground">{c.contact_person}</p>
             )}
           </div>
         </div>
@@ -84,8 +84,8 @@ export function CustomersView() {
       key: "mobile",
       header: "Phone",
       render: (c) => (
-        <div className="flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-300">
-          <Phone className="size-3.5 text-slate-400" />
+        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+          <Phone className="size-3.5 text-muted-foreground" />
           <span>{c.mobile || "—"}</span>
         </div>
       ),
@@ -95,7 +95,7 @@ export function CustomersView() {
       header: "City",
       sortable: true,
       render: (c) => (
-        <span className="rounded-lg bg-slate-100 px-2 py-1 text-xs font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-400">
+        <span className="text-muted-foreground">
           {c.city || "—"}
         </span>
       ),
@@ -104,7 +104,7 @@ export function CustomersView() {
       key: "gst_number",
       header: "GSTIN",
       render: (c) => (
-        <span className="font-mono text-xs text-slate-500">
+        <span className="font-mono text-xs text-muted-foreground">
           {c.gst_number || "Unregistered"}
         </span>
       ),
@@ -117,15 +117,15 @@ export function CustomersView() {
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" className="size-8 rounded-lg" aria-label="Customer actions">
-              <MoreHorizontal className="size-4 text-slate-500" />
+              <MoreHorizontal className="size-4 text-muted-foreground" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="rounded-xl">
+          <DropdownMenuContent align="end">
             <DropdownMenuItem asChild>
               <Link href={`/customers/${customer.id}`}>View History</Link>
             </DropdownMenuItem>
             <DropdownMenuItem onSelect={() => openEdit(customer)}>
-              <Edit className="mr-2 size-4 text-slate-500" />
+              <Edit className="size-4" />
               Edit
             </DropdownMenuItem>
             <DropdownMenuItem destructive onSelect={() => setDeleting(customer)}>
@@ -141,8 +141,8 @@ export function CustomersView() {
   return (
     <div className="space-y-6">
       <PageHeader title="Customer Directory" description="Manage clients, ledger history, contact information and GST details.">
-        <Button onClick={openNew} className="rounded-xl bg-indigo-600 font-semibold text-white shadow-md shadow-indigo-600/20 hover:bg-indigo-700">
-          <Plus className="mr-1.5 size-4" />
+        <Button onClick={openNew}>
+          <Plus />
           Add Customer
         </Button>
       </PageHeader>

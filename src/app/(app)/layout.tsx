@@ -25,12 +25,12 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const userName = profile?.full_name ?? user.email?.split("@")[0] ?? "User";
 
   return (
-    <div className="app-shell flex min-h-dvh gap-3 px-2 sm:px-3 lg:px-3.5">
+    <div className="app-shell flex min-h-dvh">
       <Sidebar />
       <div className="flex min-w-0 flex-1 flex-col">
         <Topbar userEmail={user.email ?? ""} userName={userName} />
-        <main className="flex-1 pb-8">
-          <div className="w-full space-y-5">{children}</div>
+        <main className="flex-1 px-4 pb-12 pt-6 sm:px-6 lg:px-8 lg:pt-8">
+          <div className="mx-auto w-full max-w-[1440px] space-y-6">{children}</div>
         </main>
       </div>
     </div>
