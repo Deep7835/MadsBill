@@ -6,8 +6,6 @@ import { usePathname } from "next/navigation";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
-  CustomerSupportIcon,
-  WhatsappIcon,
   Logout01Icon,
   PrinterIcon,
   SidebarLeft01Icon,
@@ -157,29 +155,7 @@ export function SidebarFooter({ collapsed }: { collapsed?: boolean }) {
   }
 
   return (
-    <div className="mt-auto space-y-3 p-3">
-      {!collapsed && (
-        <div className="rounded-[14px] border border-slate-200 p-4 dark:border-slate-800">
-          <span className="flex size-9 items-center justify-center rounded-[10px] bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400">
-            <HugeiconsIcon icon={CustomerSupportIcon} className="size-[18px]" />
-          </span>
-          <p className="mt-3 text-sm font-semibold text-slate-900 dark:text-slate-100">Need Assistance?</p>
-          <p className="mt-1 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
-            Custom rates, GST invoices or billing questions.
-          </p>
-          <a
-            href="https://wa.me/919876543210"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-slate-900 underline underline-offset-4 transition-colors hover:text-indigo-600 dark:text-slate-100 dark:hover:text-indigo-400"
-          >
-            <HugeiconsIcon icon={WhatsappIcon} className="size-4" />
-            WhatsApp Support
-            <HugeiconsIcon icon={ArrowRight01Icon} className="size-4" />
-          </a>
-        </div>
-      )}
-
+    <div className="mt-auto p-3">
       <button
         type="button"
         onClick={handleSignOut}
