@@ -30,7 +30,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       <div className="flex min-w-0 flex-1 flex-col">
         <Topbar userEmail={user.email ?? ""} userName={userName} />
         <main className="flex-1 px-4 pb-12 pt-6 sm:px-6 lg:px-8 lg:pt-8">
-          <div className="mx-auto w-full max-w-[1440px] space-y-6">{children}</div>
+          <div className="mx-auto w-full max-w-[1920px] space-y-6">{children}</div>
         </main>
       </div>
     </div>
