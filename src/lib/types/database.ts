@@ -53,6 +53,12 @@ export interface Product {
   slab1_discount: number;
   slab2_min_area: number | null;
   slab2_discount: number;
+  /** Internal purchase cost per unit — never printed on documents. */
+  cost_price: number;
+  /** Warn when stock falls to this level; 0 turns the alert off. */
+  reorder_level: number;
+  /** False for services, which invoices should not deduct. */
+  track_stock: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -189,6 +195,25 @@ export interface CommunicationLog {
   created_by: string | null;
   created_at: string;
 }
+
+export type StockMovementKind = "opening" | "purchase" | "usage" | "wastage" | "adjustment" | "invoice";
+
+/** One change to a product's stock (table `stock_movements`). `qty` is signed. */
+export interface StockMovement {
+  id: string;
+  product_id: string;
+  kind: StockMovementKind;
+  qty: number;
+  unit_cost: number | null;
+  date: string;
+  quotation_id: string | null;
+  supplier: string | null;
+  note: string | null;
+  created_at: string;
+}
+
+/** A product with its current stock on hand, for the inventory register. */
+export type StockItem = Product & { on_hand: number };
 
 /** A quotation joined with its customer — the shape every list page uses. */
 export type QuotationWithCustomer = Quotation & {
