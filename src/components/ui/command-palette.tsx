@@ -55,6 +55,7 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
     { label: "Dashboard", category: "Navigation", icon: LayoutDashboard, path: "/dashboard" },
     { label: "Price Calculator", category: "Navigation", icon: Calculator, path: "/calculator" },
     { label: "Quotations & Bills", category: "Navigation", icon: FileText, path: "/quotations" },
+    { label: "GST Bills", category: "Navigation", icon: Receipt, path: "/gst-bills" },
     { label: "Customers Ledger", category: "Navigation", icon: Users, path: "/customers" },
     { label: "Products & Rates", category: "Navigation", icon: Package, path: "/products" },
     { label: "Inventory (Soon)", category: "Navigation", icon: Boxes, path: "/inventory" },

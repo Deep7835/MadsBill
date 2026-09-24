@@ -103,17 +103,36 @@ export function LineItemRow({
             size="sm"
           />
         </div>
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
-          onClick={() => onRemove(index)}
-          disabled={!removable}
-          aria-label={`Remove line ${index + 1}`}
-        >
-          <HugeiconsIcon icon={Delete02Icon} className="size-4" />
-        </Button>
+        <div className="flex items-center gap-2">
+          <Select
+            value={isSqft ? "sqft" : "piece"}
+            onValueChange={(val) =>
+              setValue?.(`items.${index}.rate_type`, val as "sqft" | "piece", {
+                shouldValidate: true,
+                shouldDirty: true,
+              })
+            }
+          >
+            <SelectTrigger className="h-8 w-36 text-xs" aria-label="Pricing unit">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="sqft">Per sq.ft.</SelectItem>
+              <SelectItem value="piece">Per piece</SelectItem>
+            </SelectContent>
+          </Select>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+            onClick={() => onRemove(index)}
+            disabled={!removable}
+            aria-label={`Remove line ${index + 1}`}
+          >
+            <HugeiconsIcon icon={Delete02Icon} className="size-4" />
+          </Button>
+        </div>
       </div>
 
       <div>
@@ -161,9 +180,17 @@ export function LineItemRow({
             />
             {fieldError(itemErrors?.description?.message)}
           </div>
+        </div>
 
+        {/* Measurements sit on one row: 7 columns for sq.ft. lines, 6 for piece lines (no area). */}
+        <div
+          className={cn(
+            "mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3",
+            isSqft ? "lg:grid-cols-7" : "lg:grid-cols-6",
+          )}
+        >
           {/* Size is on every line: it prices sqft lines and is a plain note on piece lines. */}
-          <div className="lg:col-span-2">
+          <div>
             <Label className="text-xs text-muted-foreground">
               Width (ft){isSqft ? "" : " · optional"}
             </Label>
@@ -178,7 +205,7 @@ export function LineItemRow({
             />
             {fieldError(itemErrors?.width?.message)}
           </div>
-          <div className="lg:col-span-2">
+          <div>
             <Label className="text-xs text-muted-foreground">
               Height (ft){isSqft ? "" : " · optional"}
             </Label>
@@ -194,7 +221,7 @@ export function LineItemRow({
             {fieldError(itemErrors?.height?.message)}
           </div>
           {isSqft ? (
-            <div className="lg:col-span-2">
+            <div>
               <Label className="text-xs text-muted-foreground">Area (sq.ft.)</Label>
               <div className="mt-1 flex h-9 items-center rounded-lg border border-dashed border-border bg-muted/50 px-3 text-sm font-medium tabular-nums">
                 {formatNumber(area ?? 0)}
@@ -202,7 +229,7 @@ export function LineItemRow({
             </div>
           ) : null}
 
-          <div className="lg:col-span-2">
+          <div>
             <Label className="text-xs text-muted-foreground">{isSqft ? "Qty" : "Pcs"}</Label>
             <Input
               className="mt-1"
@@ -217,7 +244,7 @@ export function LineItemRow({
           </div>
 
           {/* Editable Rate Column */}
-          <div className="lg:col-span-2">
+          <div>
             <Label className="text-xs text-muted-foreground">
               Rate {isSqft ? "/ sq.ft." : "/ piece"}
             </Label>
@@ -239,7 +266,7 @@ export function LineItemRow({
           </div>
 
           {/* GST % Dropdown */}
-          <div className="lg:col-span-2">
+          <div>
             <Label className="text-xs text-muted-foreground">GST %</Label>
             <Select
               value={String(Number(value?.gst_percent ?? 18))}
@@ -270,7 +297,7 @@ export function LineItemRow({
             </Select>
           </div>
 
-          <div className={cn("flex flex-col justify-end", isSqft ? "lg:col-span-2" : "lg:col-span-4")}>
+          <div className="flex flex-col justify-end">
             <Label className="text-xs text-muted-foreground">Amount</Label>
             <div className="mt-1 flex h-9 items-center justify-end rounded-lg bg-primary/5 px-3 text-sm font-semibold tabular-nums text-primary">
               {formatCurrency(amount)}
