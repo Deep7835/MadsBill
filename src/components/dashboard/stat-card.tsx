@@ -61,15 +61,15 @@ export function StatCard({
   return (
     <div
       className={cn(
-        "min-w-0 px-4 py-3.5",
+        "min-w-0 px-3.5 py-3 sm:px-4 sm:py-3.5",
         !bare && "rounded-xl border border-border bg-card shadow-[var(--shadow-panel)]",
       )}
     >
       <div className="flex items-center justify-between gap-2">
-        <p className="truncate text-[13px] font-medium text-muted-foreground">{label}</p>
+        <p className="truncate text-xs font-medium text-muted-foreground sm:text-[13px]">{label}</p>
         <span
           className={cn(
-            "flex size-7 shrink-0 items-center justify-center rounded-md border border-border",
+            "flex size-6 shrink-0 items-center justify-center rounded-md border border-border sm:size-7",
             styles.icon,
           )}
         >
@@ -80,13 +80,13 @@ export function StatCard({
           ) : null}
         </span>
       </div>
-      <p className="mt-1 truncate text-xl font-semibold tracking-tight tabular-nums text-foreground">
+      <p className="mt-1 truncate text-lg font-semibold sm:text-xl tracking-tight tabular-nums text-foreground">
         {value}
       </p>
 
       {hint ? <p className="mt-1 truncate text-xs text-muted-foreground">{hint}</p> : null}
 
-      <div className="mt-3">
+      <div className="mt-2.5 sm:mt-3">
         <Meter fill={fill} className={styles.bar} />
       </div>
     </div>

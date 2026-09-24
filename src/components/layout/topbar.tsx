@@ -7,8 +7,7 @@ import {
   Menu,
   Search,
   Plus,
-  Bell,
-  ChevronDown,
+  Calculator,
   LogOut,
   Command,
   Sun,
@@ -141,27 +140,25 @@ export function Topbar({ userEmail, userName }: TopbarProps) {
             </Link>
           </Button>
 
-          {/* Theme Toggle */}
-          <button
-            type="button"
-            onClick={toggleTheme}
-            aria-label="Toggle dark mode"
-            className="flex size-9 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors duration-150 hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40 hidden sm:flex"
-          >
-            {isDarkMode ? <Sun className="size-[18px]" strokeWidth={1.75} /> : <Moon className="size-[18px]" strokeWidth={1.75} />}
-          </button>
-
-          {/* Notifications button */}
-          <Link
-            href="/quotations?status=invoice"
-            aria-label="Unpaid invoices notifications"
-            className="flex size-9 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors duration-150 hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40 relative"
-          >
-            <Bell className="size-[18px]" strokeWidth={1.75} />
-            <span className="absolute right-2 top-2 size-2 rounded-full bg-primary ring-2 ring-card" />
-          </Link>
-
-          <span aria-hidden="true" className="mx-1 hidden h-5 w-px bg-border sm:block" />
+          <div className="flex items-center gap-0.5 rounded-full border border-border bg-card p-0.5 shadow-[var(--shadow-raised)]">
+            <button
+              type="button"
+              onClick={toggleTheme}
+              aria-label={isDarkMode ? "Switch to light mode" : "Switch to dark mode"}
+              title={isDarkMode ? "Light mode" : "Dark mode"}
+              className="flex size-8 items-center justify-center rounded-full text-muted-foreground transition-colors duration-150 hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
+            >
+              {isDarkMode ? <Sun className="size-4" strokeWidth={1.75} /> : <Moon className="size-4" strokeWidth={1.75} />}
+            </button>
+            <Link
+              href="/calculator"
+              aria-label="Price calculator"
+              title="Price calculator"
+              className="flex size-8 items-center justify-center rounded-full text-muted-foreground transition-colors duration-150 hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
+            >
+              <Calculator className="size-4" strokeWidth={1.75} />
+            </Link>
+          </div>
 
           {/* User Account Dropdown */}
           <DropdownMenu>
@@ -170,12 +167,9 @@ export function Topbar({ userEmail, userName }: TopbarProps) {
                 type="button"
                 aria-label={`Account menu for ${userName}`}
                 title={userEmail}
-                className="flex h-9 shrink-0 items-center gap-1 rounded-full p-0.5 pr-1.5 transition-colors duration-150 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40 data-[state=open]:bg-muted"
+                className="flex size-9 shrink-0 items-center justify-center rounded-full bg-accent text-[13px] font-semibold text-accent-foreground ring-1 ring-border ring-offset-2 ring-offset-card transition-[box-shadow] duration-150 hover:ring-primary/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/60 data-[state=open]:ring-primary/60"
               >
-                <span className="flex size-8 items-center justify-center rounded-full bg-accent text-[13px] font-semibold text-accent-foreground">
-                  {initial}
-                </span>
-                <ChevronDown className="size-3.5 text-muted-foreground" />
+                {initial}
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-60">
@@ -189,14 +183,6 @@ export function Topbar({ userEmail, userName }: TopbarProps) {
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onSelect={toggleTheme} className="sm:hidden">
-                {isDarkMode ? (
-                  <Sun />
-                ) : (
-                  <Moon />
-                )}
-                {isDarkMode ? "Light mode" : "Dark mode"}
-              </DropdownMenuItem>
               <DropdownMenuItem asChild>
                 <Link href="/settings">
                   <Settings />

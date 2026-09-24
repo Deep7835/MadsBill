@@ -8,7 +8,6 @@ import {
   ArrowRight,
   ArrowUpRight,
   Calculator,
-  CheckCircle2,
   Clock,
   FileText,
   History,
@@ -118,11 +117,12 @@ export function DashboardView() {
         title="Dashboard"
         description="Sales, pending payments and recent billing at a glance."
       >
+        <div className="inline-flex rounded-lg shadow-[var(--shadow-raised)] [&>*]:shadow-none [&>*:first-child]:rounded-r-none [&>*:last-child]:-ml-px [&>*:last-child]:rounded-l-none">
         <Dialog open={converterOpen} onOpenChange={setConverterOpen}>
           <DialogTrigger asChild>
-            <Button variant="outline">
+            <Button variant="outline" title="Unit converter">
               <Ruler className="text-muted-foreground" />
-              Unit converter
+              <span className="hidden sm:inline">Converter</span>
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-sm">
@@ -136,6 +136,7 @@ export function DashboardView() {
           </DialogContent>
         </Dialog>
         <DateFilter />
+        </div>
       </PageHeader>
 
       {loading ? (
@@ -157,10 +158,8 @@ export function DashboardView() {
           <div
             className={cn(
               PANEL,
-              "grid overflow-hidden sm:grid-cols-2 lg:grid-cols-5",
-              "[&>*]:border-border",
-              "[&>*+*]:border-t sm:[&>*:nth-child(2)]:border-t-0 sm:[&>*:nth-child(even)]:border-l",
-              "lg:[&>*]:border-t-0 lg:[&>*+*]:border-l",
+              "flex flex-wrap gap-px overflow-hidden bg-border",
+              "[&>*]:min-w-[9.5rem] [&>*]:flex-1 [&>*]:basis-[9.5rem] [&>*]:bg-card sm:[&>*]:basis-[11rem]",
             )}
           >
             <StatCard
@@ -244,21 +243,6 @@ export function DashboardView() {
                   ))}
                 </nav>
               </div>
-            </div>
-          </div>
-
-          {/* Order tracking — full width */}
-          <div className={cn(PANEL, "flex items-center gap-3 px-4 py-3")}>
-            <span className="flex size-7 shrink-0 items-center justify-center rounded-md border border-border text-[var(--success)]">
-              <CheckCircle2 className="size-4" strokeWidth={1.75} />
-            </span>
-            <div>
-              <p className="text-sm font-semibold text-foreground">
-                Order &amp; Delivery Tracking
-              </p>
-              <p className="mt-0.5 text-xs text-muted-foreground">
-                {data?.deliveredCount ?? 0} orders completed and delivered. Automated customer WhatsApp notifications enabled.
-              </p>
             </div>
           </div>
 
