@@ -16,6 +16,8 @@ import { toast } from "sonner";
 import { PageHeader } from "@/components/shared/page-header";
 import { FormField } from "@/components/shared/form-field";
 import { GST_STATES } from "@/lib/gst-states";
+import { describeGstin, parseGstin } from "@/lib/gstin";
+import { cn } from "@/lib/utils";
 import { ImageUploadField } from "@/components/shared/image-upload-field";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -93,6 +95,10 @@ export function SettingsView() {
     });
   }, [data, reset]);
 
+  // Your own GSTIN gets the same check-digit validation as a customer's.
+  const ownGstin = parseGstin(watch("gst_number"));
+  const ownGstinHint = describeGstin(ownGstin);
+
   const logoUrl = watch("logo_url");
   const stampUrl = watch("stamp_url");
   const signatureUrl = watch("signature_url");
@@ -166,11 +172,21 @@ export function SettingsView() {
               className="sm:col-span-2"
             />
 
-            <FormField label="GSTIN" htmlFor="gst_number" error={errors.gst_number?.message}>
+            <FormField
+              label="GSTIN"
+              htmlFor="gst_number"
+              error={errors.gst_number?.message}
+              hint={ownGstinHint ?? "Your GSTIN — its state code decides CGST/SGST vs IGST."}
+            >
               <Input
                 id="gst_number"
-                className="uppercase"
-                placeholder="09ABCDE1234F1Z5"
+                className={cn(
+                  "uppercase",
+                  ownGstin.wellFormed && !ownGstin.valid && "border-destructive",
+                  ownGstin.valid && "border-[var(--success)]",
+                )}
+                aria-invalid={ownGstin.wellFormed && !ownGstin.valid}
+                placeholder="27AAPFU0939F1ZV"
                 {...register("gst_number", {
                   setValueAs: (v: string) => (v ?? "").toUpperCase().trim(),
                 })}

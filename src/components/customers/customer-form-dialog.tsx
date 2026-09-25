@@ -18,6 +18,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { FormField } from "@/components/shared/form-field";
 import { GST_STATES } from "@/lib/gst-states";
+import { describeGstin, parseGstin } from "@/lib/gstin";
+import { cn } from "@/lib/utils";
 import {
   customerSchema,
   type CustomerFormValues,
@@ -56,11 +58,28 @@ export function CustomerFormDialog({
     register,
     handleSubmit,
     reset,
+    watch,
+    setValue,
     formState: { errors },
   } = useForm<CustomerFormValues, unknown, CustomerPayload>({
     resolver: zodResolver(customerSchema),
     defaultValues: EMPTY,
   });
+
+  // A GSTIN carries its own state code and PAN, so those fill themselves in as
+  // soon as a valid one is typed — no lookup service involved.
+  const gstin = parseGstin(watch("gst_number"));
+  const gstinHint = describeGstin(gstin);
+
+  useEffect(() => {
+    if (!gstin.valid || !gstin.stateName) return;
+    // Only correct a state that disagrees with the GSTIN; never clobber a
+    // blank one the user is still filling in elsewhere.
+    if (watch("state") !== gstin.stateName) {
+      setValue("state", gstin.stateName, { shouldDirty: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [gstin.valid, gstin.stateName]);
 
   useEffect(() => {
     if (!open) return;
@@ -139,12 +158,17 @@ export function CustomerFormDialog({
               label="GSTIN"
               htmlFor="gst_number"
               error={errors.gst_number?.message}
-              hint="15 characters, optional"
+              hint={gstinHint ?? "15 characters, optional — state fills in automatically"}
             >
               <Input
                 id="gst_number"
-                placeholder="09ABCDE1234F1Z5"
-                className="uppercase"
+                placeholder="27AAPFU0939F1ZV"
+                className={cn(
+                  "uppercase",
+                  gstin.wellFormed && !gstin.valid && "border-destructive",
+                  gstin.valid && "border-[var(--success)]",
+                )}
+                aria-invalid={gstin.wellFormed && !gstin.valid}
                 {...register("gst_number", {
                   setValueAs: (v: string) => (v ?? "").toUpperCase().trim(),
                 })}
