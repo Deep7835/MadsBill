@@ -21,6 +21,7 @@ export function DocumentPreview({
 }) {
   const hsn = settings?.default_hsn?.trim() || "—";
   const isInvoice = quotation.status === "invoice";
+  const taxed = quotation.gst_enabled !== false;
   const customer = quotation.customer;
 
   return (
@@ -114,7 +115,9 @@ export function DocumentPreview({
               ) : null}
               <Field label="Qty">{formatNumber(Number(item.qty))}</Field>
               <Field label="Rate">{formatCurrency(item.rate)}</Field>
-              <Field label="GST">{formatNumber(Number(item.gst_percent), 0)}%</Field>
+              {taxed ? (
+                <Field label="GST">{formatNumber(Number(item.gst_percent), 0)}%</Field>
+              ) : null}
             </dl>
           </li>
         ))}
@@ -131,7 +134,9 @@ export function DocumentPreview({
               <TableHead className="hidden text-right sm:table-cell">Area</TableHead>
               <TableHead className="text-right">Qty</TableHead>
               <TableHead className="text-right">Rate</TableHead>
-              <TableHead className="hidden text-center md:table-cell">GST</TableHead>
+              {taxed ? (
+                <TableHead className="hidden text-center md:table-cell">GST</TableHead>
+              ) : null}
               <TableHead className="text-right">Amount</TableHead>
             </TableRow>
           </TableHeader>
@@ -155,9 +160,11 @@ export function DocumentPreview({
                 <TableCell className="whitespace-nowrap text-right tabular-nums">
                   {formatCurrency(item.rate)}
                 </TableCell>
-                <TableCell className="hidden text-center text-muted-foreground md:table-cell">
-                  {formatNumber(Number(item.gst_percent), 0)}%
-                </TableCell>
+                {taxed ? (
+                  <TableCell className="hidden text-center text-muted-foreground md:table-cell">
+                    {formatNumber(Number(item.gst_percent), 0)}%
+                  </TableCell>
+                ) : null}
                 <TableCell className="whitespace-nowrap text-right font-medium tabular-nums">
                   {formatCurrency(item.amount)}
                 </TableCell>
@@ -204,7 +211,15 @@ export function DocumentPreview({
               </div>
               <div className="flex justify-between">
                 <dt className="text-muted-foreground">GST</dt>
-                <dd className="tabular-nums">{formatCurrency(quotation.gst_amount)}</dd>
+                <dd className="tabular-nums">
+                  {quotation.gst_enabled === false ? (
+                    <span className="text-xs uppercase tracking-wide text-muted-foreground">
+                      Not applied
+                    </span>
+                  ) : (
+                    formatCurrency(quotation.gst_amount)
+                  )}
+                </dd>
               </div>
               <div className="flex items-baseline justify-between border-t border-border pt-1 font-medium">
                 <dt className="text-muted-foreground">Grand total</dt>

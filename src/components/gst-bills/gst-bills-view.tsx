@@ -3,20 +3,35 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { Download01Icon, Invoice03Icon, PrinterIcon } from "@hugeicons/core-free-icons";
+import {
+  Download01Icon,
+  Invoice03Icon,
+  PencilEdit02Icon,
+  PrinterIcon,
+} from "@hugeicons/core-free-icons";
 import { toast } from "sonner";
 
 import { PageHeader } from "@/components/shared/page-header";
 import { DataTable, type Column } from "@/components/shared/data-table";
 import { SegmentedControl } from "@/components/shared/segmented-control";
 import { PaymentStatusBadge } from "@/components/shared/status-badge";
-import { GenerateGstBillDialog, useGstBillPdf } from "@/components/gst-bills/gst-bill-card";
+import {
+  EditGstBillDialog,
+  GenerateGstBillDialog,
+  useGstBillPdf,
+} from "@/components/gst-bills/gst-bill-card";
 import { Button } from "@/components/ui/button";
 import { useAsyncData } from "@/hooks/use-async-data";
-import { fetchGstBillInvoices, fetchQuotation, fetchSettings, type GstBillRow } from "@/lib/queries";
+import {
+  fetchGstBillInvoices,
+  fetchQuotation,
+  fetchSettings,
+  setDocumentGst,
+  type GstBillRow,
+} from "@/lib/queries";
 import { formatCurrency, formatDate } from "@/lib/format";
 
-type Tab = "issued" | "pending";
+type Tab = "issued" | "pending" | "plain";
 type Action = "print" | "pdf";
 
 /** "MK-012" → 12, so MK-1000 sorts after MK-999. */
@@ -31,9 +46,11 @@ export function GstBillsView() {
 
   const [tab, setTab] = useState<Tab>("issued");
   const [generating, setGenerating] = useState<GstBillRow | null>(null);
+  const [editing, setEditing] = useState<GstBillRow | null>(null);
+  const [applying, setApplying] = useState<string | null>(null);
   const [working, setWorking] = useState<{ id: string; action: Action } | null>(null);
 
-  const { issued, pending } = useMemo(() => {
+  const { issued, pending, plain } = useMemo(() => {
     // Flattened so the table search matches customer names and GSTINs too.
     const rows = (data ?? []).map((r) => ({
       ...r,
@@ -42,7 +59,10 @@ export function GstBillsView() {
     }));
     return {
       issued: rows.filter((r) => r.bill_number).sort((a, b) => billSeq(b) - billSeq(a)),
-      pending: rows.filter((r) => !r.bill_number),
+      // Invoices raised without GST carry no tax to report, so they are not
+      // waiting to be billed — they show under their own tab instead.
+      pending: rows.filter((r) => !r.bill_number && r.gst_enabled !== false),
+      plain: rows.filter((r) => !r.bill_number && r.gst_enabled === false),
     };
   }, [data]);
 
@@ -63,6 +83,23 @@ export function GstBillsView() {
 
   const isBusy = (row: GstBillRow, action: Action) =>
     working?.id === row.id && working.action === action;
+
+  /** Turns a plain invoice into a taxed one, then drops it into "Ready to bill". */
+  async function applyGst(row: GstBillRow) {
+    setApplying(row.id);
+    try {
+      await setDocumentGst(row.id, true);
+      toast.success(`GST applied to ${row.quote_number}`);
+      await refresh();
+      setTab("pending");
+    } catch (err) {
+      toast.error("Could not apply GST", {
+        description: err instanceof Error ? err.message : undefined,
+      });
+    } finally {
+      setApplying(null);
+    }
+  }
 
   const customerCell = (row: GstBillRow) => (
     <div className="min-w-0">
@@ -128,6 +165,16 @@ export function GstBillsView() {
           <Button
             variant="outline"
             size="sm"
+            onClick={() => setEditing(row)}
+            disabled={!!working}
+            aria-label={`Edit ${row.bill_number}`}
+          >
+            <HugeiconsIcon icon={PencilEdit02Icon} />
+            Edit
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
             onClick={() => runPdf(row, "print")}
             loading={isBusy(row, "print")}
             disabled={!!working}
@@ -187,6 +234,48 @@ export function GstBillsView() {
     },
   ];
 
+  /** Plain invoices: applying GST re-totals them so they can then be billed. */
+  const plainColumns: Column<GstBillRow>[] = [
+    {
+      key: "quote_number",
+      header: "Invoice",
+      render: (row) => (
+        <Link href={`/quotations/${row.id}`} className="font-bold text-foreground hover:text-primary">
+          {row.quote_number}
+        </Link>
+      ),
+    },
+    {
+      key: "date",
+      header: "Invoice date",
+      render: (row) => <span className="text-xs">{formatDate(row.date)}</span>,
+    },
+    { key: "customer", header: "Customer", render: customerCell },
+    {
+      key: "grand_total",
+      header: "Total",
+      className: "text-right font-bold tabular-nums",
+      render: (row) => formatCurrency(row.grand_total),
+    },
+    {
+      key: "actions",
+      header: "",
+      className: "w-px text-right",
+      render: (row) => (
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => applyGst(row)}
+          loading={applying === row.id}
+          disabled={!!applying}
+        >
+          <HugeiconsIcon icon={Invoice03Icon} />
+          Apply GST
+        </Button>
+      ),
+    },
+  ];
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -201,6 +290,7 @@ export function GstBillsView() {
         segments={[
           { value: "issued", label: `Issued bills${data ? ` (${issued.length})` : ""}` },
           { value: "pending", label: `Ready to bill${data ? ` (${pending.length})` : ""}` },
+          { value: "plain", label: `Without GST${data ? ` (${plain.length})` : ""}` },
         ]}
       />
 
@@ -213,14 +303,23 @@ export function GstBillsView() {
           searchPlaceholder="Search bill number or customer..."
           emptyMessage="No GST bills yet. Open 'Ready to bill' and generate one from an invoice."
         />
-      ) : (
+      ) : tab === "pending" ? (
         <DataTable
           key="pending"
           data={pending}
           columns={pendingColumns}
           isLoading={loading}
           searchPlaceholder="Search invoice number or customer..."
-          emptyMessage="Every invoice already has a GST bill. Convert a quotation to an invoice to bill it."
+          emptyMessage="Every taxed invoice already has a GST bill. Convert a quotation to an invoice to bill it."
+        />
+      ) : (
+        <DataTable
+          key="plain"
+          data={plain}
+          columns={plainColumns}
+          isLoading={loading}
+          searchPlaceholder="Search invoice number or customer..."
+          emptyMessage="No plain invoices. Raise one with 'Without GST' to see it here."
         />
       )}
 
@@ -231,6 +330,12 @@ export function GstBillsView() {
           await refresh();
           setTab("issued");
         }}
+      />
+
+      <EditGstBillDialog
+        invoice={editing}
+        onOpenChange={(open) => !open && setEditing(null)}
+        onSaved={refresh}
       />
     </div>
   );

@@ -39,6 +39,8 @@ export const quotationSchema = z.object({
     .optional()
     .transform((v) => (v ? v : null)),
   status: z.enum(["quotation", "invoice"]),
+  /** Off raises a plain bill: the rate is the final price and no tax is added. */
+  gst_enabled: z.boolean(),
   payment_status: z.enum(["unpaid", "partial", "paid"]),
   notes: z
     .string()

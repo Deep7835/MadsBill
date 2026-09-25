@@ -45,6 +45,8 @@ function drawHeader(
   y: number,
 ): number {
   const { margin } = PAGE;
+  // Documents raised without GST print no tax anywhere.
+  const taxed = quotation.gst_enabled !== false;
   const metaWidth = 74;
   const infoWidth = CONTENT_WIDTH - metaWidth;
   const metaX = margin + infoWidth;
@@ -104,7 +106,8 @@ function drawHeader(
   box(doc, metaX, y, metaWidth, headerHeight);
   box(doc, metaX, y, metaWidth, 9, { fill: COLORS.navy, stroke: COLORS.navy });
 
-  text(doc, "TAX INVOICE", metaX + metaWidth / 2, y + 6.2, {
+  // A supply with no tax on it is not a tax invoice.
+  text(doc, taxed ? "TAX INVOICE" : "INVOICE", metaX + metaWidth / 2, y + 6.2, {
     size: 13,
     style: "bold",
     color: COLORS.white,
@@ -135,6 +138,8 @@ function drawBillTo(
   y: number,
 ): number {
   const { margin } = PAGE;
+  // Documents raised without GST print no tax anywhere.
+  const taxed = quotation.gst_enabled !== false;
   const rightWidth = 74;
   const leftWidth = CONTENT_WIDTH - rightWidth;
   const rightX = margin + leftWidth;
@@ -183,7 +188,11 @@ function drawBillTo(
 
   const supplyRows: [string, string][] = [
     ["Place of Supply", gst.placeOfSupply],
-    ["Tax Type", gst.intraState ? "CGST + SGST (Intra-state)" : "IGST (Inter-state)"],
+    ...(taxed
+      ? ([
+          ["Tax Type", gst.intraState ? "CGST + SGST (Intra-state)" : "IGST (Inter-state)"],
+        ] as [string, string][])
+      : ([["Tax", "Not applicable"]] as [string, string][])),
     ["Due Date", quotation.valid_until ? formatDate(quotation.valid_until) : "On receipt"],
   ];
 
@@ -206,12 +215,14 @@ function drawBillTo(
 
 function drawItems(doc: jsPDF, quotation: QuotationFull, hsn: string, y: number): number {
   const { margin } = PAGE;
+  // Nothing is "taxable" on a plain bill — the column is just the amount.
+  const amountHeader = quotation.gst_enabled === false ? "Amount" : "Taxable Value";
 
   autoTable(doc, {
     startY: y,
     margin: { left: margin, right: margin, top: PAGE.margin, bottom: PAGE.margin + 4 },
     theme: "grid",
-    head: [["#", "Description of Goods / Services", "HSN/SAC", "Size (W×H)", "Qty", "Rate", "Taxable Value"]],
+    head: [["#", "Description of Goods / Services", "HSN/SAC", "Size (W×H)", "Qty", "Rate", amountHeader]],
     body: quotation.items.map((item, index) => {
       const detail = itemDetailLine(item);
       return [
@@ -336,6 +347,8 @@ function drawTotalsBlock(
   y: number,
 ): number {
   const { margin } = PAGE;
+  // Documents raised without GST print no tax anywhere.
+  const taxed = quotation.gst_enabled !== false;
   const totalsWidth = 72;
   const leftWidth = CONTENT_WIDTH - totalsWidth;
   const totalsX = margin + leftWidth;
@@ -349,13 +362,15 @@ function drawTotalsBlock(
   const showPaymentDetails = totalPaid > 0 || quotation.payment_status !== "unpaid";
 
   const rows: [string, string, boolean][] = [
-    ["Taxable Value", `${CURRENCY} ${formatAmount(gst.taxable)}`, false],
-    ...(gst.intraState
+    ["Subtotal", `${CURRENCY} ${formatAmount(gst.taxable)}`, false],
+    ...(!taxed
+      ? ([] as [string, string, boolean][])
+      : gst.intraState
       ? ([
           ["CGST", `${CURRENCY} ${formatAmount(gst.cgst)}`, false],
           ["SGST", `${CURRENCY} ${formatAmount(gst.sgst)}`, false],
         ] as [string, string, boolean][])
-      : ([["IGST", `${CURRENCY} ${formatAmount(gst.igst)}`, false]] as [string, string, boolean][])),
+        : ([["IGST", `${CURRENCY} ${formatAmount(gst.igst)}`, false]] as [string, string, boolean][])),
     ["Grand Total", `${CURRENCY} ${formatAmount(quotation.grand_total)}`, !showPaymentDetails],
     ...(showPaymentDetails
       ? ([
@@ -524,8 +539,11 @@ export function drawInvoice(
   y = drawBillTo(doc, quotation, gst, y);
   y = drawItems(doc, quotation, hsn, y + 3);
 
-  y = ensureSpace(doc, y + 3, 26);
-  y = drawTaxSummary(doc, gst, hsn, y);
+  // Nothing to summarise when no tax was charged.
+  if (quotation.gst_enabled !== false) {
+    y = ensureSpace(doc, y + 3, 26);
+    y = drawTaxSummary(doc, gst, hsn, y);
+  }
 
   y = ensureSpace(doc, y + 3, 12);
   sectionBar(doc, `Amount in words: ${amountInWords(quotation.grand_total)}`, PAGE.margin, y, CONTENT_WIDTH, {

@@ -1,6 +1,7 @@
 "use client";
 
 import { createClient } from "@/lib/supabase/client";
+import { round2 } from "@/lib/format";
 import type { ReportInvoice } from "@/lib/reports";
 import type {
   CommunicationLog,
@@ -296,6 +297,60 @@ export async function generateGstBill(id: string): Promise<Quotation> {
   const supabase = createClient();
   return unwrap(
     await supabase.rpc("generate_gst_bill", { p_quotation_id: id }).single(),
+  ) as Quotation;
+}
+
+/** Renames / re-dates an issued GST bill. The database rejects duplicate numbers. */
+export async function updateGstBill(
+  id: string,
+  billNumber: string,
+  billDate: string | null,
+): Promise<Quotation> {
+  const supabase = createClient();
+  return unwrap(
+    await supabase
+      .rpc("update_gst_bill", {
+        p_quotation_id: id,
+        p_bill_number: billNumber,
+        p_bill_date: billDate,
+      })
+      .single(),
+  ) as Quotation;
+}
+
+/**
+ * Switches a document between taxed and plain. Line items keep their own GST
+ * percentages either way, so only the document total needs recomputing.
+ */
+export async function setDocumentGst(id: string, enabled: boolean): Promise<Quotation> {
+  const supabase = createClient();
+
+  const items = unwrap(
+    await supabase.from("quotation_items").select("amount, gst_percent").eq("quotation_id", id),
+  ) as Pick<QuotationItem, "amount" | "gst_percent">[];
+
+  const subtotal = round2(items.reduce((sum, item) => sum + Number(item.amount ?? 0), 0));
+  const gstAmount = enabled
+    ? round2(
+        items.reduce(
+          (sum, item) => sum + (Number(item.amount ?? 0) * Number(item.gst_percent ?? 0)) / 100,
+          0,
+        ),
+      )
+    : 0;
+
+  return unwrap(
+    await supabase
+      .from("quotations")
+      .update({
+        gst_enabled: enabled,
+        subtotal,
+        gst_amount: gstAmount,
+        grand_total: round2(subtotal + gstAmount),
+      })
+      .eq("id", id)
+      .select()
+      .single(),
   ) as Quotation;
 }
 

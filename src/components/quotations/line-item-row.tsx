@@ -36,6 +36,8 @@ interface LineItemRowProps {
   onProductChange: (index: number, productId: string) => void;
   onRemove: (index: number) => void;
   removable: boolean;
+  /** False on a non-GST document — the per-line GST picker is hidden. */
+  gstEnabled?: boolean;
 }
 
 export function LineItemRow({
@@ -48,6 +50,7 @@ export function LineItemRow({
   onProductChange,
   onRemove,
   removable,
+  gstEnabled = true,
 }: LineItemRowProps) {
   const itemErrors = Array.isArray(errors) ? errors[index] : undefined;
   const isSqft = value?.rate_type === "sqft";
@@ -59,7 +62,7 @@ export function LineItemRow({
     height: value?.height,
     qty: value?.qty,
     rate: value?.rate,
-    gst_percent: value?.gst_percent,
+    gst_percent: gstEnabled ? value?.gst_percent : 0,
     slabs: product,
   });
 
@@ -255,8 +258,8 @@ export function LineItemRow({
             ) : null}
           </div>
 
-          {/* GST % Dropdown */}
-          <div>
+          {/* GST % Dropdown — hidden entirely on a non-GST document */}
+          <div className={gstEnabled ? undefined : "hidden"}>
             <Label className="text-xs font-medium text-muted-foreground">GST %</Label>
             <Select
               value={String(Number(value?.gst_percent ?? 18))}

@@ -75,6 +75,8 @@ export interface Quotation {
   subtotal: number;
   gst_amount: number;
   grand_total: number;
+  /** False for a plain bill with no tax: every line is 0% and gst_amount is 0. */
+  gst_enabled: boolean;
   /** GST bill number (MK-001…), set once when the invoice is issued as a GST bill. */
   bill_number: string | null;
   bill_date: string | null;

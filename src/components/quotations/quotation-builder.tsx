@@ -16,6 +16,7 @@ import { toast } from "sonner";
 
 import { PageHeader } from "@/components/shared/page-header";
 import { FormField } from "@/components/shared/form-field";
+import { SegmentedControl } from "@/components/shared/segmented-control";
 import { LineItemRow } from "@/components/quotations/line-item-row";
 import { CustomerFormDialog } from "@/components/customers/customer-form-dialog";
 import { Button } from "@/components/ui/button";
@@ -68,6 +69,7 @@ function defaultsFor(quotation?: QuotationFull, presetCustomerId?: string): Quot
       date: toDateInput(quotation.date),
       valid_until: quotation.valid_until ? toDateInput(quotation.valid_until) : "",
       status: quotation.status,
+      gst_enabled: quotation.gst_enabled ?? true,
       payment_status: quotation.payment_status,
       notes: quotation.notes ?? "",
       items: quotation.items.map((item) => ({
@@ -90,6 +92,7 @@ function defaultsFor(quotation?: QuotationFull, presetCustomerId?: string): Quot
     date: toDateInput(new Date()),
     valid_until: toDateInput(addDays(new Date(), 15)),
     status: "quotation",
+    gst_enabled: true,
     payment_status: "unpaid",
     notes: "",
     items: [blankItem()],
@@ -167,6 +170,8 @@ export function QuotationBuilder({
     [products],
   );
 
+  const gstEnabled = watch("gst_enabled") !== false;
+
   const toCalcLine = useCallback(
     (item: ItemValues): CalcLine => ({
       rate_type: item?.rate_type === "piece" ? "piece" : "sqft",
@@ -174,10 +179,12 @@ export function QuotationBuilder({
       height: item?.height,
       qty: item?.qty,
       rate: item?.rate,
-      gst_percent: item?.gst_percent,
+      // Each line keeps its own %, but a non-GST document charges none of it,
+      // so switching GST back on restores the rates rather than losing them.
+      gst_percent: gstEnabled ? item?.gst_percent : 0,
       slabs: item?.product_id ? (productById.get(item.product_id) ?? null) : null,
     }),
-    [productById],
+    [productById, gstEnabled],
   );
 
   const totals = useMemo(() => calcTotals(items.map(toCalcLine)), [items, toCalcLine]);
@@ -219,6 +226,9 @@ export function QuotationBuilder({
           // base_rate is what was typed; rate is what the slab actually charges.
           base_rate: item.rate,
           rate,
+          // The line keeps its own rate even on a non-GST document; the
+          // document flag decides whether any tax is charged, so turning GST
+          // back on restores the percentages instead of losing them.
           gst_percent: item.gst_percent,
           amount,
         };
@@ -231,6 +241,7 @@ export function QuotationBuilder({
           date: values.date,
           valid_until: values.valid_until,
           status: values.status,
+          gst_enabled: values.gst_enabled,
           payment_status: values.payment_status,
           notes: values.notes,
           subtotal: computed.subtotal,
@@ -380,6 +391,7 @@ export function QuotationBuilder({
                   onProductChange={handleProductChange}
                   onRemove={remove}
                   removable={fields.length > 1}
+                  gstEnabled={gstEnabled}
                 />
               ))
             )}
@@ -467,6 +479,30 @@ export function QuotationBuilder({
               />
               </FormField>
 
+              <FormField
+                label="Tax"
+                hint={
+                  gstEnabled
+                    ? "Each line's GST % is charged and the document can be issued as a GST bill."
+                    : "No tax is added — the rate is the final price. GST bills need this on."
+                }
+              >
+                <Controller
+                  control={control}
+                  name="gst_enabled"
+                  render={({ field }) => (
+                    <SegmentedControl
+                      value={field.value === false ? "no-gst" : "gst"}
+                      onChange={(value) => field.onChange(value === "gst")}
+                      aria-label="Tax treatment"
+                      segments={[
+                        { value: "gst", label: "With GST" },
+                        { value: "no-gst", label: "Without GST" },
+                      ]}
+                    />
+                  )}
+                />
+              </FormField>
             </CardContent>
           </Card>
 
@@ -485,7 +521,15 @@ export function QuotationBuilder({
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">GST</span>
-                <span className="font-medium tabular-nums">{formatCurrency(totals.gstAmount)}</span>
+                {gstEnabled ? (
+                  <span className="font-medium tabular-nums">
+                    {formatCurrency(totals.gstAmount)}
+                  </span>
+                ) : (
+                  <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                    Not applied
+                  </span>
+                )}
               </div>
               {totals.savings > 0 ? (
                 <div className="flex justify-between text-[var(--success)]">
