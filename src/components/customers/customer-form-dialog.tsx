@@ -20,6 +20,17 @@ import { FormField } from "@/components/shared/form-field";
 import { GST_STATES } from "@/lib/gst-states";
 import { describeGstin, parseGstin } from "@/lib/gstin";
 import { cn } from "@/lib/utils";
+
+/** Mirrors GstTaxpayer from the server route — kept local so the client bundle
+ *  never imports the server-only lookup module. */
+interface GstTaxpayerDto {
+  legalName: string | null;
+  tradeName: string | null;
+  status: string | null;
+  address: string | null;
+  city: string | null;
+  state: string | null;
+}
 import {
   customerSchema,
   type CustomerFormValues,
@@ -70,6 +81,45 @@ export function CustomerFormDialog({
   // soon as a valid one is typed — no lookup service involved.
   const gstin = parseGstin(watch("gst_number"));
   const gstinHint = describeGstin(gstin);
+
+  const [fetching, setFetching] = useState(false);
+
+  /** Pulls legal name and address from the GST provider via our server route. */
+  async function handleFetchDetails() {
+    setFetching(true);
+    try {
+      const response = await fetch("/api/gst-lookup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ gstin: gstin.gstin }),
+      });
+      const body = (await response.json()) as { taxpayer?: GstTaxpayerDto; error?: string };
+
+      if (!response.ok || !body.taxpayer) {
+        toast.error("Could not fetch GST details", { description: body.error });
+        return;
+      }
+
+      const t = body.taxpayer;
+      const fill = (field: "business_name" | "address" | "city" | "state", value: string | null) => {
+        if (value) setValue(field, value, { shouldDirty: true, shouldValidate: true });
+      };
+
+      // Trade name is what the business is actually called; legal name is the fallback.
+      fill("business_name", t.tradeName || t.legalName);
+      fill("address", t.address);
+      fill("city", t.city);
+      fill("state", t.state);
+
+      toast.success(t.tradeName || t.legalName || "Details fetched", {
+        description: t.status && t.status !== "Active" ? `GST status: ${t.status}` : undefined,
+      });
+    } catch {
+      toast.error("Could not reach the lookup service");
+    } finally {
+      setFetching(false);
+    }
+  }
 
   useEffect(() => {
     if (!gstin.valid || !gstin.stateName) return;
@@ -160,19 +210,36 @@ export function CustomerFormDialog({
               error={errors.gst_number?.message}
               hint={gstinHint ?? "15 characters, optional — state fills in automatically"}
             >
-              <Input
-                id="gst_number"
-                placeholder="27AAPFU0939F1ZV"
-                className={cn(
-                  "uppercase",
-                  gstin.wellFormed && !gstin.valid && "border-destructive",
-                  gstin.valid && "border-[var(--success)]",
-                )}
-                aria-invalid={gstin.wellFormed && !gstin.valid}
-                {...register("gst_number", {
-                  setValueAs: (v: string) => (v ?? "").toUpperCase().trim(),
-                })}
-              />
+              <div className="flex gap-2">
+                <Input
+                  id="gst_number"
+                  placeholder="27AAPFU0939F1ZV"
+                  className={cn(
+                    "uppercase",
+                    gstin.wellFormed && !gstin.valid && "border-destructive",
+                    gstin.valid && "border-[var(--success)]",
+                  )}
+                  aria-invalid={gstin.wellFormed && !gstin.valid}
+                  {...register("gst_number", {
+                    setValueAs: (v: string) => (v ?? "").toUpperCase().trim(),
+                  })}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="shrink-0"
+                  onClick={handleFetchDetails}
+                  loading={fetching}
+                  disabled={!gstin.valid}
+                  title={
+                    gstin.valid
+                      ? "Fetch name and address from the GST portal"
+                      : "Enter a valid GSTIN first"
+                  }
+                >
+                  Fetch
+                </Button>
+              </div>
             </FormField>
 
             <FormField

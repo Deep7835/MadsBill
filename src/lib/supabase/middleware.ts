@@ -37,6 +37,11 @@ export async function updateSession(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const isPublic = PUBLIC_PATHS.some((p) => (p === "/" ? pathname === "/" : pathname.startsWith(p)));
 
+  // Route handlers answer with a status code, not a redirect — bouncing them to
+  // /login would hand a fetch() an HTML page where it expects JSON. Each route
+  // under /api must therefore do its own auth check; see /api/gst-lookup.
+  if (pathname.startsWith("/api/")) return response;
+
   if (!user && !isPublic) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
