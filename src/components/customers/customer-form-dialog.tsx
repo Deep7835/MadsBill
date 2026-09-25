@@ -17,6 +17,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { FormField } from "@/components/shared/form-field";
+import { GST_STATES } from "@/lib/gst-states";
 import {
   customerSchema,
   type CustomerFormValues,
@@ -163,8 +164,28 @@ export function CustomerFormDialog({
               <Input id="city" placeholder="Noida" {...register("city")} />
             </FormField>
 
-            <FormField label="State" htmlFor="state" error={errors.state?.message}>
-              <Input id="state" placeholder="Uttar Pradesh" {...register("state")} />
+            <FormField
+              label="State"
+              htmlFor="state"
+              error={errors.state?.message}
+              hint="Decides CGST+SGST vs IGST — pick from the list so it resolves."
+            >
+              {/* A datalist keeps free typing possible while steering to the
+                  official names the GST state codes are matched against. */}
+              <Input
+                id="state"
+                list="gst-states"
+                placeholder="Uttar Pradesh"
+                autoComplete="off"
+                {...register("state")}
+              />
+              <datalist id="gst-states">
+                {GST_STATES.map((s) => (
+                  <option key={s.code} value={s.name}>
+                    {s.code}
+                  </option>
+                ))}
+              </datalist>
             </FormField>
           </div>
 

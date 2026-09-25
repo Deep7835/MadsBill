@@ -15,6 +15,7 @@ import { toast } from "sonner";
 
 import { PageHeader } from "@/components/shared/page-header";
 import { FormField } from "@/components/shared/form-field";
+import { GST_STATES } from "@/lib/gst-states";
 import { ImageUploadField } from "@/components/shared/image-upload-field";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -205,8 +206,20 @@ export function SettingsView() {
               <Input id="city" {...register("city")} />
             </FormField>
 
-            <FormField label="State" htmlFor="state" error={errors.state?.message}>
-              <Input id="state" {...register("state")} />
+            <FormField
+              label="State"
+              htmlFor="state"
+              error={errors.state?.message}
+              hint="Your own state — every invoice compares against it to split CGST/SGST."
+            >
+              <Input id="state" list="gst-states-settings" autoComplete="off" {...register("state")} />
+              <datalist id="gst-states-settings">
+                {GST_STATES.map((s) => (
+                  <option key={s.code} value={s.name}>
+                    {s.code}
+                  </option>
+                ))}
+              </datalist>
             </FormField>
           </CardContent>
         </Card>
